@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include <unistd.h>
 
 #define W 80
 #define H 60
@@ -53,7 +54,7 @@ double *t)
 	if (sol == 2)
 	{
 //		printf( "two solutions : %f and %f\n", t1, t2);
-		if (abs( t1) > abs( t2))
+		if (fabs( t1) > fabs( t2))
 			t1 = t2;
 	}
 	else if (sol == 1)

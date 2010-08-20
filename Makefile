@@ -1,5 +1,8 @@
 TARGET=intersec.exe
 
+CFLAGS=-Wall -Werror
+CFLAGS+=-g -O0
+
 MV=mv
 
 LDFLAGS=-lm
