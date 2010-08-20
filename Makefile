@@ -15,4 +15,4 @@ intersec.exe: intersec
 clean:
 	$(RM) $(TARGET)
 clobber: clean
-	$(RM) *~
+	$(RM) *~ *.tga
