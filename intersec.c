@@ -99,6 +99,7 @@ int main( int argc, char *argv[])
 	double winw, winh;
 	winw = 1.0; winh = 1.0;
 	int do_tga = 0;
+	int do_att = 1;
 	int bpp = 24;
 	unsigned char tga_bdata;
 	unsigned short tga_sdata;
@@ -183,9 +184,12 @@ int main( int argc, char *argv[])
 			}
 			if (do_tga)
 			{
-				TGA_BYTE( (unsigned char)(255 * rmin));
-				TGA_BYTE( (unsigned char)(255 * gmin));
-				TGA_BYTE( (unsigned char)(255 * bmin));
+				double att = 1.0;
+				if (do_att)
+					att = 1.0 / sqrt(tmin);
+				TGA_BYTE( (unsigned char)(255 * rmin * att));
+				TGA_BYTE( (unsigned char)(255 * gmin * att));
+				TGA_BYTE( (unsigned char)(255 * bmin * att));
 //				TGA_BYTE( 0);
 			}
 			else
