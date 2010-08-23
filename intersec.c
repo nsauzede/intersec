@@ -6,8 +6,8 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
-#define W 80
-#define H 60
+#define W 600
+#define H 600
 #define SMALL	0.001
 #define BIG		10.0
 
@@ -214,7 +214,7 @@ int main( int argc, char *argv[])
 					}
 				}
 			}
-			double att = 1.0;
+			double att = 1.0;	// should be a vector(rgb) ?
 			if (tmin >= BIG)	// sky
 			{
 				double coef1, coef2;
