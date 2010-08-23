@@ -174,22 +174,25 @@ int main( int argc, char *argv[])
 	int i, j;
 	for (j = 0; j < h; j++)
 	{
+		double _vx, _vy, _vz;
+		_vy = vy + winh / 2 - winh * (double)j / (h - 1);
+		_vz = vz;
+
 		for (i = 0; i < w; i++)
 		{
 			int s;
 			double tmin = BIG;
 			char pix = '.';
 			double rmin = 0.0, gmin = 0.0, bmin = 0.0;
+
+			_vx = vx - winw / 2 + winw * (double)i / (w - 1);
+
 			for (s = 0; s < nsph; s++)
 			{
 				double cx, cy, cz, sr;
 				cx = spheres[s].cx; cy = spheres[s].cy; cz = spheres[s].cz; sr = spheres[s].sr;
 //				printf( "sphere: c(%f;%f;%f) r(%f)\n", cx, cy, cz, sr);
 				int res;
-				double _vx, _vy, _vz;
-				_vx = vx - winw / 2 + winw * (double)i / (w - 1);
-				_vy = vy + winh / 2 - winh * (double)j / (h - 1);
-				_vz = vz;
 				double t = 0;
 				res = intersec_sphere( cx, cy, cz, sr, ex, ey, ez, _vx, _vy, _vz, &t);
 //				printf( "%c", res ? 's' : '.');
@@ -211,11 +214,24 @@ int main( int argc, char *argv[])
 					}
 				}
 			}
-			if (do_tga)
+			double att = 1.0;
+			if (tmin >= BIG)	// sky
 			{
-				double att = 1.0;
+				double coef1, coef2;
+				coef1 = 1.0 * ((double)i / w);
+				coef2 = 1.0 * ((double)j / h);
+//				coef2 = 1.0 - coef2;
+				rmin = 1.0 - coef2;
+				gmin = 0.5;
+				bmin = coef2;
+			}
+			else				// ambient
+			{
 				if (do_att)
 					att = 1.0 / sqrt(tmin);
+			}
+			if (do_tga)
+			{
 				TGA_BYTE( (unsigned char)(255 * rmin * att));
 				TGA_BYTE( (unsigned char)(255 * gmin * att));
 				TGA_BYTE( (unsigned char)(255 * bmin * att));
