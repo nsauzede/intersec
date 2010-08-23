@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <math.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdlib.h>
 
 #define W 80
 #define H 60
@@ -89,6 +93,13 @@ sphere_t spheres[] = {
 };
 int nsph = sizeof (spheres) / sizeof (spheres[0]);
 
+#ifdef WIN32
+#include <windows.h>
+#define MAP_FAILED ((HANDLE)-1)
+#else
+#include <sys/mman.h>
+#endif
+
 int main( int argc, char *argv[])
 {
 	double ex, ey, ez, vx, vy, vz;
@@ -98,11 +109,14 @@ int main( int argc, char *argv[])
 	w = W; h = H;
 	double winw, winh;
 	winw = 1.0; winh = 1.0;
-	int do_tga = 0;
+	int do_tga = 1;
+	int do_txt = 0;
 	int do_att = 1;
 	int bpp = 24;
-	unsigned char tga_bdata;
-	unsigned short tga_sdata;
+	int tga_fd = -1;
+	unsigned char *tga_map = MAP_FAILED;
+	long tga_size = 0;
+	long tga_index = 0;
 
 	int arg = 1;
 	if (argc > arg)
@@ -119,8 +133,23 @@ int main( int argc, char *argv[])
 	}
 	if (do_tga)
 	{
-#define TGA_BYTE(b) tga_bdata = b; write( 1, &tga_bdata, sizeof( tga_bdata))
-#define TGA_SHORT(s) tga_sdata = s; write( 1, &tga_sdata, sizeof( tga_sdata))
+		tga_fd = open( "out.tga", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+		if (tga_fd == -1)
+		{
+			perror( "open");
+			exit( 2);
+		}
+		tga_size = w * h * bpp / 8 + 18;
+		ftruncate( tga_fd, tga_size);
+#ifdef WIN32
+		tga_map = malloc( tga_size);
+		if (!tga_map)
+			tga_map = MAP_FAILED;
+#else
+		tga_map = mmap( 0, tga_size, PROT_READ | PROT_WRITE, MAP_SHARED, tga_fd, 0);
+#endif
+#define TGA_BYTE(b) do {tga_map[tga_index++] = b;}while(0)
+#define TGA_SHORT(s) do{*(unsigned short *)(&tga_map[0] + tga_index) = s;tga_index+=sizeof( unsigned short);}while(0)
 		TGA_BYTE( 0);
 		TGA_BYTE( 0);
 		TGA_BYTE( 2);
@@ -136,7 +165,7 @@ int main( int argc, char *argv[])
 		TGA_BYTE( bpp);
 		TGA_BYTE( 0x20);
 	}
-	else
+	if (do_txt)
 	{
 		printf( "w=%d h=%d\n", w, h);
 		printf( "eye: e(%f;%f;%f) v(%f;%f;%f)\n", ex, ey, ez, vx, vy, vz);
@@ -192,11 +221,21 @@ int main( int argc, char *argv[])
 				TGA_BYTE( (unsigned char)(255 * bmin * att));
 //				TGA_BYTE( 0);
 			}
-			else
+			if (do_txt)
 				printf( "%c", pix);
 		}
-		if (!do_tga)
+		if (do_txt)
 			printf( "\n");
+	}
+	if (do_tga)
+	{
+#ifdef WIN32
+		write( tga_fd, tga_map, tga_size);
+		free( tga_map);
+#else
+		munmap( tga_map, tga_size);
+#endif
+		close( tga_fd);
 	}
 	
 	return 0;
