@@ -1,7 +1,13 @@
 TARGET=intersec.exe
 
 CFLAGS=-Wall -Werror
+
+OPTIM=1
+ifdef OPTIM
+CFLAGS+=-O2
+else
 CFLAGS+=-g -O0
+endif
 
 MV=mv
 
