@@ -283,7 +283,8 @@ int main( int argc, char *argv[])
 #endif
 		close( tga_fd);
 	}
-	dprintf( "tga_index=%lu", (unsigned long)tga_index);
+	dprintf( "tga_size=%lu\n", (unsigned long)tga_size);
+	dprintf( "tga_index=%lu\n", (unsigned long)tga_index);
 	
 	return 0;
 }
