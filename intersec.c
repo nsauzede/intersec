@@ -245,6 +245,7 @@ int main( int argc, char *argv[])
 			double r = 0.0, g = 0.0, b = 0.0;
 
 			traceray( ex, ey, ez, _vx, _vy, _vz, &r, &g, &b, &pix, do_att);
+			printf( "  (r=%f g=%f b=%f)", r, g, b);
 			if (do_tga)
 			{
 				TGA_BYTE( (unsigned char)(255 * b));
@@ -257,6 +258,7 @@ int main( int argc, char *argv[])
 		}
 		if (do_txt)
 			printf( "\n");
+		printf( "\n");
 	}
 	if (do_tga)
 	{
