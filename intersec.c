@@ -1,10 +1,3 @@
-#ifdef WIN32
-#include <windows.h>
-#define MAP_FAILED ((HANDLE)-1)
-#else
-#include <sys/mman.h>
-#endif
-
 #include <stdio.h>
 #include <math.h>
 #include <unistd.h>
@@ -13,10 +6,24 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
+#ifdef WIN32
+#include <windows.h>
+#define MAP_FAILED ((HANDLE)-1)
+#else
+#include <sys/mman.h>
+#endif
+
 #define W 600
 #define H 600
 #define SMALL	0.001
 #define BIG		10.0
+
+//#define DEBUG
+#ifdef DEBUG
+#define dprintf(...) do{printf(__VA_ARGS__);}while(0)
+#else
+#define dprintf(...) do{}while(0)
+#endif
 
 int solvetri( double a, double b, double c, double *t1, double *t2)
 {
@@ -43,9 +50,7 @@ int solvetri( double a, double b, double c, double *t1, double *t2)
 	return result;
 }
 
-int intersec_sphere( double cx, double cy, double cz, double sr, 
-double ex, double ey, double ez, double vx, double vy, double vz,
-double *t)
+int intersec_sphere( double cx, double cy, double cz, double sr, double ex, double ey, double ez, double vx, double vy, double vz, double *t)
 {
 	int result = 0;
 	double a, b, c;
@@ -174,8 +179,8 @@ int main( int argc, char *argv[])
 	int bpp = 24;
 	int tga_fd = -1;
 	unsigned char *tga_map = MAP_FAILED;
-	long tga_size = 0;
-	long tga_index = 0;
+	size_t tga_size = 0;
+	size_t tga_index = 0;
 
 	int arg = 1;
 	if (argc > arg)
@@ -245,14 +250,14 @@ int main( int argc, char *argv[])
 			double r = 0.0, g = 0.0, b = 0.0;
 
 			traceray( ex, ey, ez, _vx, _vy, _vz, &r, &g, &b, &pix, do_att);
-			printf( "  (r=%f g=%f b=%f)", r, g, b);
+			dprintf( "  (r=%f g=%f b=%f)", r, g, b);
 			if (do_tga)
 			{
 				unsigned char cr, cg, cb;
 				cr = ((double)255 * r);
 				cg = (unsigned char)(255 * g);
 				cb = (unsigned char)(255 * b);
-				printf( "{%02x:%02x:%02x}", cr, cg, cb);
+				dprintf( "{%02x:%02x:%02x}", cr, cg, cb);
 				TGA_BYTE( cb);
 				TGA_BYTE( cg);
 				TGA_BYTE( cr);
@@ -263,7 +268,7 @@ int main( int argc, char *argv[])
 		}
 		if (do_txt)
 			printf( "\n");
-		printf( "\n");
+		dprintf( "\n");
 	}
 	if (do_tga)
 	{
