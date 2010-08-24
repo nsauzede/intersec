@@ -15,7 +15,7 @@ CFLAGS+=-m32
 LDFLAGS+=-m32
 endif
 
-DEBUG=1
+#DEBUG=1
 ifdef DEBUG
 CFLAGS+=-DDEBUG=$(DEBUG)
 endif

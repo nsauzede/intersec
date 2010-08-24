@@ -196,7 +196,7 @@ int main( int argc, char *argv[])
 	}
 	if (do_tga)
 	{
-		tga_fd = open( "out.tga", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+		tga_fd = open( "out.tga", O_CREAT | O_RDWR | O_BINARY, S_IRUSR | S_IWUSR);
 		if (tga_fd == -1)
 		{
 			perror( "open");
