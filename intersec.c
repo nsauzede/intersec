@@ -90,6 +90,7 @@ typedef struct {
 sphere_t spheres[] = {
 	{ .cx = 0.05, .cy = 0.1, .cz = 0.5, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0 },
 	{ .cx = 0.0, .cy = 0.0, .cz = 0.6, .sr = 0.1, .r = 0.0, .g = 1.0, .b = 0.0 },
+	{ .cx = 0.1, .cy = 0.0, .cz = 0.7, .sr = 0.03, .r = 0.0, .g = 0.0, .b = 1.0 },
 };
 int nsph = sizeof (spheres) / sizeof (spheres[0]);
 
@@ -134,24 +135,27 @@ int traceray( double ex, double ey, double ez, double _vx, double _vy, double _v
 			}
 		}
 	}
-	double att = 1.0;	// should be a vector(rgb) ?
 	if (tmin >= BIG)	// sky
 	{
 		double coef1, coef2;
 		coef1 = 1.0 * _vx;
 		coef2 = 1.0 * _vy;
-		rmin = 1.0 - coef2;
+		bmin = 1.0 - coef2;
 		gmin = 0.5;
-		bmin = coef2;
+		rmin = coef2;
 	}
-	else				// ambient
+	else				// object -> ambient
 	{
+		double att = 1.0;	// should be a vector(rgb) ?
 		if (do_att)
 			att = 1.0 / sqrt(tmin);
+		rmin *= att;
+		gmin *= att;
+		bmin *= att;
 	}
-	*r = rmin * att;
-	*g = gmin * att;
-	*b = bmin * att;
+	*r = rmin;
+	*g = gmin;
+	*b = bmin;
 	return 0;
 }
 
@@ -243,9 +247,9 @@ int main( int argc, char *argv[])
 			traceray( ex, ey, ez, _vx, _vy, _vz, &r, &g, &b, &pix, do_att);
 			if (do_tga)
 			{
-				TGA_BYTE( (unsigned char)(255 * r));
-				TGA_BYTE( (unsigned char)(255 * g));
 				TGA_BYTE( (unsigned char)(255 * b));
+				TGA_BYTE( (unsigned char)(255 * g));
+				TGA_BYTE( (unsigned char)(255 * r));
 //				TGA_BYTE( 0);
 			}
 			if (do_txt)
