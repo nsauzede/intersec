@@ -209,6 +209,8 @@ int main( int argc, char *argv[])
 		tga_map = malloc( tga_size);
 		if (!tga_map)
 			tga_map = MAP_FAILED;
+		lseek( fd, 0, SEEK_SET);
+		read( fd, map, size);
 #else
 		tga_map = mmap( 0, tga_size, PROT_READ | PROT_WRITE, MAP_SHARED, tga_fd, 0);
 #endif
@@ -273,6 +275,7 @@ int main( int argc, char *argv[])
 	if (do_tga)
 	{
 #ifdef WIN32
+		lseek( fd, 0, SEEK_SET);
 		write( tga_fd, tga_map, tga_size);
 		free( tga_map);
 #else
