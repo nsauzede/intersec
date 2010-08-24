@@ -249,7 +249,7 @@ int main( int argc, char *argv[])
 			if (do_tga)
 			{
 				unsigned char cr, cg, cb;
-				cr = (unsigned char)(255 * r);
+				cr = ((double)255 * r);
 				cg = (unsigned char)(255 * g);
 				cb = (unsigned char)(255 * b);
 				printf( "{%02x:%02x:%02x}", cr, cg, cb);
