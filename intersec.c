@@ -18,7 +18,6 @@
 #define SMALL	0.001
 #define BIG		10.0
 
-//#define DEBUG
 #ifdef DEBUG
 #define dprintf(...) do{printf(__VA_ARGS__);}while(0)
 #else
