@@ -255,7 +255,7 @@ int main( int argc, char *argv[])
 				printf( "{%02x:%02x:%02x}", cr, cg, cb);
 				TGA_BYTE( cb);
 				TGA_BYTE( cg);
-				TGA_BYTE( cb);
+				TGA_BYTE( cr);
 //				TGA_BYTE( 0);
 			}
 			if (do_txt)

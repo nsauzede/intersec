@@ -9,6 +9,12 @@ else
 CFLAGS+=-g -O0
 endif
 
+#USE32=1
+ifdef USE32
+CFLAGS+=-m32
+LDFLAGS+=-m32
+endif
+
 MV=mv
 
 LDFLAGS=-lm
