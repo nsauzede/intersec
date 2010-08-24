@@ -100,6 +100,61 @@ int nsph = sizeof (spheres) / sizeof (spheres[0]);
 #include <sys/mman.h>
 #endif
 
+int traceray( double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b, char *pix, int do_att)
+{
+	int s;
+	double tmin = BIG;
+	double rmin = 0.0, gmin = 0.0, bmin = 0.0;
+	for (s = 0; s < nsph; s++)
+	{
+		double cx, cy, cz, sr;
+		cx = spheres[s].cx; cy = spheres[s].cy; cz = spheres[s].cz; sr = spheres[s].sr;
+//		printf( "sphere: c(%f;%f;%f) r(%f)\n", cx, cy, cz, sr);
+		int res;
+		double t = 0;
+		res = intersec_sphere( cx, cy, cz, sr, ex, ey, ez, _vx, _vy, _vz, &t);
+//		printf( "%c", res ? 's' : '.');
+		if (res)
+		{
+			if (t < tmin)
+			{
+				tmin = t;
+				rmin = spheres[s].r;
+				gmin = spheres[s].g;
+				bmin = spheres[s].b;
+//				pix = '0' + s;
+				if (spheres[s].r > 0)
+					*pix = 'r';
+				else if (spheres[s].g > 0)
+					*pix = 'g';
+				else if (spheres[s].b > 0)
+					*pix = 'b';
+				else
+					*pix = 'k';
+			}
+		}
+	}
+	double att = 1.0;	// should be a vector(rgb) ?
+	if (tmin >= BIG)	// sky
+	{
+		double coef1, coef2;
+		coef1 = 1.0 * _vx;
+		coef2 = 1.0 * _vy;
+		rmin = 1.0 - coef2;
+		gmin = 0.5;
+		bmin = coef2;
+	}
+	else				// ambient
+	{
+		if (do_att)
+			att = 1.0 / sqrt(tmin);
+	}
+	*r = rmin * att;
+	*g = gmin * att;
+	*b = bmin * att;
+	return 0;
+}
+
 int main( int argc, char *argv[])
 {
 	double ex, ey, ez, vx, vy, vz;
@@ -180,61 +235,17 @@ int main( int argc, char *argv[])
 
 		for (i = 0; i < w; i++)
 		{
-			int s;
-			double tmin = BIG;
 			char pix = '.';
-			double rmin = 0.0, gmin = 0.0, bmin = 0.0;
-
 			_vx = vx - winw / 2 + winw * (double)i / (w - 1);
 
-			for (s = 0; s < nsph; s++)
-			{
-				double cx, cy, cz, sr;
-				cx = spheres[s].cx; cy = spheres[s].cy; cz = spheres[s].cz; sr = spheres[s].sr;
-//				printf( "sphere: c(%f;%f;%f) r(%f)\n", cx, cy, cz, sr);
-				int res;
-				double t = 0;
-				res = intersec_sphere( cx, cy, cz, sr, ex, ey, ez, _vx, _vy, _vz, &t);
-//				printf( "%c", res ? 's' : '.');
-				if (res)
-				{
-					if (t < tmin)
-					{
-						tmin = t;
-						rmin = spheres[s].r; gmin = spheres[s].g; bmin = spheres[s].b;
-//						pix = '0' + s;
-						if (spheres[s].r > 0)
-							pix = 'r';
-						else if (spheres[s].g > 0)
-							pix = 'g';
-						else if (spheres[s].b > 0)
-							pix = 'b';
-						else
-							pix = 'k';
-					}
-				}
-			}
-			double att = 1.0;	// should be a vector(rgb) ?
-			if (tmin >= BIG)	// sky
-			{
-				double coef1, coef2;
-				coef1 = 1.0 * ((double)i / w);
-				coef2 = 1.0 * ((double)j / h);
-//				coef2 = 1.0 - coef2;
-				rmin = 1.0 - coef2;
-				gmin = 0.5;
-				bmin = coef2;
-			}
-			else				// ambient
-			{
-				if (do_att)
-					att = 1.0 / sqrt(tmin);
-			}
+			double r = 0.0, g = 0.0, b = 0.0;
+
+			traceray( ex, ey, ez, _vx, _vy, _vz, &r, &g, &b, &pix, do_att);
 			if (do_tga)
 			{
-				TGA_BYTE( (unsigned char)(255 * rmin * att));
-				TGA_BYTE( (unsigned char)(255 * gmin * att));
-				TGA_BYTE( (unsigned char)(255 * bmin * att));
+				TGA_BYTE( (unsigned char)(255 * r));
+				TGA_BYTE( (unsigned char)(255 * g));
+				TGA_BYTE( (unsigned char)(255 * b));
 //				TGA_BYTE( 0);
 			}
 			if (do_txt)
