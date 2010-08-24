@@ -248,9 +248,14 @@ int main( int argc, char *argv[])
 			printf( "  (r=%f g=%f b=%f)", r, g, b);
 			if (do_tga)
 			{
-				TGA_BYTE( (unsigned char)(255 * b));
-				TGA_BYTE( (unsigned char)(255 * g));
-				TGA_BYTE( (unsigned char)(255 * r));
+				unsigned char cr, cg, cb;
+				cr = (unsigned char)(255 * r);
+				cg = (unsigned char)(255 * g);
+				cb = (unsigned char)(255 * b);
+				printf( "{%02x:%02x:%02x}", cr, cg, cb);
+				TGA_BYTE( cb);
+				TGA_BYTE( cg);
+				TGA_BYTE( cb);
 //				TGA_BYTE( 0);
 			}
 			if (do_txt)
