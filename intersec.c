@@ -13,8 +13,8 @@
 #include <sys/mman.h>
 #endif
 
-#define W 600
-#define H 600
+#define W 60
+#define H 60
 #define SMALL	0.001
 #define BIG		10.0
 
@@ -23,6 +23,18 @@
 #else
 #define dprintf(...) do{}while(0)
 #endif
+
+typedef struct {
+	double cx, cy, cz, sr;
+	double r, g, b;
+} sphere_t;
+
+sphere_t spheres[] = {
+	{ .cx = 0.0, .cy = -0.1, .cz = 0.0, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0 },
+	{ .cx = 0.0, .cy = 0.1, .cz = 0.0, .sr = 0.2, .r = 0.0, .g = 1.0, .b = 0.0 },
+	{ .cx = 0.0, .cy = 0.4, .cz = 0.0, .sr = 0.2, .r = 0.0, .g = 0.0, .b = 1.0 },
+};
+int nsph = sizeof (spheres) / sizeof (spheres[0]);
 
 int solvetri( double a, double b, double c, double *t1, double *t2)
 {
@@ -93,21 +105,9 @@ int intersec_sphere( double cx, double cy, double cz, double sr, double ex, doub
 	return result;
 }
 
-typedef struct {
-	double cx, cy, cz, sr;
-	double r, g, b;
-} sphere_t;
-
-sphere_t spheres[] = {
-	{ .cx = 0.05, .cy = 0.1, .cz = 0.5, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0 },
-	{ .cx = 0.0, .cy = 0.0, .cz = 0.6, .sr = 0.1, .r = 0.0, .g = 1.0, .b = 0.0 },
-	{ .cx = 0.1, .cy = 0.0, .cz = 0.7, .sr = 0.03, .r = 0.0, .g = 0.0, .b = 1.0 },
-};
-int nsph = sizeof (spheres) / sizeof (spheres[0]);
-
 int traceray( double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b, char *pix, int do_att)
 {
-	int s;
+	int smin = -1, s;
 	double tmin = BIG;
 	double rmin = 0.0, gmin = 0.0, bmin = 0.0;
 	for (s = 0; s < nsph; s++)
@@ -123,6 +123,7 @@ int traceray( double ex, double ey, double ez, double _vx, double _vy, double _v
 		{
 			if (t < tmin)
 			{
+				smin = s;
 				tmin = t;
 				rmin = spheres[s].r;
 				gmin = spheres[s].g;
@@ -144,18 +145,61 @@ int traceray( double ex, double ey, double ez, double _vx, double _vy, double _v
 		double coef1, coef2;
 		coef1 = 1.0 * _vx;
 		coef2 = 1.0 * _vy;
+		if (coef2 > 1.0)
+			coef2 = 1.0;
+		if (coef2 < 0.0)
+			coef2 = 0.0;
 		bmin = 1.0 - coef2;
 		gmin = 0.5;
 		rmin = coef2;
+//		printf( "sky color %f %f %f\n", rmin, gmin, bmin);
+				if ((rmin > 1.0) || (gmin > 1.0) || (bmin > 1.0) || (rmin < 0.0) || (gmin < 0.0) || (bmin < 0.0))
+				{
+					printf( "boom sky color overflow r=%f g=%f b=%f\n", rmin, gmin, bmin);fflush( stdout);
+					getchar();
+					exit( 3);
+				}
 	}
 	else				// object -> ambient
 	{
+//		printf( "object\n");
 		double att = 1.0;	// should be a vector(rgb) ?
 		if (do_att)
-			att = 1.0 / sqrt(tmin);
+//			att = 1.0 / sqrt(tmin);
+//			att = sqrt(tmin);
+			att = 1.0 / tmin;
+//			att = tmin / BIG;
+//			att = BIG / tmin;
+		if (att > 1.0)
+			att = 1.0;
 		rmin *= att;
 		gmin *= att;
 		bmin *= att;
+				if ((rmin > 1.0) || (gmin > 1.0) || (bmin > 1.0) || (rmin < 0.0) || (gmin < 0.0) || (bmin < 0.0))
+				{
+					printf( "boom object color overflow r=%f g=%f b=%f\n", rmin, gmin, bmin);fflush( stdout);
+					getchar();
+					exit( 3);
+				}
+#if 1
+// compute reflexions here
+		double rx, ry, rz;		// coord of intersec
+		rx = ex + _vx * tmin;
+		ry = ey + _vy * tmin;
+		rz = ez + _vz * tmin;
+//		dprintf( "inters with sphere %d at (%f,%f,%f)", smin, rx, ry, rz);
+		double rvx, rvy, rvz;	// vect of reflected ray
+		rvx = rx - spheres[smin].cx;
+		rvy = ry - spheres[smin].cy;
+		rvz = rz - spheres[smin].cz;
+//		dprintf( "refl vec (%f,%f,%f)\n", rvx, rvy, rvz);
+		double rr = 0.0, rg = 0.0, rb = 0.0;		// reflected color to add
+		traceray( rx, ry, rz, rvx, rvy, rvz, &rr, &rg, &rb, pix, do_att);
+		double ratt = 0.9;
+		rmin = (rmin + rr * ratt) / (1.0 + ratt);
+		gmin = (gmin + rg * ratt) / (1.0 + ratt);
+		bmin = (bmin + rb * ratt) / (1.0 + ratt);
+#endif
 	}
 	*r = rmin;
 	*g = gmin;
@@ -255,10 +299,20 @@ int main( int argc, char *argv[])
 			dprintf( "  (r=%f g=%f b=%f)", r, g, b);
 			if (do_tga)
 			{
+#if 1
+				static int count = 0;
+				if ((r > 1.0) || (g > 1.0) || (b > 1.0) || (r < 0.0) || (g < 0.0) || (b < 0.0))
+				{
+					printf( "boom color overflow %d at (%d,%d) r=%f g=%f b=%f\n", count, i, j, r, g, b);fflush( stdout);
+					getchar();
+					exit( 3);
+				}
+				count++;
+#endif
 				unsigned char cr, cg, cb;
-				cr = ((double)255 * r);
-				cg = (unsigned char)(255 * g);
-				cb = (unsigned char)(255 * b);
+				cr = (double)255 * r;
+				cg = (double)255 * g;
+				cb = (double)255 * b;
 				dprintf( "{%02x:%02x:%02x}", cr, cg, cb);
 				TGA_BYTE( cb);
 				TGA_BYTE( cg);
