@@ -203,14 +203,14 @@ int main( int argc, char *argv[])
 			exit( 2);
 		}
 		tga_size = w * h * bpp / 8 + 18;
-		dprintf( "tga_size=%zd\n", tga_size);
+		dprintf( "tga_size=%lu\n", (unsigned long)tga_size);
 		ftruncate( tga_fd, tga_size);
 #ifdef WIN32
 		tga_map = malloc( tga_size);
 		if (!tga_map)
 			tga_map = MAP_FAILED;
-		lseek( fd, 0, SEEK_SET);
-		read( fd, map, size);
+		lseek( tga_fd, 0, SEEK_SET);
+		read( tga_fd, tga_map, tga_size);
 #else
 		tga_map = mmap( 0, tga_size, PROT_READ | PROT_WRITE, MAP_SHARED, tga_fd, 0);
 #endif
@@ -275,7 +275,7 @@ int main( int argc, char *argv[])
 	if (do_tga)
 	{
 #ifdef WIN32
-		lseek( fd, 0, SEEK_SET);
+		lseek( tga_fd, 0, SEEK_SET);
 		write( tga_fd, tga_map, tga_size);
 		free( tga_map);
 #else
@@ -283,6 +283,7 @@ int main( int argc, char *argv[])
 #endif
 		close( tga_fd);
 	}
+	dprintf( "tga_index=%lu", (unsigned long)tga_index);
 	
 	return 0;
 }
