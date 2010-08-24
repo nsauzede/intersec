@@ -30,9 +30,15 @@ typedef struct {
 } sphere_t;
 
 sphere_t spheres[] = {
+#if 1
+	{ .cx = 0.05, .cy = 0.1, .cz = 0.5, .sr = 0.1, .r = 1.0, .g = 0.0, .b = 0.0 },
+	{ .cx = -0.05, .cy = 0.0, .cz = 0.6, .sr = 0.05, .r = 0.0, .g = 1.0, .b = 0.0 },
+	{ .cx = 0.1, .cy = 0.0, .cz = 0.7, .sr = 0.03, .r = 0.0, .g = 0.0, .b = 1.0 },
+#else
 	{ .cx = 0.0, .cy = -0.1, .cz = 0.0, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0 },
 	{ .cx = 0.0, .cy = 0.1, .cz = 0.0, .sr = 0.2, .r = 0.0, .g = 1.0, .b = 0.0 },
 	{ .cx = 0.0, .cy = 0.4, .cz = 0.0, .sr = 0.2, .r = 0.0, .g = 0.0, .b = 1.0 },
+#endif
 };
 int nsph = sizeof (spheres) / sizeof (spheres[0]);
 
@@ -188,14 +194,20 @@ int traceray( double ex, double ey, double ez, double _vx, double _vy, double _v
 		ry = ey + _vy * tmin;
 		rz = ez + _vz * tmin;
 //		dprintf( "inters with sphere %d at (%f,%f,%f)", smin, rx, ry, rz);
+		double nvx, nvy, nvz;	// normal vect
+		nvx = rx - spheres[smin].cx;
+		nvy = ry - spheres[smin].cy;
+		nvz = rz - spheres[smin].cz;
 		double rvx, rvy, rvz;	// vect of reflected ray
-		rvx = rx - spheres[smin].cx;
-		rvy = ry - spheres[smin].cy;
-		rvz = rz - spheres[smin].cz;
+		double dot = 1.0;
+//		dot = -(_vx *nvx + _vy * nvy + _vz * nvz);
+		rvx = _vx + 2 * dot * nvx;
+		rvy = _vy + 2 * dot * nvy;
+		rvz = _vz + 2 * dot * nvz;
 //		dprintf( "refl vec (%f,%f,%f)\n", rvx, rvy, rvz);
 		double rr = 0.0, rg = 0.0, rb = 0.0;		// reflected color to add
 		traceray( rx, ry, rz, rvx, rvy, rvz, &rr, &rg, &rb, pix, do_att);
-		double ratt = 0.9;
+		double ratt = 0.5;
 		rmin = (rmin + rr * ratt) / (1.0 + ratt);
 		gmin = (gmin + rg * ratt) / (1.0 + ratt);
 		bmin = (bmin + rb * ratt) / (1.0 + ratt);
