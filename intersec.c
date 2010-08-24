@@ -1,3 +1,10 @@
+#ifdef WIN32
+#include <windows.h>
+#define MAP_FAILED ((HANDLE)-1)
+#else
+#include <sys/mman.h>
+#endif
+
 #include <stdio.h>
 #include <math.h>
 #include <unistd.h>
@@ -93,13 +100,6 @@ sphere_t spheres[] = {
 	{ .cx = 0.1, .cy = 0.0, .cz = 0.7, .sr = 0.03, .r = 0.0, .g = 0.0, .b = 1.0 },
 };
 int nsph = sizeof (spheres) / sizeof (spheres[0]);
-
-#ifdef WIN32
-#include <windows.h>
-#define MAP_FAILED ((HANDLE)-1)
-#else
-#include <sys/mman.h>
-#endif
 
 int traceray( double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b, char *pix, int do_att)
 {
