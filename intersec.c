@@ -187,23 +187,31 @@ int traceray( double ex, double ey, double ez, double _vx, double _vy, double _v
 					getchar();
 					exit( 3);
 				}
-#if 1
 // compute reflexions here
 		double rx, ry, rz;		// coord of intersec
 		rx = ex + _vx * tmin;
 		ry = ey + _vy * tmin;
 		rz = ez + _vz * tmin;
+		double n;
 //		dprintf( "inters with sphere %d at (%f,%f,%f)", smin, rx, ry, rz);
 		double nvx, nvy, nvz;	// normal vect
 		nvx = rx - spheres[smin].cx;
 		nvy = ry - spheres[smin].cy;
 		nvz = rz - spheres[smin].cz;
+		n = sqrt( nvx * nvx + nvy * nvy + nvz * nvz);
+		nvx /= n;
+		nvy /= n;
+		nvz /= n;
 		double rvx, rvy, rvz;	// vect of reflected ray
 		double dot = 1.0;
-//		dot = -(_vx *nvx + _vy * nvy + _vz * nvz);
-		rvx = _vx + 2 * dot * nvx;
-		rvy = _vy + 2 * dot * nvy;
-		rvz = _vz + 2 * dot * nvz;
+		dot = (_vx *nvx + _vy * nvy + _vz * nvz);
+		rvx = _vx - 2 * dot * nvx;
+		rvy = _vy - 2 * dot * nvy;
+		rvz = _vz - 2 * dot * nvz;
+		n = sqrt( rvx * rvx + rvy * rvy + rvz * rvz);
+		rvx /= n;
+		rvy /= n;
+		rvz /= n;
 //		dprintf( "refl vec (%f,%f,%f)\n", rvx, rvy, rvz);
 		double rr = 0.0, rg = 0.0, rb = 0.0;		// reflected color to add
 		traceray( rx, ry, rz, rvx, rvy, rvz, &rr, &rg, &rb, pix, do_att);
@@ -211,7 +219,6 @@ int traceray( double ex, double ey, double ez, double _vx, double _vy, double _v
 		rmin = (rmin + rr * ratt) / (1.0 + ratt);
 		gmin = (gmin + rg * ratt) / (1.0 + ratt);
 		bmin = (bmin + rb * ratt) / (1.0 + ratt);
-#endif
 	}
 	*r = rmin;
 	*g = gmin;
@@ -252,7 +259,11 @@ int main( int argc, char *argv[])
 	}
 	if (do_tga)
 	{
-		tga_fd = open( "out.tga", O_CREAT | O_RDWR | O_BINARY, S_IRUSR | S_IWUSR);
+		tga_fd = open( "out.tga", O_CREAT | O_RDWR 
+#ifdef WIN32
+			| O_BINARY
+#endif
+			, S_IRUSR | S_IWUSR);
 		if (tga_fd == -1)
 		{
 			perror( "open");
