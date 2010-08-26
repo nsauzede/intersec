@@ -31,7 +31,7 @@ typedef struct {
 
 sphere_t spheres[] = {
 #if 1
-	{ .cx = 0.05, .cy = 0.1, .cz = 0.5, .sr = 0.1, .r = 1.0, .g = 0.0, .b = 0.0 },
+	{ .cx = 0.05, .cy = 0.1, .cz = 0.5, .sr = 0.1, .r = 0.0, .g = 0.0, .b = 0.0 },
 	{ .cx = -0.05, .cy = 0.0, .cz = 0.6, .sr = 0.05, .r = 0.0, .g = 1.0, .b = 0.0 },
 	{ .cx = 0.1, .cy = 0.0, .cz = 0.7, .sr = 0.03, .r = 0.0, .g = 0.0, .b = 1.0 },
 #else
@@ -111,6 +111,7 @@ int intersec_sphere( double cx, double cy, double cz, double sr, double ex, doub
 	return result;
 }
 
+int reflections = 0;
 int traceray( double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b, char *pix, int do_att)
 {
 	int smin = -1, s;
@@ -155,9 +156,9 @@ int traceray( double ex, double ey, double ez, double _vx, double _vy, double _v
 			coef2 = 1.0;
 		if (coef2 < 0.0)
 			coef2 = 0.0;
-		bmin = 1.0 - coef2;
+		rmin = 1.0 - coef2;
 		gmin = 0.5;
-		rmin = coef2;
+		bmin = coef2;
 //		printf( "sky color %f %f %f\n", rmin, gmin, bmin);
 				if ((rmin > 1.0) || (gmin > 1.0) || (bmin > 1.0) || (rmin < 0.0) || (gmin < 0.0) || (bmin < 0.0))
 				{
@@ -213,6 +214,7 @@ int traceray( double ex, double ey, double ez, double _vx, double _vy, double _v
 		rvy /= n;
 		rvz /= n;
 //		dprintf( "refl vec (%f,%f,%f)\n", rvx, rvy, rvz);
+		reflections++;
 		double rr = 0.0, rg = 0.0, rb = 0.0;		// reflected color to add
 		traceray( rx, ry, rz, rvx, rvy, rvz, &rr, &rg, &rb, pix, do_att);
 		double ratt = 0.5;
@@ -362,6 +364,7 @@ int main( int argc, char *argv[])
 	}
 	dprintf( "tga_size=%lu\n", (unsigned long)tga_size);
 	dprintf( "tga_index=%lu\n", (unsigned long)tga_index);
+	printf( "reflections=%d\n", reflections);
 	
 	return 0;
 }
