@@ -31,7 +31,7 @@ typedef struct {
 
 sphere_t spheres[] = {
 #if 1
-	{ .cx = 0.05, .cy = 0.1, .cz = 0.5, .sr = 0.1, .r = 0.0, .g = 0.0, .b = 0.0 },
+	{ .cx = 0.05, .cy = 0.1, .cz = 0.5, .sr = 0.1, .r = 1.0, .g = 0.0, .b = 0.0 },
 	{ .cx = -0.05, .cy = 0.0, .cz = 0.6, .sr = 0.05, .r = 0.0, .g = 1.0, .b = 0.0 },
 	{ .cx = 0.1, .cy = 0.0, .cz = 0.7, .sr = 0.03, .r = 0.0, .g = 0.0, .b = 1.0 },
 #else
@@ -111,10 +111,11 @@ int intersec_sphere( double cx, double cy, double cz, double sr, double ex, doub
 	return result;
 }
 
+#define ATT_MIN 0.001
 int reflections = 0;
-int traceray( double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b, char *pix, int do_att)
+int traceray( double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b, char *pix, double att)
 {
-	int smin = -1, s;
+	unsigned long smin = -1, s;
 	double tmin = BIG;
 	double rmin = 0.0, gmin = 0.0, bmin = 0.0;
 	for (s = 0; s < nsph; s++)
@@ -170,13 +171,8 @@ int traceray( double ex, double ey, double ez, double _vx, double _vy, double _v
 	else				// object -> ambient
 	{
 //		printf( "object\n");
-		double att = 1.0;	// should be a vector(rgb) ?
-		if (do_att)
-//			att = 1.0 / sqrt(tmin);
-//			att = sqrt(tmin);
-			att = 1.0 / tmin;
-//			att = tmin / BIG;
-//			att = BIG / tmin;
+		if (att < ATT_MIN)
+			return 0;
 		if (att > 1.0)
 			att = 1.0;
 		rmin *= att;
@@ -216,11 +212,22 @@ int traceray( double ex, double ey, double ez, double _vx, double _vy, double _v
 //		dprintf( "refl vec (%f,%f,%f)\n", rvx, rvy, rvz);
 		reflections++;
 		double rr = 0.0, rg = 0.0, rb = 0.0;		// reflected color to add
-		traceray( rx, ry, rz, rvx, rvy, rvz, &rr, &rg, &rb, pix, do_att);
+		traceray( rx, ry, rz, rvx, rvy, rvz, &rr, &rg, &rb, pix, att * 0.9);
+#if 0
 		double ratt = 0.5;
 		rmin = (rmin + rr * ratt) / (1.0 + ratt);
 		gmin = (gmin + rg * ratt) / (1.0 + ratt);
 		bmin = (bmin + rb * ratt) / (1.0 + ratt);
+#elif 1
+		double iatt = 1.0, ratt = 0.9;
+		rmin = (rmin * iatt + rr * ratt) / (iatt + ratt);
+		gmin = (gmin * iatt + rg * ratt) / (iatt + ratt);
+		bmin = (bmin * iatt + rb * ratt) / (iatt + ratt);
+#else
+		rmin = rr;
+		gmin = rg;
+		bmin = rb;
+#endif
 	}
 	*r = rmin;
 	*g = gmin;
@@ -233,7 +240,7 @@ int main( int argc, char *argv[])
 	double ex, ey, ez, vx, vy, vz;
 	
 	ex = 0; ey = 0; ez = 1; vx = 0.05; vy = 0.1; vz = -1;
-	int w, h;
+	unsigned long w, h;
 	w = W; h = H;
 	double winw, winh;
 	winw = 1.0; winh = 1.0;
@@ -249,10 +256,10 @@ int main( int argc, char *argv[])
 	int arg = 1;
 	if (argc > arg)
 	{
-		sscanf( argv[arg++], "%d", &w);
+		sscanf( argv[arg++], "%lu", &w);
 		if (argc > arg)
 		{
-			sscanf( argv[arg++], "%d", &h);
+			sscanf( argv[arg++], "%lu", &h);
 			if (argc > arg)
 			{
 				sscanf( argv[arg++], "%d", &do_tga);
@@ -302,11 +309,11 @@ int main( int argc, char *argv[])
 	}
 	if (do_txt)
 	{
-		printf( "w=%d h=%d\n", w, h);
+		printf( "w=%lu h=%lu\n", w, h);
 		printf( "eye: e(%f;%f;%f) v(%f;%f;%f)\n", ex, ey, ez, vx, vy, vz);
 	}
 	
-	int i, j;
+	unsigned long i, j;
 	for (j = 0; j < h; j++)
 	{
 		double _vx, _vy, _vz;
@@ -325,10 +332,10 @@ int main( int argc, char *argv[])
 			if (do_tga)
 			{
 #if 1
-				static int count = 0;
+				static unsigned long count = 0;
 				if ((r > 1.0) || (g > 1.0) || (b > 1.0) || (r < 0.0) || (g < 0.0) || (b < 0.0))
 				{
-					printf( "boom color overflow %d at (%d,%d) r=%f g=%f b=%f\n", count, i, j, r, g, b);fflush( stdout);
+					printf( "boom color overflow %lu at (%lu,%lu) r=%f g=%f b=%f\n", count, i, j, r, g, b);fflush( stdout);
 					getchar();
 					exit( 3);
 				}
