@@ -30,10 +30,21 @@ typedef struct {
 } sphere_t;
 
 sphere_t spheres[] = {
-#if 1
+#if 0
 	{ .cx = 0.05, .cy = 0.1, .cz = 0.5, .sr = 0.1, .r = 1.0, .g = 0.0, .b = 0.0 },
 	{ .cx = -0.05, .cy = 0.0, .cz = 0.6, .sr = 0.05, .r = 0.0, .g = 1.0, .b = 0.0 },
 	{ .cx = 0.1, .cy = 0.0, .cz = 0.7, .sr = 0.03, .r = 0.0, .g = 0.0, .b = 1.0 },
+#elif 1
+#define SR 0.07
+#define R 0.3
+#define G 0.3
+#define B 0.3
+	{ .cx = -0.3, .cy = 0.4, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
+	{ .cx = 0.0, .cy = 0.4, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
+	{ .cx = 0.3, .cy = 0.4, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
+	{ .cx = -0.4, .cy = 0.3, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
+	{ .cx = 0.0, .cy = 0.3, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
+	{ .cx = 0.4, .cy = 0.3, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
 #else
 	{ .cx = 0.0, .cy = -0.1, .cz = 0.0, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0 },
 	{ .cx = 0.0, .cy = 0.1, .cz = 0.0, .sr = 0.2, .r = 0.0, .g = 1.0, .b = 0.0 },
@@ -112,9 +123,18 @@ int intersec_sphere( double cx, double cy, double cz, double sr, double ex, doub
 }
 
 #define ATT_MIN 0.001
-int reflections = 0;
-int traceray( double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b, char *pix, double att)
+#define LEV_MAX -1
+
+unsigned long traced = 0;
+unsigned long intersected = 0;
+unsigned long reflected = 0;
+int level_max_reached = -1;
+int level_max = LEV_MAX;
+int traceray( int level, double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b, char *pix, double att)
 {
+	traced++;
+	if (level > level_max_reached)
+		level_max_reached = level;
 	unsigned long smin = -1, s;
 	double tmin = BIG;
 	double rmin = 0.0, gmin = 0.0, bmin = 0.0;
@@ -170,9 +190,8 @@ int traceray( double ex, double ey, double ez, double _vx, double _vy, double _v
 	}
 	else				// object -> ambient
 	{
+		intersected++;
 //		printf( "object\n");
-		if (att < ATT_MIN)
-			return 0;
 		if (att > 1.0)
 			att = 1.0;
 		rmin *= att;
@@ -210,24 +229,30 @@ int traceray( double ex, double ey, double ez, double _vx, double _vy, double _v
 		rvy /= n;
 		rvz /= n;
 //		dprintf( "refl vec (%f,%f,%f)\n", rvx, rvy, rvz);
-		reflections++;
 		double rr = 0.0, rg = 0.0, rb = 0.0;		// reflected color to add
-		traceray( rx, ry, rz, rvx, rvy, rvz, &rr, &rg, &rb, pix, att * 0.9);
+		if (1
+			&& (att >= ATT_MIN)
+			&& ((level < level_max) || (level_max == -1))
+		)
+		{
+			reflected++;
+			traceray( level + 1, rx, ry, rz, rvx, rvy, rvz, &rr, &rg, &rb, pix, att * 0.9);
 #if 0
-		double ratt = 0.5;
-		rmin = (rmin + rr * ratt) / (1.0 + ratt);
-		gmin = (gmin + rg * ratt) / (1.0 + ratt);
-		bmin = (bmin + rb * ratt) / (1.0 + ratt);
+			double ratt = 0.5;
+			rmin = (rmin + rr * ratt) / (1.0 + ratt);
+			gmin = (gmin + rg * ratt) / (1.0 + ratt);
+			bmin = (bmin + rb * ratt) / (1.0 + ratt);
 #elif 1
-		double iatt = 1.0, ratt = 0.9;
-		rmin = (rmin * iatt + rr * ratt) / (iatt + ratt);
-		gmin = (gmin * iatt + rg * ratt) / (iatt + ratt);
-		bmin = (bmin * iatt + rb * ratt) / (iatt + ratt);
+			double iatt = 1.0, ratt = 0.9;
+			rmin = (rmin * iatt + rr * ratt) / (iatt + ratt);
+			gmin = (gmin * iatt + rg * ratt) / (iatt + ratt);
+			bmin = (bmin * iatt + rb * ratt) / (iatt + ratt);
 #else
-		rmin = rr;
-		gmin = rg;
-		bmin = rb;
+			rmin = rr;
+			gmin = rg;
+			bmin = rb;
 #endif
+		}
 	}
 	*r = rmin;
 	*g = gmin;
@@ -262,7 +287,7 @@ int main( int argc, char *argv[])
 			sscanf( argv[arg++], "%lu", &h);
 			if (argc > arg)
 			{
-				sscanf( argv[arg++], "%d", &do_tga);
+				sscanf( argv[arg++], "%d", &level_max);
 			}
 		}
 	}
@@ -313,6 +338,7 @@ int main( int argc, char *argv[])
 		printf( "eye: e(%f;%f;%f) v(%f;%f;%f)\n", ex, ey, ez, vx, vy, vz);
 	}
 	
+	printf( "w=%lu h=%lu level_max=%d\n", w, h, level_max);
 	unsigned long i, j;
 	for (j = 0; j < h; j++)
 	{
@@ -322,12 +348,22 @@ int main( int argc, char *argv[])
 
 		for (i = 0; i < w; i++)
 		{
+			int percent = 100 * (j * w + i) / (w * h);
+			static int old_percent = -1;
+			if (percent != old_percent)
+			{
+				old_percent = percent;
+				if (!(old_percent % 10))
+				{
+					printf( " %d%%", old_percent);fflush( stdout);
+				}
+			}
 			char pix = '.';
 			_vx = vx - winw / 2 + winw * (double)i / (w - 1);
 
 			double r = 0.0, g = 0.0, b = 0.0;
 
-			traceray( ex, ey, ez, _vx, _vy, _vz, &r, &g, &b, &pix, do_att);
+			traceray( 0, ex, ey, ez, _vx, _vy, _vz, &r, &g, &b, &pix, do_att);
 			dprintf( "  (r=%f g=%f b=%f)", r, g, b);
 			if (do_tga)
 			{
@@ -358,6 +394,7 @@ int main( int argc, char *argv[])
 			printf( "\n");
 		dprintf( "\n");
 	}
+	printf( "\n");
 	if (do_tga)
 	{
 #ifdef WIN32
@@ -371,7 +408,8 @@ int main( int argc, char *argv[])
 	}
 	dprintf( "tga_size=%lu\n", (unsigned long)tga_size);
 	dprintf( "tga_index=%lu\n", (unsigned long)tga_index);
-	printf( "reflections=%d\n", reflections);
+	printf( "traced=%lu intersected=%lu\n", traced, intersected);
+	printf( "reflected=%lu level_max=%d level_max_reached=%d\n", reflected, level_max, level_max_reached);
 	
 	return 0;
 }
