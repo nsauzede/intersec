@@ -305,7 +305,8 @@ int main( int argc, char *argv[])
 		}
 		tga_size = w * h * bpp / 8 + 18;
 		dprintf( "tga_size=%lu\n", (unsigned long)tga_size);
-		ftruncate( tga_fd, tga_size);
+		if (ftruncate( tga_fd, tga_size))
+			perror( "ftruncate");
 #ifdef WIN32
 		tga_map = malloc( tga_size);
 		if (!tga_map)
