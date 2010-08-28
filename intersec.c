@@ -44,33 +44,33 @@ sphere_t spheres[] = {
 #define CY 0.08
 #define CZ 0.1
 #if 1 /* ioccc ray */
-	{ .cx = -7*CX, .cy = 6*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
-	{ .cx = -3*CX, .cy = 6*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
-	{ .cx = 2*CX, .cy = 6*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
-	{ .cx = 5*CX, .cy = 6*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
-	{ .cx = 8*CX, .cy = 6*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
+	{ .cx = -7*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
+	{ .cx = -3*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = 10*G, .b = B },
+	{ .cx = 2*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = 10*B },
+	{ .cx = 5*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
+	{ .cx = 8*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = 10*G, .b = B },
 
-	{ .cx = -7*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
-	{ .cx = -4*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
-	{ .cx = -2*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
-	{ .cx = 1*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
-	{ .cx = 4*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
-	{ .cx = 7*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
+	{ .cx = -7*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = 10*B },
+	{ .cx = -4*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = 1*G, .b = B },
+	{ .cx = -2*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
+	{ .cx = 1*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = 10*B },
+	{ .cx = 4*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = 1*G, .b = B },
+	{ .cx = 7*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
 
-	{ .cx = -7*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
-	{ .cx = -4*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
-	{ .cx = -2*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
-	{ .cx = 1*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
-	{ .cx = 4*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
-	{ .cx = 7*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
+	{ .cx = -7*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
+	{ .cx = -4*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = 1*B },
+	{ .cx = -2*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = 1*B },
+	{ .cx = 1*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
+	{ .cx = 4*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = 1*B },
+	{ .cx = 7*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = 1*B },
 
-	{ .cx = -7*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = B },
-	{ .cx = -3*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = B },
-	{ .cx = 2*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = B },
-	{ .cx = 5*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = B },
-	{ .cx = 8*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = B },
+	{ .cx = -7*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
+	{ .cx = -3*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
+	{ .cx = 2*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
+	{ .cx = 5*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
+	{ .cx = 8*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
 
-	{ .cx = 0*CX, .cy = -7*CY, .cz = 4*CZ, .sr = 10*SR, .r = R, .g = G, .b = B },
+	{ .cx = 0*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = B },
 #endif
 #else
 	{ .cx = 0.0, .cy = -0.1, .cz = 0.0, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0 },
@@ -291,7 +291,7 @@ int main( int argc, char *argv[])
 {
 	double ex, ey, ez, vx, vy, vz;
 	
-	ex = 0; ey = 0; ez = 1; vx = 0.05; vy = 0.1; vz = -1;
+	ex = 0; ey = 0; ez = 1; vx = 0.0; vy = 0.0; vz = -1;
 	unsigned long w, h;
 	w = W; h = H;
 	double winw, winh;
@@ -366,7 +366,7 @@ int main( int argc, char *argv[])
 		printf( "eye: e(%f;%f;%f) v(%f;%f;%f)\n", ex, ey, ez, vx, vy, vz);
 	}
 	
-	printf( "w=%lu h=%lu winw=%f winh=%f level_max=%d\n", w, h, winw, winh, level_max);
+	printf( "w=%lu h=%lu winw=%.2f winh=%.2f vx=%f vy=%f vz=%f level_max=%d\n", w, h, winw, winh, vx, vy, vz, level_max);
 	unsigned long i, j;
 	unsigned long old_t = time( 0);
 	for (j = 0; j < h; j++)
