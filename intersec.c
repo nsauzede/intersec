@@ -36,16 +36,42 @@ sphere_t spheres[] = {
 	{ .cx = -0.05, .cy = 0.0, .cz = 0.6, .sr = 0.05, .r = 0.0, .g = 1.0, .b = 0.0 },
 	{ .cx = 0.1, .cy = 0.0, .cz = 0.7, .sr = 0.03, .r = 0.0, .g = 0.0, .b = 1.0 },
 #elif 1
-#define SR 0.07
-#define R 0.3
-#define G 0.3
-#define B 0.3
-	{ .cx = -0.3, .cy = 0.4, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
-	{ .cx = 0.0, .cy = 0.4, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
-	{ .cx = 0.3, .cy = 0.4, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
-	{ .cx = -0.4, .cy = 0.3, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
-	{ .cx = 0.0, .cy = 0.3, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
-	{ .cx = 0.4, .cy = 0.3, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
+#define SR 0.05
+#define R 0.1
+#define G 0.1
+#define B 0.1
+#define CX 0.05
+#define CY 0.08
+#define CZ 0.1
+#if 1 /* ioccc ray */
+	{ .cx = -7*CX, .cy = 6*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
+	{ .cx = -3*CX, .cy = 6*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
+	{ .cx = 2*CX, .cy = 6*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
+	{ .cx = 5*CX, .cy = 6*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
+	{ .cx = 8*CX, .cy = 6*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
+
+	{ .cx = -7*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
+	{ .cx = -4*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
+	{ .cx = -2*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
+	{ .cx = 1*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
+	{ .cx = 4*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
+	{ .cx = 7*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
+
+	{ .cx = -7*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
+	{ .cx = -4*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
+	{ .cx = -2*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
+	{ .cx = 1*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
+	{ .cx = 4*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
+	{ .cx = 7*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
+
+	{ .cx = -7*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = B },
+	{ .cx = -3*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = B },
+	{ .cx = 2*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = B },
+	{ .cx = 5*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = B },
+	{ .cx = 8*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = B },
+
+	{ .cx = 0*CX, .cy = -7*CY, .cz = 4*CZ, .sr = 10*SR, .r = R, .g = G, .b = B },
+#endif
 #else
 	{ .cx = 0.0, .cy = -0.1, .cz = 0.0, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0 },
 	{ .cx = 0.0, .cy = 0.1, .cz = 0.0, .sr = 0.2, .r = 0.0, .g = 1.0, .b = 0.0 },
@@ -340,7 +366,7 @@ int main( int argc, char *argv[])
 		printf( "eye: e(%f;%f;%f) v(%f;%f;%f)\n", ex, ey, ez, vx, vy, vz);
 	}
 	
-	printf( "w=%lu h=%lu level_max=%d\n", w, h, level_max);
+	printf( "w=%lu h=%lu winw=%f winh=%f level_max=%d\n", w, h, winw, winh, level_max);
 	unsigned long i, j;
 	unsigned long old_t = time( 0);
 	for (j = 0; j < h; j++)
