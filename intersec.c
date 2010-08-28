@@ -152,6 +152,24 @@ int intersec_sphere( double cx, double cy, double cz, double sr, double ex, doub
 #define ATT_MIN 0.001
 #define LEV_MAX -1
 
+int sky_color( double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b)
+{
+	double th, ph, n, coef2;
+	n = sqrt( _vx * _vx + _vy * _vy + _vz * _vz);
+	th = acos( _vz / n);
+	ph = acos( _vx / n) * 180 / M_PI;
+	coef2 = (ph + 90) / 180;
+	if (coef2 > 1.0)
+		coef2 = 1.0;
+	if (coef2 < 0.0)
+		coef2 = 0.0;
+	*r = 1.0 - coef2;
+	*g = 0.5;
+	*b = coef2;
+
+	return 0;
+}
+
 unsigned long traced = 0;
 unsigned long intersected = 0;
 unsigned long reflected = 0;
@@ -197,16 +215,7 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 	}
 	if (tmin >= BIG)	// sky
 	{
-		double coef1, coef2;
-		coef1 = 1.0 * _vx;
-		coef2 = 1.0 * _vy;
-		if (coef2 > 1.0)
-			coef2 = 1.0;
-		if (coef2 < 0.0)
-			coef2 = 0.0;
-		rmin = 1.0 - coef2;
-		gmin = 0.5;
-		bmin = coef2;
+		sky_color( ex, ey, ez, _vx, _vy, _vz, &rmin, &gmin, &bmin);
 //		printf( "sky color %f %f %f\n", rmin, gmin, bmin);
 				if ((rmin > 1.0) || (gmin > 1.0) || (bmin > 1.0) || (rmin < 0.0) || (gmin < 0.0) || (bmin < 0.0))
 				{
