@@ -37,39 +37,43 @@ sphere_t spheres[] = {
 	{ .cx = 0.1, .cy = 0.0, .cz = 0.7, .sr = 0.03, .r = 0.0, .g = 0.0, .b = 1.0 },
 #elif 1
 #define SR 0.05
-#define R 0.1
-#define G 0.1
-#define B 0.1
+#define R 0.4
+#define G 0.4
+#define B 0.4
 #define CX 0.05
 #define CY 0.08
 #define CZ 0.1
 #if 1 /* ioccc ray */
-	{ .cx = -7*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
-	{ .cx = -3*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = 10*G, .b = B },
-	{ .cx = 2*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = 10*B },
-	{ .cx = 5*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
-	{ .cx = 8*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = 10*G, .b = B },
+	{ .cx = -7*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = B },
+	{ .cx = -3*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = 1*G, .b = B },
+	{ .cx = 2*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = 1*B },
+	{ .cx = 5*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = B },
+	{ .cx = 8*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = 1*G, .b = B },
 
-	{ .cx = -7*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = 10*B },
-	{ .cx = -4*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = 1*G, .b = B },
-	{ .cx = -2*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
-	{ .cx = 1*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = 10*B },
-	{ .cx = 4*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = 1*G, .b = B },
-	{ .cx = 7*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
+	{ .cx = -7*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = 1*B },
+	{ .cx = -4*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = 1*G, .b = B },
+	{ .cx = -2*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = B },
+	{ .cx = 1*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = 1*B },
+	{ .cx = 4*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = 1*G, .b = B },
+	{ .cx = 7*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = B },
 
-	{ .cx = -7*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
-	{ .cx = -4*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = 1*B },
-	{ .cx = -2*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = 1*B },
-	{ .cx = 1*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
-	{ .cx = 4*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = 1*B },
-	{ .cx = 7*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = 1*B },
+	{ .cx = -7*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 1*B },
+	{ .cx = -4*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = 1*B },
+	{ .cx = -2*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = 1*B },
+	{ .cx = 1*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 1*B },
+	{ .cx = 4*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = 1*B },
+	{ .cx = 7*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = 1*B },
 
-	{ .cx = -7*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
-	{ .cx = -3*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
-	{ .cx = 2*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 10*G, .b = B },
-	{ .cx = 5*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 10*B },
-	{ .cx = 8*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = 10*R, .g = G, .b = B },
+	{ .cx = -7*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 1*B },
+	{ .cx = -3*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = B },
+	{ .cx = 2*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = B },
+	{ .cx = 5*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 1*B },
+	{ .cx = 8*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = B },
 
+#undef CX
+#undef CY
+#define CX 0.025
+#define CY 0.04
 	{ .cx = 0*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = B },
 #endif
 #else
@@ -156,16 +160,25 @@ int sky_color( double ex, double ey, double ez, double _vx, double _vy, double _
 {
 	double th, ph, n, coef2;
 	n = sqrt( _vx * _vx + _vy * _vy + _vz * _vz);
-	th = acos( _vz / n);
+	th = acos( _vy / n) * 180 / M_PI;
 	ph = acos( _vx / n) * 180 / M_PI;
-	coef2 = (ph + 90) / 180;
+//	coef2 = (ph + 90) / 180;
+	coef2 = (th) / 180;
+#if 0
 	if (coef2 > 1.0)
 		coef2 = 1.0;
 	if (coef2 < 0.0)
 		coef2 = 0.0;
-	*r = 1.0 - coef2;
+#endif
+#if 0
+	*b = 1.0 - coef2;
 	*g = 0.5;
-	*b = coef2;
+	*r = coef2;
+#else
+	*b = coef2 <= 0.333 ? 747 * (coef2 - 0) + 6 : coef2 <= 0.666 ? -55.5 * (coef2 - 0.333) + 255 : 0;
+	*g = coef2 <= 1.0 / 3.0 ? coef2 : 0.5;
+	*r = coef2;
+#endif
 
 	return 0;
 }
