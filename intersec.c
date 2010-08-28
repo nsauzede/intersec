@@ -351,7 +351,7 @@ int main( int argc, char *argv[])
 
 		for (i = 0; i < w; i++)
 		{
-			int percent = 100 * (j * w + i) / (w * h);
+			int percent = (double)100.0 * (j * w + i) / (w * h);
 			static int old_percent = -1;
 			if (percent != old_percent)
 			{
