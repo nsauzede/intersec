@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <time.h>
 
 #ifdef WIN32
 #include <windows.h>
@@ -341,6 +342,7 @@ int main( int argc, char *argv[])
 	
 	printf( "w=%lu h=%lu level_max=%d\n", w, h, level_max);
 	unsigned long i, j;
+	unsigned long old_t = time( 0);
 	for (j = 0; j < h; j++)
 	{
 		double _vx, _vy, _vz;
@@ -395,6 +397,7 @@ int main( int argc, char *argv[])
 			printf( "\n");
 		dprintf( "\n");
 	}
+	unsigned long cur_t = time( 0);
 	printf( "\n");
 	if (do_tga)
 	{
@@ -411,6 +414,9 @@ int main( int argc, char *argv[])
 	dprintf( "tga_index=%lu\n", (unsigned long)tga_index);
 	printf( "traced=%lu intersected=%lu\n", traced, intersected);
 	printf( "reflected=%lu level_max=%d level_max_reached=%d\n", reflected, level_max, level_max_reached);
+	unsigned long duration = cur_t - old_t;
+	unsigned long perf = (w * h) / duration;
+	printf( "perf : %lu ray/s duration=%lus (old_t=%lu cur_t=%lu)\n", perf, duration, old_t, cur_t);
 	
 	return 0;
 }
