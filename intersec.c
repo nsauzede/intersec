@@ -73,8 +73,32 @@ sphere_t spheres[] = {
 #undef CX
 #undef CY
 #define CX 0.025
-#define CY 0.04
-	{ .cx = 0*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
+#define CY 0.013
+	{ .cx = -10*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
+	{ .cx = -8*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
+	{ .cx = 0*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
+	{ .cx = 8*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
+	{ .cx = 13*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
+
+	{ .cx = -10*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
+	{ .cx = -6*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
+	{ .cx = -2*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
+	{ .cx = 2*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
+	{ .cx = 8*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
+	{ .cx = 13*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
+
+	{ .cx = -10*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
+	{ .cx = -8*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
+	{ .cx = -2*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
+	{ .cx = 0*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
+	{ .cx = 2*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
+	{ .cx = 10*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
+
+	{ .cx = -10*CX, .cy = -15*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
+	{ .cx = -6*CX, .cy = -15*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
+	{ .cx = -2*CX, .cy = -15*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
+	{ .cx = 2*CX, .cy = -15*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
+	{ .cx = 10*CX, .cy = -15*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
 #endif
 #else
 	{ .cx = 0.0, .cy = -0.1, .cz = 0.0, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0 },
