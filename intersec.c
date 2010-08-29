@@ -74,7 +74,7 @@ sphere_t spheres[] = {
 #undef CY
 #define CX 0.025
 #define CY 0.04
-	{ .cx = 0*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = B },
+	{ .cx = 0*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
 #endif
 #else
 	{ .cx = 0.0, .cy = -0.1, .cz = 0.0, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0 },
@@ -160,6 +160,7 @@ unsigned long the_winw, the_winh;
 int sky_color( double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b)
 {
 	double coef2;
+	double rmin, gmin, bmin;
 #if 0
 	double th, ph, n;
 	n = sqrt( _vx * _vx + _vy * _vy + _vz * _vz);
@@ -175,15 +176,22 @@ int sky_color( double ex, double ey, double ez, double _vx, double _vy, double _
 #endif
 	if (coef2 < 0.0)
 		coef2 = 0.0;
-#endif
-#if 0
-	*b = 1.0 - coef2;
-	*g = 0.5;
-	*r = coef2;
 #else
-	coef2 = _vy / the_winh;
+	coef2 = (_vy + 1) / (the_winh + 1);
 //	coef2 = _vy / 10000.0;
 #endif
+	rmin = 1.0 - coef2;
+	gmin = 0.5;
+	bmin = coef2;
+				if ((rmin > 1.0) || (gmin > 1.0) || (bmin > 1.0) || (rmin < 0.0) || (gmin < 0.0) || (bmin < 0.0))
+				{
+					printf( "boom sky color overflow r=%f g=%f b=%f\n", rmin, gmin, bmin);fflush( stdout);
+					getchar();
+					exit( 3);
+				}
+	*b = bmin;
+	*g = gmin;
+	*r = rmin;
 
 	return 0;
 }
@@ -235,12 +243,6 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 	{
 		sky_color( ex, ey, ez, _vx, _vy, _vz, &rmin, &gmin, &bmin);
 //		printf( "sky color %f %f %f\n", rmin, gmin, bmin);
-				if ((rmin > 1.0) || (gmin > 1.0) || (bmin > 1.0) || (rmin < 0.0) || (gmin < 0.0) || (bmin < 0.0))
-				{
-					printf( "boom sky color overflow r=%f g=%f b=%f\n", rmin, gmin, bmin);fflush( stdout);
-					getchar();
-					exit( 3);
-				}
 	}
 	else				// object -> ambient
 	{
