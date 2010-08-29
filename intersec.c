@@ -156,17 +156,23 @@ int intersec_sphere( double cx, double cy, double cz, double sr, double ex, doub
 #define ATT_MIN 0.001
 #define LEV_MAX -1
 
+unsigned long the_winw, the_winh;
 int sky_color( double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b)
 {
-	double th, ph, n, coef2;
+	double coef2;
+#if 0
+	double th, ph, n;
 	n = sqrt( _vx * _vx + _vy * _vy + _vz * _vz);
-	th = acos( _vy / n) * 180 / M_PI;
+	th = acos( _vz / n) * 180 / M_PI;
 	ph = acos( _vx / n) * 180 / M_PI;
-//	coef2 = (ph + 90) / 180;
-	coef2 = (th) / 180;
+	coef2 = (th + 90) / 180;
 #if 0
 	if (coef2 > 1.0)
 		coef2 = 1.0;
+#else
+	while (coef2 > 1.0)
+		coef2 /= 2;
+#endif
 	if (coef2 < 0.0)
 		coef2 = 0.0;
 #endif
@@ -175,9 +181,8 @@ int sky_color( double ex, double ey, double ez, double _vx, double _vy, double _
 	*g = 0.5;
 	*r = coef2;
 #else
-	*b = coef2 <= 0.333 ? 747 * (coef2 - 0) + 6 : coef2 <= 0.666 ? -55.5 * (coef2 - 0.333) + 255 : 0;
-	*g = coef2 <= 1.0 / 3.0 ? coef2 : 0.5;
-	*r = coef2;
+	coef2 = _vy / the_winh;
+//	coef2 = _vy / 10000.0;
 #endif
 
 	return 0;
@@ -292,7 +297,7 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 			gmin = (gmin + rg * ratt) / (1.0 + ratt);
 			bmin = (bmin + rb * ratt) / (1.0 + ratt);
 #elif 1
-			double iatt = 1.0, ratt = 0.9;
+			double iatt = 1.0, ratt = 1.0;
 			rmin = (rmin * iatt + rr * ratt) / (iatt + ratt);
 			gmin = (gmin * iatt + rg * ratt) / (iatt + ratt);
 			bmin = (bmin * iatt + rb * ratt) / (iatt + ratt);
@@ -388,6 +393,7 @@ int main( int argc, char *argv[])
 		printf( "eye: e(%f;%f;%f) v(%f;%f;%f)\n", ex, ey, ez, vx, vy, vz);
 	}
 	
+	the_winw = winw; the_winh = winh;
 	printf( "w=%lu h=%lu winw=%.2f winh=%.2f vx=%f vy=%f vz=%f level_max=%d\n", w, h, winw, winh, vx, vy, vz, level_max);
 	unsigned long i, j;
 	unsigned long old_t = time( 0);
@@ -463,6 +469,8 @@ int main( int argc, char *argv[])
 	printf( "traced=%lu intersected=%lu\n", traced, intersected);
 	printf( "reflected=%lu level_max=%d level_max_reached=%d\n", reflected, level_max, level_max_reached);
 	unsigned long duration = cur_t - old_t;
+	if (!duration)
+		duration = 1;
 	unsigned long perf = (w * h) / duration;
 	printf( "perf : %lu ray/s duration=%lus (old_t=%lu cur_t=%lu)\n", perf, duration, old_t, cur_t);
 	
