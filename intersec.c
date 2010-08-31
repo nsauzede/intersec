@@ -181,10 +181,11 @@ int intersec_sphere( double cx, double cy, double cz, double sr, double ex, doub
 #define LEV_MAX -1
 
 unsigned long the_winw, the_winh;
-int sky_color( double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b)
+int sky_color( double ex, double ey, double ez, double _vx, double _vy, double _vz, double *_r, double *_g, double *_b)
 {
 	double coef2;
-	double rmin, gmin, bmin;
+	double rmin = 0, gmin = 0, bmin = 0;
+#if 0
 #if 0
 	double th, ph, n;
 	n = sqrt( _vx * _vx + _vy * _vy + _vz * _vz);
@@ -207,15 +208,78 @@ int sky_color( double ex, double ey, double ez, double _vx, double _vy, double _
 	rmin = 1.0 - coef2;
 	gmin = 0.5;
 	bmin = coef2;
+#else
+	coef2 = 1.0 - (_vy + 1) / (the_winh + 1);
+	double a, b;
+	double x1, x2, y1, y2;
+	if (coef2 <= 0.333)
+	{
+		x1 = 0; x2 = 0.333;
+		y1 = 6; y2 = 255;
+		a = x2 - x1;
+		coef2 -= x1;
+		b = y1 - a * x1;
+		rmin = a * coef2 + b;
+		y1 = 105; y2 = 255;
+		b = y1 - a * x1;
+		gmin = a * coef2 + b;
+		y1 = 155; y2 = 255;
+		b = y1 - a * x1;
+		bmin = a * coef2 + b;
+	}
+	else if (coef2 <= 0.666)
+	{
+		x1 = 0.333; x2 = 0.666;
+		y1 = 255; y2 = 218;
+		coef2 -= x1;
+		a = x2 - x1;
+		b = y1 - a * x1;
+		rmin = a * coef2 + b;
+		y1 = 255; y2 = 178;
+		a = x2 - x1;
+		b = y1 - a * x1;
+		gmin = a * coef2 + b;
+		y1 = 255; y2 = 127;
+		a = x2 - x1;
+		b = y1 - a * x1;
+		bmin = a * coef2 + b;
+	}
+	else if (coef2 <= 1.0)
+	{
+		x1 = 0.666; x2 = 1.0;
+		y1 = 218; y2 = 103;
+		coef2 -= x1;
+		a = x2 - x1;
+		b = y1 - a * x1;
+		rmin = a * coef2 + b;
+		y1 = 178; y2 = 55;
+		a = x2 - x1;
+		b = y1 - a * x1;
+		gmin = a * coef2 + b;
+		y1 = 127; y2 = 26;
+		a = x2 - x1;
+		b = y1 - a * x1;
+		bmin = a * coef2 + b;
+	}
+	else
+	{
+		printf( "boom sky color coef2 out of bound coef2=%f\n", coef2);fflush( stdout);
+		getchar();
+		exit( 3);
+	}
+	rmin /= 255;
+	gmin /= 255;
+	bmin /= 255;
+#endif
 				if ((rmin > 1.0) || (gmin > 1.0) || (bmin > 1.0) || (rmin < 0.0) || (gmin < 0.0) || (bmin < 0.0))
 				{
 					printf( "boom sky color overflow r=%f g=%f b=%f\n", rmin, gmin, bmin);fflush( stdout);
 					getchar();
 					exit( 3);
 				}
-	*b = bmin;
-	*g = gmin;
-	*r = rmin;
+	*_b = bmin;
+	*_g = gmin;
+	*_r = rmin;
 
 	return 0;
 }
