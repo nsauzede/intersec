@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <time.h>
 
 #ifdef WIN32
 #include <windows.h>
@@ -35,16 +36,70 @@ sphere_t spheres[] = {
 	{ .cx = -0.05, .cy = 0.0, .cz = 0.6, .sr = 0.05, .r = 0.0, .g = 1.0, .b = 0.0 },
 	{ .cx = 0.1, .cy = 0.0, .cz = 0.7, .sr = 0.03, .r = 0.0, .g = 0.0, .b = 1.0 },
 #elif 1
-#define SR 0.07
-#define R 0.3
-#define G 0.3
-#define B 0.3
-	{ .cx = -0.3, .cy = 0.4, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
-	{ .cx = 0.0, .cy = 0.4, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
-	{ .cx = 0.3, .cy = 0.4, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
-	{ .cx = -0.4, .cy = 0.3, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
-	{ .cx = 0.0, .cy = 0.3, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
-	{ .cx = 0.4, .cy = 0.3, .cz = -0.0, .sr = SR, .r = R, .g = G, .b = B },
+#define SR 0.05
+#define R 0.4
+#define G 0.4
+#define B 0.4
+#define CX 0.05
+#define CY 0.08
+#define CZ 0.1
+#if 1 /* ioccc ray */
+	{ .cx = -7*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = B },
+	{ .cx = -3*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = 1*G, .b = B },
+	{ .cx = 2*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = 1*B },
+	{ .cx = 5*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = B },
+	{ .cx = 8*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = 1*G, .b = B },
+
+	{ .cx = -7*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = 1*B },
+	{ .cx = -4*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = 1*G, .b = B },
+	{ .cx = -2*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = B },
+	{ .cx = 1*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = 1*B },
+	{ .cx = 4*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = 1*G, .b = B },
+	{ .cx = 7*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = B },
+
+	{ .cx = -7*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 1*B },
+	{ .cx = -4*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = 1*B },
+	{ .cx = -2*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = 1*B },
+	{ .cx = 1*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 1*B },
+	{ .cx = 4*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = 1*B },
+	{ .cx = 7*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = 1*B },
+
+	{ .cx = -7*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 1*B },
+	{ .cx = -3*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = B },
+	{ .cx = 2*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = B },
+	{ .cx = 5*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 1*B },
+	{ .cx = 8*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = B },
+
+#undef CX
+#undef CY
+#define CX 0.025
+#define CY 0.013
+	{ .cx = -10*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
+	{ .cx = -8*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
+	{ .cx = 0*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
+	{ .cx = 8*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
+	{ .cx = 13*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
+
+	{ .cx = -10*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
+	{ .cx = -6*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
+	{ .cx = -2*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
+	{ .cx = 2*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
+	{ .cx = 8*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
+	{ .cx = 13*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
+
+	{ .cx = -10*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
+	{ .cx = -8*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
+	{ .cx = -2*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
+	{ .cx = 0*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
+	{ .cx = 2*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
+	{ .cx = 10*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
+
+	{ .cx = -10*CX, .cy = -15*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
+	{ .cx = -6*CX, .cy = -15*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
+	{ .cx = -2*CX, .cy = -15*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
+	{ .cx = 2*CX, .cy = -15*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
+	{ .cx = 10*CX, .cy = -15*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
+#endif
 #else
 	{ .cx = 0.0, .cy = -0.1, .cz = 0.0, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0 },
 	{ .cx = 0.0, .cy = 0.1, .cz = 0.0, .sr = 0.2, .r = 0.0, .g = 1.0, .b = 0.0 },
@@ -125,6 +180,121 @@ int intersec_sphere( double cx, double cy, double cz, double sr, double ex, doub
 #define ATT_MIN 0.001
 #define LEV_MAX -1
 
+unsigned long the_winw, the_winh;
+int sky_color( double ex, double ey, double ez, double _vx, double _vy, double _vz, double *_r, double *_g, double *_b)
+{
+	double coef2;
+	double rmin = 0, gmin = 0, bmin = 0;
+#if 0
+#if 0
+	double th, ph, n;
+	n = sqrt( _vx * _vx + _vy * _vy + _vz * _vz);
+	th = acos( _vz / n) * 180 / M_PI;
+	ph = acos( _vx / n) * 180 / M_PI;
+	coef2 = (th + 90) / 180;
+#if 0
+	if (coef2 > 1.0)
+		coef2 = 1.0;
+#else
+	while (coef2 > 1.0)
+		coef2 /= 2;
+#endif
+	if (coef2 < 0.0)
+		coef2 = 0.0;
+#else
+	coef2 = (_vy + 1) / (the_winh + 1);
+//	coef2 = _vy / 10000.0;
+#endif
+	rmin = 1.0 - coef2;
+	gmin = 0.5;
+	bmin = coef2;
+#else
+#if 0
+	double x, y, z;
+	x = ex + _vx;
+	y = ey + _vy;
+	z = ez + _vz;
+#endif
+	double th, ph, n;
+	n = sqrt( _vx * _vx + _vy * _vy + _vz * _vz);
+	ph = asin( _vy / n) * 180 / M_PI;
+	th = acos( _vx / n) * 180 / M_PI;
+	coef2 = (fmod( th, 180)) / 180;
+//	coef2 = 1.0 - (_vy + 0.5) / (the_winh);
+	double a, b;
+	double x1, x2, y1, y2;
+	if (coef2 <= 0.333)
+	{
+		x1 = 0; x2 = 0.333;
+		y1 = 6; y2 = 255;
+		a = x2 - x1;
+		coef2 -= x1;
+		b = y1 - a * x1;
+		rmin = a * coef2 + b;
+		y1 = 105; y2 = 255;
+		b = y1 - a * x1;
+		gmin = a * coef2 + b;
+		y1 = 155; y2 = 255;
+		b = y1 - a * x1;
+		bmin = a * coef2 + b;
+	}
+	else if (coef2 <= 0.666)
+	{
+		x1 = 0.333; x2 = 0.666;
+		y1 = 255; y2 = 218;
+		coef2 -= x1;
+		a = x2 - x1;
+		b = y1 - a * x1;
+		rmin = a * coef2 + b;
+		y1 = 255; y2 = 178;
+		a = x2 - x1;
+		b = y1 - a * x1;
+		gmin = a * coef2 + b;
+		y1 = 255; y2 = 127;
+		a = x2 - x1;
+		b = y1 - a * x1;
+		bmin = a * coef2 + b;
+	}
+	else if (coef2 <= 1.0)
+	{
+		x1 = 0.666; x2 = 1.0;
+		y1 = 218; y2 = 103;
+		coef2 -= x1;
+		a = x2 - x1;
+		b = y1 - a * x1;
+		rmin = a * coef2 + b;
+		y1 = 178; y2 = 55;
+		a = x2 - x1;
+		b = y1 - a * x1;
+		gmin = a * coef2 + b;
+		y1 = 127; y2 = 26;
+		a = x2 - x1;
+		b = y1 - a * x1;
+		bmin = a * coef2 + b;
+	}
+	else
+	{
+		printf( "boom sky color coef2 out of bound coef2=%f\n", coef2);fflush( stdout);
+		getchar();
+		exit( 3);
+	}
+	rmin /= 255;
+	gmin /= 255;
+	bmin /= 255;
+#endif
+				if ((rmin > 1.0) || (gmin > 1.0) || (bmin > 1.0) || (rmin < 0.0) || (gmin < 0.0) || (bmin < 0.0))
+				{
+					printf( "boom sky color overflow r=%f g=%f b=%f\n", rmin, gmin, bmin);fflush( stdout);
+					getchar();
+					exit( 3);
+				}
+	*_b = bmin;
+	*_g = gmin;
+	*_r = rmin;
+
+	return 0;
+}
+
 unsigned long traced = 0;
 unsigned long intersected = 0;
 unsigned long reflected = 0;
@@ -170,23 +340,8 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 	}
 	if (tmin >= BIG)	// sky
 	{
-		double coef1, coef2;
-		coef1 = 1.0 * _vx;
-		coef2 = 1.0 * _vy;
-		if (coef2 > 1.0)
-			coef2 = 1.0;
-		if (coef2 < 0.0)
-			coef2 = 0.0;
-		rmin = 1.0 - coef2;
-		gmin = 0.5;
-		bmin = coef2;
+		sky_color( ex, ey, ez, _vx, _vy, _vz, &rmin, &gmin, &bmin);
 //		printf( "sky color %f %f %f\n", rmin, gmin, bmin);
-				if ((rmin > 1.0) || (gmin > 1.0) || (bmin > 1.0) || (rmin < 0.0) || (gmin < 0.0) || (bmin < 0.0))
-				{
-					printf( "boom sky color overflow r=%f g=%f b=%f\n", rmin, gmin, bmin);fflush( stdout);
-					getchar();
-					exit( 3);
-				}
 	}
 	else				// object -> ambient
 	{
@@ -243,7 +398,7 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 			gmin = (gmin + rg * ratt) / (1.0 + ratt);
 			bmin = (bmin + rb * ratt) / (1.0 + ratt);
 #elif 1
-			double iatt = 1.0, ratt = 0.9;
+			double iatt = 1.0, ratt = 1.0;
 			rmin = (rmin * iatt + rr * ratt) / (iatt + ratt);
 			gmin = (gmin * iatt + rg * ratt) / (iatt + ratt);
 			bmin = (bmin * iatt + rb * ratt) / (iatt + ratt);
@@ -264,7 +419,7 @@ int main( int argc, char *argv[])
 {
 	double ex, ey, ez, vx, vy, vz;
 	
-	ex = 0; ey = 0; ez = 1; vx = 0.05; vy = 0.1; vz = -1;
+	ex = 0; ey = 0; ez = 1; vx = 0.0; vy = 0.0; vz = -1;
 	unsigned long w, h;
 	w = W; h = H;
 	double winw, winh;
@@ -339,17 +494,19 @@ int main( int argc, char *argv[])
 		printf( "eye: e(%f;%f;%f) v(%f;%f;%f)\n", ex, ey, ez, vx, vy, vz);
 	}
 	
-	printf( "w=%lu h=%lu level_max=%d\n", w, h, level_max);
+	the_winw = winw; the_winh = winh;
+	printf( "w=%lu h=%lu winw=%.2f winh=%.2f vx=%f vy=%f vz=%f level_max=%d\n", w, h, winw, winh, vx, vy, vz, level_max);
 	unsigned long i, j;
+	unsigned long old_t = time( 0);
 	for (j = 0; j < h; j++)
 	{
 		double _vx, _vy, _vz;
-		_vy = vy + winh / 2 - winh * (double)j / (h - 1);
+		_vy = vy + (((double)h - 1) - j) / (h - 1) - winh / 2;
 		_vz = vz;
 
 		for (i = 0; i < w; i++)
 		{
-			int percent = 100 * (j * w + i) / (w * h);
+			int percent = (double)100.0 * (j * w + i) / (w * h);
 			static int old_percent = -1;
 			if (percent != old_percent)
 			{
@@ -362,6 +519,7 @@ int main( int argc, char *argv[])
 			char pix = '.';
 			_vx = vx - winw / 2 + winw * (double)i / (w - 1);
 
+//			printf( "j=%lu i=%lu vy=%f vx=%f\n", j, i, _vy, _vx);
 			double r = 0.0, g = 0.0, b = 0.0;
 
 			traceray( 0, ex, ey, ez, _vx, _vy, _vz, &r, &g, &b, &pix, do_att);
@@ -395,6 +553,7 @@ int main( int argc, char *argv[])
 			printf( "\n");
 		dprintf( "\n");
 	}
+	unsigned long cur_t = time( 0);
 	printf( "\n");
 	if (do_tga)
 	{
@@ -411,6 +570,11 @@ int main( int argc, char *argv[])
 	dprintf( "tga_index=%lu\n", (unsigned long)tga_index);
 	printf( "traced=%lu intersected=%lu\n", traced, intersected);
 	printf( "reflected=%lu level_max=%d level_max_reached=%d\n", reflected, level_max, level_max_reached);
+	unsigned long duration = cur_t - old_t;
+	if (!duration)
+		duration = 1;
+	unsigned long perf = (w * h) / duration;
+	printf( "perf : %lu ray/s duration=%lus (old_t=%lu cur_t=%lu)\n", perf, duration, old_t, cur_t);
 	
 	return 0;
 }
