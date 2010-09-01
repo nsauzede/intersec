@@ -217,8 +217,8 @@ int sky_color( double ex, double ey, double ez, double _vx, double _vy, double _
 #endif
 	double th, ph, n;
 	n = sqrt( _vx * _vx + _vy * _vy + _vz * _vz);
-	th = asin( _vy / n) * 180 / M_PI;
-	ph = acos( _vx / n) * 180 / M_PI;
+	ph = asin( _vy / n) * 180 / M_PI;
+	th = acos( _vx / n) * 180 / M_PI;
 	coef2 = (fmod( th, 180)) / 180;
 //	coef2 = 1.0 - (_vy + 0.5) / (the_winh);
 	double a, b;
