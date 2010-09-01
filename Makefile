@@ -32,6 +32,9 @@ check: $(TARGET)
 intersec.exe: intersec
 	$(MV) -f $< $@
 
+sdlr3:CFLAGS=`sdl-config --cflags`
+sdlr3:LDFLAGS+=`sdl-config --libs`
+
 clean:
 	$(RM) $(TARGET)
 clobber: clean
