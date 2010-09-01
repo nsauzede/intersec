@@ -209,7 +209,18 @@ int sky_color( double ex, double ey, double ez, double _vx, double _vy, double _
 	gmin = 0.5;
 	bmin = coef2;
 #else
-	coef2 = 1.0 - (_vy + 1) / (the_winh + 1);
+#if 0
+	double x, y, z;
+	x = ex + _vx;
+	y = ey + _vy;
+	z = ez + _vz;
+#endif
+	double th, ph, n;
+	n = sqrt( _vx * _vx + _vy * _vy + _vz * _vz);
+	th = asin( _vy / n) * 180 / M_PI;
+	ph = acos( _vx / n) * 180 / M_PI;
+	coef2 = (fmod( th, 180)) / 180;
+//	coef2 = 1.0 - (_vy + 0.5) / (the_winh);
 	double a, b;
 	double x1, x2, y1, y2;
 	if (coef2 <= 0.333)
@@ -490,7 +501,7 @@ int main( int argc, char *argv[])
 	for (j = 0; j < h; j++)
 	{
 		double _vx, _vy, _vz;
-		_vy = vy + winh / 2 - winh * (double)j / (h - 1);
+		_vy = vy + (((double)h - 1) - j) / (h - 1) - winh / 2;
 		_vz = vz;
 
 		for (i = 0; i < w; i++)
@@ -508,6 +519,7 @@ int main( int argc, char *argv[])
 			char pix = '.';
 			_vx = vx - winw / 2 + winw * (double)i / (w - 1);
 
+//			printf( "j=%lu i=%lu vy=%f vx=%f\n", j, i, _vy, _vx);
 			double r = 0.0, g = 0.0, b = 0.0;
 
 			traceray( 0, ex, ey, ez, _vx, _vy, _vz, &r, &g, &b, &pix, do_att);
