@@ -31,10 +31,11 @@ typedef struct {
 } sphere_t;
 
 sphere_t spheres[] = {
-#if 0
-	{ .cx = 0.05, .cy = 0.1, .cz = 0.5, .sr = 0.1, .r = 1.0, .g = 0.0, .b = 0.0 },
-	{ .cx = -0.05, .cy = 0.0, .cz = 0.6, .sr = 0.05, .r = 0.0, .g = 1.0, .b = 0.0 },
-	{ .cx = 0.1, .cy = 0.0, .cz = 0.7, .sr = 0.03, .r = 0.0, .g = 0.0, .b = 1.0 },
+#if 1
+	{ .cx = 0.05, .cy = 0.3, .cz = -0.8, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0 },
+	{ .cx = -0.2, .cy = -0.1, .cz = -0.6, .sr = 0.1, .r = 0.0, .g = 1.0, .b = 0.0 },
+	{ .cx = 0.5, .cy = -0.05, .cz = -0.7, .sr = 0.2, .r = 0.0, .g = 0.0, .b = 1.0 },
+	{ .cx = 0.0, .cy = 0.0, .cz = 0.0, .sr = 0.03, .r = 1.0, .g = 1.0, .b = 1.0 },
 #elif 1
 #define SR 0.05
 #define R 0.4
@@ -183,38 +184,9 @@ int intersec_sphere( double cx, double cy, double cz, double sr, double ex, doub
 unsigned long the_winw, the_winh;
 int sky_color( double ex, double ey, double ez, double _vx, double _vy, double _vz, double *_r, double *_g, double *_b)
 {
-	double coef2;
 	double rmin = 0, gmin = 0, bmin = 0;
 #if 0
-#if 0
-	double th, ph, n;
-	n = sqrt( _vx * _vx + _vy * _vy + _vz * _vz);
-	th = acos( _vz / n) * 180 / M_PI;
-	ph = acos( _vx / n) * 180 / M_PI;
-	coef2 = (th + 90) / 180;
-#if 0
-	if (coef2 > 1.0)
-		coef2 = 1.0;
-#else
-	while (coef2 > 1.0)
-		coef2 /= 2;
-#endif
-	if (coef2 < 0.0)
-		coef2 = 0.0;
-#else
-	coef2 = (_vy + 1) / (the_winh + 1);
-//	coef2 = _vy / 10000.0;
-#endif
-	rmin = 1.0 - coef2;
-	gmin = 0.5;
-	bmin = coef2;
-#else
-#if 0
-	double x, y, z;
-	x = ex + _vx;
-	y = ey + _vy;
-	z = ez + _vz;
-#endif
+	double coef2;
 	double th, ph, n;
 	n = sqrt( _vx * _vx + _vy * _vy + _vz * _vz);
 	ph = asin( _vx / n) * 180 / M_PI;
@@ -281,13 +253,13 @@ int sky_color( double ex, double ey, double ez, double _vx, double _vy, double _
 	rmin /= 255;
 	gmin /= 255;
 	bmin /= 255;
-#endif
 				if ((rmin > 1.0) || (gmin > 1.0) || (bmin > 1.0) || (rmin < 0.0) || (gmin < 0.0) || (bmin < 0.0))
 				{
 					printf( "boom sky color overflow r=%f g=%f b=%f\n", rmin, gmin, bmin);fflush( stdout);
 					getchar();
 					exit( 3);
 				}
+#endif
 	*_b = bmin;
 	*_g = gmin;
 	*_r = rmin;
@@ -398,7 +370,12 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 			gmin = (gmin + rg * ratt) / (1.0 + ratt);
 			bmin = (bmin + rb * ratt) / (1.0 + ratt);
 #elif 1
-			double iatt = 1.0, ratt = 1.0;
+			double iatt = 1.0;
+#if 1
+			double ratt = 1.0;
+#else
+			double ratt = att;
+#endif
 			rmin = (rmin * iatt + rr * ratt) / (iatt + ratt);
 			gmin = (gmin * iatt + rg * ratt) / (iatt + ratt);
 			bmin = (bmin * iatt + rb * ratt) / (iatt + ratt);
@@ -423,7 +400,7 @@ int main( int argc, char *argv[])
 	unsigned long w, h;
 	w = W; h = H;
 	double winw, winh;
-	winw = 1.0; winh = 1.0;
+	double winscale = 1.0;
 	int do_tga = 1;
 	int do_txt = 0;
 	int do_att = 1;
@@ -446,6 +423,7 @@ int main( int argc, char *argv[])
 			}
 		}
 	}
+	winw = 1.0 * winscale; winh = winw * h / w;
 	if (do_tga)
 	{
 		tga_fd = open( "out.tga", O_CREAT | O_RDWR 
@@ -501,7 +479,8 @@ int main( int argc, char *argv[])
 	for (j = 0; j < h; j++)
 	{
 		double _vx, _vy, _vz;
-		_vy = vy + (((double)h - 1) - j) / (h - 1) - winh / 2;
+//		_vy = vy + (((double)h - 1) - j) / (h - 1) - winh / 2;
+		_vy = vy - winh / 2 + winh * (double)(h - j - 1) / (h - 1);
 		_vz = vz;
 
 		for (i = 0; i < w; i++)
