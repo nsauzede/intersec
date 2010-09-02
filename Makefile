@@ -32,7 +32,7 @@ check: $(TARGET)
 intersec.exe: intersec
 	$(MV) -f $< $@
 
-sdlr3:CFLAGS=`sdl-config --cflags` -g -O0
+sdlr3:CFLAGS=`sdl-config --cflags` -g -O2
 sdlr3:LDFLAGS+=`sdl-config --libs`
 
 clean:
