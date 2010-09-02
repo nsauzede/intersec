@@ -23,10 +23,15 @@
 
 SDL_Surface *screen;
 
+#if 0
 xsize = 1024;
 ysize = 768;
 An = 3;
-
+#else
+xsize = 600;
+ysize = 600;
+An = 1;
+#endif
 camera_X = 0;
 camera_Y = -10;
 camera_Z = -7;
@@ -446,11 +451,31 @@ do_line(y)
 {
 	/*  Do all lines:  */
 	do_pixels_in_line(0, --y? do_line(y),y:y);
+//	int end = y == 0;
+//	do
+	while (1)
+	{
+	    SDL_Event event;
+	    while (SDL_PollEvent( &event))
+	    {
+	    	if (event.type == SDL_QUIT)
+	    	{
+//	    		if (y == 0)
+	    			exit( 0);
+//	    		end = 1;
+	    		break;
+	    	};
+	    }
+	    if (y > 0)
+	    	break;
+	}
+//	while (!end);
 }
 
 
 main()
 {
+	SDL_Init( SDL_INIT_VIDEO);
 	screen = SDL_SetVideoMode( xsize, ysize, 32, 0);
 
 	/*  and do all lines:  */
