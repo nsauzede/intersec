@@ -429,11 +429,17 @@ do_pixels_in_line(x, y)
 	    rect.w = 1;
 	    rect.h = 1;
 	    col = SDL_MapRGB( screen->format, R/An/An, G/An/An, B/An/An);
-
+	    SDL_Event event;
+	    if (SDL_PollEvent( &event))
+	    if (event.type == SDL_QUIT)
+	    {
+	    	exit( 0);
+	    }
 	x < xsize ?
 	    (
 	    SDL_FillRect( screen, &rect, col),
 	    SDL_UpdateRect( screen, x, y, 1, 1),
+//	    printf( "x=%d\n", x),
 //	    SDL_UpdateRect( screen, x, y, x, y),
 
 		/*  and then do the next pixel in this line:  */
@@ -451,25 +457,6 @@ do_line(y)
 {
 	/*  Do all lines:  */
 	do_pixels_in_line(0, --y? do_line(y),y:y);
-//	int end = y == 0;
-//	do
-	while (1)
-	{
-	    SDL_Event event;
-	    while (SDL_PollEvent( &event))
-	    {
-	    	if (event.type == SDL_QUIT)
-	    	{
-//	    		if (y == 0)
-	    			exit( 0);
-//	    		end = 1;
-	    		break;
-	    	};
-	    }
-	    if (y > 0)
-	    	break;
-	}
-//	while (!end);
 }
 
 
@@ -480,4 +467,17 @@ main()
 
 	/*  and do all lines:  */
 	do_line(ysize);
+	int leave = 0;
+	while (!leave)
+	{
+	    SDL_Event event;
+	    while (SDL_PollEvent( &event))
+	    {
+	    	if (event.type == SDL_QUIT)
+	    	{
+				leave = 1;
+	    		break;
+	    	};
+	    }
+	}
 }
