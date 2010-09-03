@@ -37,8 +37,6 @@ typedef struct {
 	double rfatt, gfatt, bfatt;		// refraction
 } sphere_t;
 
-//#define USE_SKY
-
 sphere_t spheres[] = {
 #if 1
 #if 1
@@ -50,7 +48,7 @@ sphere_t spheres[] = {
 	{ .cx = 0.5, .cy = -0.05, .cz = -0.7, .sr = 0.2, .r = 0.1, .g = 0.1, .b = 1.0, .rdatt = D, .gdatt = D, .bdatt = D, .rratt = R, .gratt = R, .bratt = R },
 	{ .cx = 0.0, .cy = 0.0, .cz = 0.0, .sr = 0.03, .r = 1.0, .g = 1.0, .b = 1.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #endif
-#define RFL 0.0
+#define RFL 1.0
 #define RFR 1.0
 	{ .cx = 0.0, .cy = 0.0, .cz = 0.3, .sr = 0.1, .r = 1.0, .g = 1.0, .b = 1.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = RFL, .gratt = RFL, .bratt = RFL, .rfatt = RFR, .gfatt = RFR, .bfatt = RFR },
 #elif 1
