@@ -138,7 +138,7 @@ int solvetri( double a, double b, double c, double *t1, double *t2)
 	return result;
 }
 
-int intersec_sphere( double cx, double cy, double cz, double sr, double ex, double ey, double ez, double vx, double vy, double vz, double *t)
+int intersec_sphere( double cx, double cy, double cz, double sr, double ex, double ey, double ez, double vx, double vy, double vz, double *tmin, double *tmax)
 {
 	int result = 0;
 	double a, b, c;
@@ -159,11 +159,16 @@ int intersec_sphere( double cx, double cy, double cz, double sr, double ex, doub
 	{
 //		printf( "two solutions : %f and %f\n", t1, t2);
 		if (fabs( t1) > fabs( t2))
+		{
+			double temp = t1;
 			t1 = t2;
+			t2 = temp;
+		}
 	}
 	else if (sol == 1)
 	{
 //		printf( "one solution : %f\n", t1);
+		t2 = t1;
 	}
 	else
 	{
@@ -173,10 +178,10 @@ int intersec_sphere( double cx, double cy, double cz, double sr, double ex, doub
 	{
 		result = 1;
 //		printf( "returning %f\n", t1);
-		if (t)
-		{
-			*t = t1;
-		}
+		if (tmin)
+			*tmin = t1;
+		if (tmax)
+			*tmax = t2;
 	}
 
 	return result;
@@ -282,7 +287,7 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 	if (level > level_max_reached)
 		level_max_reached = level;
 	unsigned long smin = -1, s;
-	double tmin = BIG;
+	double tmin = BIG, tmax = 0, srmin = 0;
 	double rmin = 0.0, gmin = 0.0, bmin = 0.0;
 	double rdatt = 0.0, gdatt = 0.0, bdatt = 0.0;	// diffuse
 	double rratt = 0.0, gratt = 0.0, bratt = 0.0;	// reflected
@@ -292,8 +297,8 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 		cx = spheres[s].cx; cy = spheres[s].cy; cz = spheres[s].cz; sr = spheres[s].sr;
 //		printf( "sphere: c(%f;%f;%f) r(%f)\n", cx, cy, cz, sr);
 		int res;
-		double t = 0;
-		res = intersec_sphere( cx, cy, cz, sr, ex, ey, ez, _vx, _vy, _vz, &t);
+		double t = 0, t2 = 0;
+		res = intersec_sphere( cx, cy, cz, sr, ex, ey, ez, _vx, _vy, _vz, &t, &t2);
 //		printf( "%c", res ? 's' : '.');
 		if (res)
 		{
@@ -301,6 +306,8 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 			{
 				smin = s;
 				tmin = t;
+				tmax = t2;
+				srmin = spheres[s].sr;
 				rmin = spheres[s].r;
 				gmin = spheres[s].g;
 				bmin = spheres[s].b;
@@ -331,20 +338,39 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 	{
 		intersected++;
 //		printf( "object\n");
+// compute reflexions here
+		double rx, ry, rz, rx2, ry2, rz2;		// coord of intersec
+		rx = ex + _vx * tmin;
+		ry = ey + _vy * tmin;
+		rz = ez + _vz * tmax;
+		rx2 = ex + _vx * tmax;
+		ry2 = ey + _vy * tmax;
+		rz2 = ez + _vz * tmax;
+		double n;
+//		dprintf( "inters with sphere %d at (%f,%f,%f)", smin, rx, ry, rz);
+		double nvx, nvy, nvz;	// normal vect
+
+// first compute distance between two intersec points
+		nvx = rx - rx2;
+		nvy = ry - ry2;
+		nvz = rz - rz2;
+		n = sqrt( nvx * nvx + nvy * nvy + nvz * nvz);
+//		printf( "sr=%f dist=%f", srmin, n);
+		double grad;
+//		grad = (fabs( tmax) - fabs( tmin));
+//		prinf( "dist=%f", grad);
+		grad = n / srmin / 2;
+//		printf( " grad=%f\n", grad);
+		rmin *= grad;
+		gmin *= grad;
+		bmin *= grad;
 				if ((rmin > 1.0) || (gmin > 1.0) || (bmin > 1.0) || (rmin < 0.0) || (gmin < 0.0) || (bmin < 0.0))
 				{
 					printf( "boom object color overflow r=%f g=%f b=%f\n", rmin, gmin, bmin);fflush( stdout);
 					getchar();
 					exit( 3);
 				}
-// compute reflexions here
-		double rx, ry, rz;		// coord of intersec
-		rx = ex + _vx * tmin;
-		ry = ey + _vy * tmin;
-		rz = ez + _vz * tmin;
-		double n;
-//		dprintf( "inters with sphere %d at (%f,%f,%f)", smin, rx, ry, rz);
-		double nvx, nvy, nvz;	// normal vect
+
 		nvx = rx - spheres[smin].cx;
 		nvy = ry - spheres[smin].cy;
 		nvz = rz - spheres[smin].cz;
