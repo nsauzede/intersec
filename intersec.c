@@ -37,7 +37,7 @@ sphere_t spheres[] = {
 	{ .cx = 0.05, .cy = 0.3, .cz = -0.8, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -0.2, .cy = -0.1, .cz = -0.6, .sr = 0.1, .r = 0.0, .g = 1.0, .b = 0.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #define D 1.0
-#define R 0.0
+#define R 1.0
 	{ .cx = 0.5, .cy = -0.05, .cz = -0.7, .sr = 0.2, .r = 0.0, .g = 0.0, .b = 1.0, .rdatt = D, .gdatt = D, .bdatt = D, .rratt = R, .gratt = R, .bratt = R },
 	{ .cx = 0.0, .cy = 0.0, .cz = 0.0, .sr = 0.03, .r = 1.0, .g = 1.0, .b = 1.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #elif 1
@@ -342,7 +342,7 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 		double rx, ry, rz, rx2, ry2, rz2;		// coord of intersec
 		rx = ex + _vx * tmin;
 		ry = ey + _vy * tmin;
-		rz = ez + _vz * tmax;
+		rz = ez + _vz * tmin;
 		rx2 = ex + _vx * tmax;
 		ry2 = ey + _vy * tmax;
 		rz2 = ez + _vz * tmax;
@@ -350,7 +350,7 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 //		dprintf( "inters with sphere %d at (%f,%f,%f)", smin, rx, ry, rz);
 		double nvx, nvy, nvz;	// normal vect
 
-// first compute distance between two intersec points
+// compute distance between two intersec points
 		nvx = rx - rx2;
 		nvy = ry - ry2;
 		nvz = rz - rz2;
@@ -360,10 +360,12 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 //		grad = (fabs( tmax) - fabs( tmin));
 //		prinf( "dist=%f", grad);
 		grad = n / srmin / 2;
+		grad = sqrt( grad);
 //		printf( " grad=%f\n", grad);
 		rmin *= grad;
 		gmin *= grad;
 		bmin *= grad;
+
 				if ((rmin > 1.0) || (gmin > 1.0) || (bmin > 1.0) || (rmin < 0.0) || (gmin < 0.0) || (bmin < 0.0))
 				{
 					printf( "boom object color overflow r=%f g=%f b=%f\n", rmin, gmin, bmin);fflush( stdout);
