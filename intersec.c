@@ -32,19 +32,27 @@
 typedef struct {
 	double cx, cy, cz, sr;
 	double r, g, b;
-	double rdatt, gdatt, bdatt;
-	double rratt, gratt, bratt;
+	double rdatt, gdatt, bdatt;		// diffuse
+	double rratt, gratt, bratt;		// reflection
+	double rfatt, gfatt, bfatt;		// refraction
 } sphere_t;
 
+//#define USE_SKY
+
 sphere_t spheres[] = {
+#if 1
 #if 1
 	{ .cx = 0.05, .cy = 0.3, .cz = -0.8, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #define D1 0.5
 	{ .cx = -0.2, .cy = -0.1, .cz = -0.6, .sr = 0.1, .r = 0.0, .g = 1.0, .b = 0.0, .rdatt = D1, .gdatt = D1, .bdatt = D1, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
-#define D 1.0
-#define R 0.5
-	{ .cx = 0.5, .cy = -0.05, .cz = -0.7, .sr = 0.2, .r = 0.0, .g = 0.0, .b = 1.0, .rdatt = D, .gdatt = D, .bdatt = D, .rratt = R, .gratt = R, .bratt = R },
+#define D 0.8
+#define R 0.1
+	{ .cx = 0.5, .cy = -0.05, .cz = -0.7, .sr = 0.2, .r = 0.1, .g = 0.1, .b = 1.0, .rdatt = D, .gdatt = D, .bdatt = D, .rratt = R, .gratt = R, .bratt = R },
 	{ .cx = 0.0, .cy = 0.0, .cz = 0.0, .sr = 0.03, .r = 1.0, .g = 1.0, .b = 1.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+#endif
+#define RFL 0.0
+#define RFR 1.0
+	{ .cx = 0.0, .cy = 0.0, .cz = 0.3, .sr = 0.1, .r = 1.0, .g = 1.0, .b = 1.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = RFL, .gratt = RFL, .bratt = RFL, .rfatt = RFR, .gfatt = RFR, .bfatt = RFR },
 #elif 1
 #define SR 0.05
 #define R 0.4
@@ -199,7 +207,7 @@ unsigned long the_winw, the_winh;
 int sky_color( double ex, double ey, double ez, double _vx, double _vy, double _vz, double *_r, double *_g, double *_b)
 {
 	double rmin = 0, gmin = 0, bmin = 0;
-#if 0
+#ifdef USE_SKY
 	double coef2;
 	double th, ph, n;
 	n = sqrt( _vx * _vx + _vy * _vy + _vz * _vz);
@@ -284,6 +292,7 @@ int sky_color( double ex, double ey, double ez, double _vx, double _vy, double _
 unsigned long traced = 0;
 unsigned long intersected = 0;
 unsigned long reflected = 0;
+unsigned long refracted = 0;
 int level_max_reached = -1;
 int level_max = LEV_MAX;
 int traceray( int level, double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b, char *pix, double ratt, double gatt, double batt)
@@ -293,9 +302,11 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 		level_max_reached = level;
 	unsigned long smin = -1, s;
 	double tmin = BIG, tmax = 0, srmin = 0;
-	double rmin = 0.0, gmin = 0.0, bmin = 0.0;
+	double rmin = 0.0, gmin = 0.0, bmin = 0.0;		// material
 	double rdatt = 0.0, gdatt = 0.0, bdatt = 0.0;	// diffuse
 	double rratt = 0.0, gratt = 0.0, bratt = 0.0;	// reflected
+	double rfatt = 0.0, gfatt = 0.0, bfatt = 0.0;	// refracted
+	
 	for (s = 0; s < nsph; s++)
 	{
 		double cx, cy, cz, sr;
@@ -322,6 +333,9 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 				rratt = spheres[s].rratt;
 				gratt = spheres[s].gratt;
 				bratt = spheres[s].bratt;
+				rfatt = spheres[s].rfatt;
+				gfatt = spheres[s].gfatt;
+				bfatt = spheres[s].bfatt;
 //				pix = '0' + s;
 				if (spheres[s].r > 0)
 					*pix = 'r';
@@ -337,13 +351,20 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 	if (tmin >= BIG)	// sky
 	{
 		sky_color( ex, ey, ez, _vx, _vy, _vz, &rmin, &gmin, &bmin);
-//		printf( "sky color %f %f %f\n", rmin, gmin, bmin);
+#if 0
+		if (level > 0)
+			printf( "sky color %f %f %f\n", rmin, gmin, bmin);
+#endif
 	}
-	else				// object -> ambient
+	else				// object
 	{
+		double rdiff = 0.0, gdiff = 0.0, bdiff = 0.0;
+		double rrefl = 0.0, grefl = 0.0, brefl = 0.0;
+		double rrefr = 0.0, grefr = 0.0, brefr = 0.0;
+	
 		intersected++;
 //		printf( "object\n");
-// compute reflexions here
+// compute intersections here
 		double rx, ry, rz, rx2, ry2, rz2;		// coord of intersec
 		rx = ex + _vx * tmin;
 		ry = ey + _vy * tmin;
@@ -352,7 +373,8 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 		ry2 = ey + _vy * tmax;
 		rz2 = ez + _vz * tmax;
 		double n;
-//		dprintf( "inters with sphere %d at (%f,%f,%f)", smin, rx, ry, rz);
+		dprintf( "ray is (%f,%f,%f)\n", _vx, _vy, _vz);
+		dprintf( "inters with sphere %lu at (%f,%f,%f)\n", smin, rx, ry, rz);
 		double nvx, nvy, nvz;	// normal vect
 
 // compute distance between two intersec points
@@ -360,52 +382,20 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 		nvy = ry - ry2;
 		nvz = rz - rz2;
 		n = sqrt( nvx * nvx + nvy * nvy + nvz * nvz);
-//		printf( "sr=%f dist=%f", srmin, n);
 		double grad;
-//		grad = (fabs( tmax) - fabs( tmin));
-//		prinf( "dist=%f", grad);
 		grad = n / srmin / 2;
 		grad = sqrt( grad);
-//		printf( " grad=%f\n", grad);
-		rmin *= grad;
-		gmin *= grad;
-		bmin *= grad;
+		rdiff = rmin * rdatt * grad;
+		gdiff = gmin * gdatt * grad;
+		bdiff = bmin * bdatt * grad;
 
-				if ((rmin > 1.0) || (gmin > 1.0) || (bmin > 1.0) || (rmin < 0.0) || (gmin < 0.0) || (bmin < 0.0))
-				{
-					printf( "boom object color overflow r=%f g=%f b=%f\n", rmin, gmin, bmin);fflush( stdout);
-					getchar();
-					exit( 3);
-				}
+		double rvx, rvy, rvz;	// vect of reflected/refracted ray
 
-		nvx = rx - spheres[smin].cx;
-		nvy = ry - spheres[smin].cy;
-		nvz = rz - spheres[smin].cz;
-		n = sqrt( nvx * nvx + nvy * nvy + nvz * nvz);
-		nvx /= n;
-		nvy /= n;
-		nvz /= n;
-		double rvx, rvy, rvz;	// vect of reflected ray
-		double dot = 1.0;
-		dot = (_vx *nvx + _vy * nvy + _vz * nvz);
-		rvx = _vx - 2 * dot * nvx;
-		rvy = _vy - 2 * dot * nvy;
-		rvz = _vz - 2 * dot * nvz;
-		n = sqrt( rvx * rvx + rvy * rvy + rvz * rvz);
-		rvx /= n;
-		rvy /= n;
-		rvz /= n;
-//		dprintf( "refl vec (%f,%f,%f)\n", rvx, rvy, rvz);
-		double rr = 0.0, rg = 0.0, rb = 0.0;		// reflected color to add
 		if (1
 			&& (((ratt * rratt) >= ATT_MIN) || ((gatt * gratt) >= ATT_MIN) || ((batt * bratt) >= ATT_MIN))
 			&& ((level < level_max) || (level_max == -1))
 		)
 		{
-// attenuate according to material reflection
-			ratt *= rratt;
-			gatt *= gratt;
-			batt *= bratt;
 // loose energy
 			double loss = 0.9;
 			ratt *= loss;
@@ -413,16 +403,80 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 			batt *= loss;
 			
 			reflected++;
-			traceray( level + 1, rx, ry, rz, rvx, rvy, rvz, &rr, &rg, &rb, pix, ratt, gatt, batt);
-			rmin = (rmin * rdatt + rr * ratt) / (rdatt + ratt);
-			gmin = (gmin * gdatt + rg * gatt) / (gdatt + gatt);
-			bmin = (bmin * bdatt + rb * batt) / (bdatt + batt);
+// normal at intersec
+		nvx = rx - spheres[smin].cx;
+		nvy = ry - spheres[smin].cy;
+		nvz = rz - spheres[smin].cz;
+		n = sqrt( nvx * nvx + nvy * nvy + nvz * nvz);
+		nvx /= n;
+		nvy /= n;
+		nvz /= n;
+
+		double dot = 1.0;
+		dot = (_vx * nvx + _vy * nvy + _vz * nvz);
+		rvx = _vx - 2 * dot * nvx;
+		rvy = _vy - 2 * dot * nvy;
+		rvz = _vz - 2 * dot * nvz;
+		n = sqrt( rvx * rvx + rvy * rvy + rvz * rvz);
+		rvx /= n;
+		rvy /= n;
+		rvz /= n;
+		dprintf( "refl vec (%f,%f,%f) (s=%lu)\n", rvx, rvy, rvz, smin);
+			traceray( level + 1, rx, ry, rz, rvx, rvy, rvz, &rrefl, &grefl, &brefl, pix, ratt * rratt, gatt * gratt, batt * bratt);
 		}
-		else
+
+		if (1
+			&& (((ratt * rfatt) >= ATT_MIN) || ((gatt * gfatt) >= ATT_MIN) || ((batt * bfatt) >= ATT_MIN))
+			&& ((level < level_max) || (level_max == -1))
+		)
 		{
-			rmin *= rdatt * ratt;
-			gmin *= gdatt * gatt;
-			bmin *= bdatt * batt;
+// loose energy
+			double loss = 0.9;
+			ratt *= loss;
+			gatt *= loss;
+			batt *= loss;
+			
+			refracted++;
+#if 0
+// normal at intersec
+		nvx = spheres[smin].cx - rx;
+		nvy = spheres[smin].cy - ry;
+		nvz = spheres[smin].cz - rz;
+		n = sqrt( nvx * nvx + nvy * nvy + nvz * nvz);
+		nvx /= n;
+		nvy /= n;
+		nvz /= n;
+
+		double dot = 1.0;
+		dot = (_vx * nvx + _vy * nvy + _vz * nvz);
+		rvx = 2 * dot * nvx - _vx;
+		rvy = 2 * dot * nvy - _vy;
+		rvz = 2 * dot * nvz - _vz;
+		n = sqrt( rvx * rvx + rvy * rvy + rvz * rvz);
+		rvx /= n;
+		rvy /= n;
+		rvz /= n;
+#else
+		rvx = _vx;
+		rvy = _vy;
+		rvz = _vz;
+#endif
+		dprintf( "refr vec (%f,%f,%f) (s=%lu)\n", rvx, rvy, rvz, smin);
+			traceray( level + 1, rx, ry, rz, rvx, rvy, rvz, &rrefr, &grefr, &brefr, pix, ratt * rfatt, gatt * gfatt, batt * bfatt);
+		}
+
+		if ((rdatt + rratt + rfatt + gdatt + gratt + gfatt + bdatt + bratt + bfatt) > SMALL)
+		{
+			rmin = (rdiff * rdatt + rrefl * rratt + rrefr * rfatt) / (rdatt + rratt + rfatt);
+			gmin = (gdiff * gdatt + grefl * gratt + grefr * gfatt) / (gdatt + gratt + gfatt);
+			bmin = (bdiff * bdatt + brefl * bratt + brefr * bfatt) / (bdatt + bratt + bfatt);
+		}
+
+		if ((rmin > 1.0) || (gmin > 1.0) || (bmin > 1.0) || (rmin < 0.0) || (gmin < 0.0) || (bmin < 0.0))
+		{
+			printf( "boom object color overflow r=%f g=%f b=%f\n", rmin, gmin, bmin);fflush( stdout);
+			getchar();
+			exit( 3);
 		}
 	}
 	*r = rmin;
@@ -601,7 +655,7 @@ int main( int argc, char *argv[])
 	dprintf( "tga_size=%lu\n", (unsigned long)tga_size);
 	dprintf( "tga_index=%lu\n", (unsigned long)tga_index);
 	printf( "traced=%lu intersected=%lu\n", traced, intersected);
-	printf( "reflected=%lu level_max=%d level_max_reached=%d\n", reflected, level_max, level_max_reached);
+	printf( "reflected=%lu refracted=%lu level_max=%d level_max_reached=%d\n", reflected, refracted, level_max, level_max_reached);
 	double duration = cur_t - old_t;
 	if (!duration)
 		duration = 1;
