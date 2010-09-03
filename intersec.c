@@ -44,7 +44,7 @@ sphere_t spheres[] = {
 #define D1 0.5
 	{ .cx = -0.2, .cy = -0.1, .cz = -0.6, .sr = 0.1, .r = 0.0, .g = 1.0, .b = 0.0, .rdatt = D1, .gdatt = D1, .bdatt = D1, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #define D 0.8
-#define R 0.1
+#define R 0.0
 	{ .cx = 0.5, .cy = -0.05, .cz = -0.7, .sr = 0.2, .r = 0.1, .g = 0.1, .b = 1.0, .rdatt = D, .gdatt = D, .bdatt = D, .rratt = R, .gratt = R, .bratt = R },
 	{ .cx = 0.0, .cy = 0.0, .cz = 0.0, .sr = 0.03, .r = 1.0, .g = 1.0, .b = 1.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #endif
@@ -349,9 +349,9 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 	if (tmin >= BIG)	// sky
 	{
 		sky_color( ex, ey, ez, _vx, _vy, _vz, &rmin, &gmin, &bmin);
-#if 0
+#if 1
 		if (level > 0)
-			printf( "sky color %f %f %f\n", rmin, gmin, bmin);
+			dprintf( "sky color %f %f %f\n", rmin, gmin, bmin);
 #endif
 	}
 	else				// object
@@ -601,7 +601,7 @@ int main( int argc, char *argv[])
 			double r = 0.0, g = 0.0, b = 0.0;
 
 			traceray( 0, ex, ey, ez, _vx, _vy, _vz, &r, &g, &b, &pix, 1.0, 1.0, 1.0);
-			dprintf( "  (r=%f g=%f b=%f)", r, g, b);
+			//dprintf( "  (r=%f g=%f b=%f)", r, g, b);
 			if (do_tga)
 			{
 #if 1
@@ -618,7 +618,7 @@ int main( int argc, char *argv[])
 				cr = (double)255 * r;
 				cg = (double)255 * g;
 				cb = (double)255 * b;
-				dprintf( "{%02x:%02x:%02x}", cr, cg, cb);
+			//	dprintf( "{%02x:%02x:%02x}", cr, cg, cb);
 				TGA_BYTE( cb);
 				TGA_BYTE( cg);
 				TGA_BYTE( cr);
@@ -629,7 +629,7 @@ int main( int argc, char *argv[])
 		}
 		if (do_txt)
 			printf( "\n");
-		dprintf( "\n");
+		//dprintf( "\n");
 	}
 	double cur_t;
 #ifndef USETIMEOFDAY
@@ -650,8 +650,8 @@ int main( int argc, char *argv[])
 #endif
 		close( tga_fd);
 	}
-	dprintf( "tga_size=%lu\n", (unsigned long)tga_size);
-	dprintf( "tga_index=%lu\n", (unsigned long)tga_index);
+//	dprintf( "tga_size=%lu\n", (unsigned long)tga_size);
+//	dprintf( "tga_index=%lu\n", (unsigned long)tga_index);
 	printf( "traced=%lu intersected=%lu\n", traced, intersected);
 	printf( "reflected=%lu refracted=%lu level_max=%d level_max_reached=%d\n", reflected, refracted, level_max, level_max_reached);
 	double duration = cur_t - old_t;
