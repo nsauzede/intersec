@@ -28,14 +28,18 @@
 typedef struct {
 	double cx, cy, cz, sr;
 	double r, g, b;
+	double rdatt, gdatt, bdatt;
+	double rratt, gratt, bratt;
 } sphere_t;
 
 sphere_t spheres[] = {
 #if 1
-	{ .cx = 0.05, .cy = 0.3, .cz = -0.8, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0 },
-	{ .cx = -0.2, .cy = -0.1, .cz = -0.6, .sr = 0.1, .r = 0.0, .g = 1.0, .b = 0.0 },
-	{ .cx = 0.5, .cy = -0.05, .cz = -0.7, .sr = 0.2, .r = 0.0, .g = 0.0, .b = 1.0 },
-	{ .cx = 0.0, .cy = 0.0, .cz = 0.0, .sr = 0.03, .r = 1.0, .g = 1.0, .b = 1.0 },
+	{ .cx = 0.05, .cy = 0.3, .cz = -0.8, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = -0.2, .cy = -0.1, .cz = -0.6, .sr = 0.1, .r = 0.0, .g = 1.0, .b = 0.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+#define D 1.0
+#define R 0.0
+	{ .cx = 0.5, .cy = -0.05, .cz = -0.7, .sr = 0.2, .r = 0.0, .g = 0.0, .b = 1.0, .rdatt = D, .gdatt = D, .bdatt = D, .rratt = R, .gratt = R, .bratt = R },
+	{ .cx = 0.0, .cy = 0.0, .cz = 0.0, .sr = 0.03, .r = 1.0, .g = 1.0, .b = 1.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #elif 1
 #define SR 0.05
 #define R 0.4
@@ -280,6 +284,8 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 	unsigned long smin = -1, s;
 	double tmin = BIG;
 	double rmin = 0.0, gmin = 0.0, bmin = 0.0;
+	double rdatt = 0.0, gdatt = 0.0, bdatt = 0.0;	// diffuse
+	double rratt = 0.0, gratt = 0.0, bratt = 0.0;	// reflected
 	for (s = 0; s < nsph; s++)
 	{
 		double cx, cy, cz, sr;
@@ -298,6 +304,12 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 				rmin = spheres[s].r;
 				gmin = spheres[s].g;
 				bmin = spheres[s].b;
+				rdatt = spheres[s].rdatt;
+				gdatt = spheres[s].gdatt;
+				bdatt = spheres[s].bdatt;
+				rratt = spheres[s].rratt;
+				gratt = spheres[s].gratt;
+				bratt = spheres[s].bratt;
 //				pix = '0' + s;
 				if (spheres[s].r > 0)
 					*pix = 'r';
@@ -319,11 +331,6 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 	{
 		intersected++;
 //		printf( "object\n");
-		if (att > 1.0)
-			att = 1.0;
-		rmin *= att;
-		gmin *= att;
-		bmin *= att;
 				if ((rmin > 1.0) || (gmin > 1.0) || (bmin > 1.0) || (rmin < 0.0) || (gmin < 0.0) || (bmin < 0.0))
 				{
 					printf( "boom object color overflow r=%f g=%f b=%f\n", rmin, gmin, bmin);fflush( stdout);
@@ -359,31 +366,21 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 		double rr = 0.0, rg = 0.0, rb = 0.0;		// reflected color to add
 		if (1
 			&& (att >= ATT_MIN)
+			&& ((rratt >= ATT_MIN) || (gratt >= ATT_MIN) || bratt >= ATT_MIN)
 			&& ((level < level_max) || (level_max == -1))
 		)
 		{
 			reflected++;
 			traceray( level + 1, rx, ry, rz, rvx, rvy, rvz, &rr, &rg, &rb, pix, att * 0.9);
-#if 0
-			double ratt = 0.5;
-			rmin = (rmin + rr * ratt) / (1.0 + ratt);
-			gmin = (gmin + rg * ratt) / (1.0 + ratt);
-			bmin = (bmin + rb * ratt) / (1.0 + ratt);
-#elif 1
-			double iatt = 1.0;
-#if 1
-			double ratt = 1.0;
-#else
-			double ratt = att;
-#endif
-			rmin = (rmin * iatt + rr * ratt) / (iatt + ratt);
-			gmin = (gmin * iatt + rg * ratt) / (iatt + ratt);
-			bmin = (bmin * iatt + rb * ratt) / (iatt + ratt);
-#else
-			rmin = rr;
-			gmin = rg;
-			bmin = rb;
-#endif
+			rmin = (rmin * rdatt * (1.0 - rratt * 0.5) + rr * rratt) / (rdatt * (1.0 - rratt * 0.5) + rratt);
+			gmin = (gmin * gdatt * (1.0 - gratt * 0.5) + rg * gratt) / (gdatt * (1.0 - gratt * 0.5) + gratt);
+			bmin = (bmin * bdatt * (1.0 - bratt * 0.5) + rb * bratt) / (bdatt * (1.0 - bratt * 0.5) + bratt);
+		}
+		else
+		{
+			rmin *= rdatt * att;
+			gmin *= gdatt * att;
+			bmin *= bdatt * att;
 		}
 	}
 	*r = rmin;
@@ -403,7 +400,6 @@ int main( int argc, char *argv[])
 	double winscale = 1.0;
 	int do_tga = 1;
 	int do_txt = 0;
-	int do_att = 1;
 	int bpp = 24;
 	int tga_fd = -1;
 	unsigned char *tga_map = MAP_FAILED;
@@ -501,7 +497,7 @@ int main( int argc, char *argv[])
 //			printf( "j=%lu i=%lu vy=%f vx=%f\n", j, i, _vy, _vx);
 			double r = 0.0, g = 0.0, b = 0.0;
 
-			traceray( 0, ex, ey, ez, _vx, _vy, _vz, &r, &g, &b, &pix, do_att);
+			traceray( 0, ex, ey, ez, _vx, _vy, _vz, &r, &g, &b, &pix, 1.0);
 			dprintf( "  (r=%f g=%f b=%f)", r, g, b);
 			if (do_tga)
 			{
