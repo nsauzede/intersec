@@ -460,7 +460,7 @@ do_line(y)
 }
 
 
-main()
+int main( int argc, char *argv[])
 {
 	SDL_Init( SDL_INIT_VIDEO);
 	screen = SDL_SetVideoMode( xsize, ysize, 32, 0);
