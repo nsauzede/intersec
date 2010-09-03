@@ -39,9 +39,10 @@ typedef struct {
 sphere_t spheres[] = {
 #if 1
 	{ .cx = 0.05, .cy = 0.3, .cz = -0.8, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
-	{ .cx = -0.2, .cy = -0.1, .cz = -0.6, .sr = 0.1, .r = 0.0, .g = 1.0, .b = 0.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+#define D1 0.5
+	{ .cx = -0.2, .cy = -0.1, .cz = -0.6, .sr = 0.1, .r = 0.0, .g = 1.0, .b = 0.0, .rdatt = D1, .gdatt = D1, .bdatt = D1, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #define D 1.0
-#define R 1.0
+#define R 0.5
 	{ .cx = 0.5, .cy = -0.05, .cz = -0.7, .sr = 0.2, .r = 0.0, .g = 0.0, .b = 1.0, .rdatt = D, .gdatt = D, .bdatt = D, .rratt = R, .gratt = R, .bratt = R },
 	{ .cx = 0.0, .cy = 0.0, .cz = 0.0, .sr = 0.03, .r = 1.0, .g = 1.0, .b = 1.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #elif 1
@@ -285,7 +286,7 @@ unsigned long intersected = 0;
 unsigned long reflected = 0;
 int level_max_reached = -1;
 int level_max = LEV_MAX;
-int traceray( int level, double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b, char *pix, double att)
+int traceray( int level, double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b, char *pix, double ratt, double gatt, double batt)
 {
 	traced++;
 	if (level > level_max_reached)
@@ -397,22 +398,31 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 //		dprintf( "refl vec (%f,%f,%f)\n", rvx, rvy, rvz);
 		double rr = 0.0, rg = 0.0, rb = 0.0;		// reflected color to add
 		if (1
-			&& (att >= ATT_MIN)
-			&& ((rratt >= ATT_MIN) || (gratt >= ATT_MIN) || bratt >= ATT_MIN)
+			&& (((ratt * rratt) >= ATT_MIN) || ((gatt * gratt) >= ATT_MIN) || ((batt * bratt) >= ATT_MIN))
 			&& ((level < level_max) || (level_max == -1))
 		)
 		{
+// attenuate according to material reflection
+			ratt *= rratt;
+			gatt *= gratt;
+			batt *= bratt;
+// loose energy
+			double loss = 0.9;
+			ratt *= loss;
+			gatt *= loss;
+			batt *= loss;
+			
 			reflected++;
-			traceray( level + 1, rx, ry, rz, rvx, rvy, rvz, &rr, &rg, &rb, pix, att * 0.9);
-			rmin = (rmin * rdatt * (1.0 - rratt * 0.5) + rr * rratt) / (rdatt * (1.0 - rratt * 0.5) + rratt);
-			gmin = (gmin * gdatt * (1.0 - gratt * 0.5) + rg * gratt) / (gdatt * (1.0 - gratt * 0.5) + gratt);
-			bmin = (bmin * bdatt * (1.0 - bratt * 0.5) + rb * bratt) / (bdatt * (1.0 - bratt * 0.5) + bratt);
+			traceray( level + 1, rx, ry, rz, rvx, rvy, rvz, &rr, &rg, &rb, pix, ratt, gatt, batt);
+			rmin = (rmin * rdatt + rr * ratt) / (rdatt + ratt);
+			gmin = (gmin * gdatt + rg * gatt) / (gdatt + gatt);
+			bmin = (bmin * bdatt + rb * batt) / (bdatt + batt);
 		}
 		else
 		{
-			rmin *= rdatt * att;
-			gmin *= gdatt * att;
-			bmin *= bdatt * att;
+			rmin *= rdatt * ratt;
+			gmin *= gdatt * gatt;
+			bmin *= bdatt * batt;
 		}
 	}
 	*r = rmin;
@@ -538,7 +548,7 @@ int main( int argc, char *argv[])
 //			printf( "j=%lu i=%lu vy=%f vx=%f\n", j, i, _vy, _vx);
 			double r = 0.0, g = 0.0, b = 0.0;
 
-			traceray( 0, ex, ey, ez, _vx, _vy, _vz, &r, &g, &b, &pix, 1.0);
+			traceray( 0, ex, ey, ez, _vx, _vy, _vz, &r, &g, &b, &pix, 1.0, 1.0, 1.0);
 			dprintf( "  (r=%f g=%f b=%f)", r, g, b);
 			if (do_tga)
 			{
