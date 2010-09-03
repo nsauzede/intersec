@@ -518,7 +518,7 @@ int main( int argc, char *argv[])
 		_vy = vy - winh / 2 + winh * (double)(h - j - 1) / (h - 1);
 		_vz = vz;
 
-		for (i = 0; i < w; i++)
+		for (i = 0; ; i++)
 		{
 			int percent = (double)100.0 * (j * w + i) / (w * h);
 			static int old_percent = -1;
@@ -530,6 +530,8 @@ int main( int argc, char *argv[])
 					printf( " %d%%", old_percent);fflush( stdout);
 				}
 			}
+			if (i >= w)
+				break;
 			char pix = '.';
 			_vx = vx - winw / 2 + winw * (double)i / (w - 1);
 
