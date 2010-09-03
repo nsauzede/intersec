@@ -34,6 +34,8 @@ intersec.exe: intersec
 
 sdlr3:CFLAGS=`sdl-config --cflags` -g -O2
 sdlr3:LDFLAGS+=`sdl-config --libs`
+sdlr3:sdlr3.c
+	$(CC) -o $@ $(CFLAGS) $^ $(LDFLAGS)
 
 clean:
 	$(RM) $(TARGET)
