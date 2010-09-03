@@ -5,7 +5,11 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#ifdef USETIMEOFDAY
+#include <sys/time.h>
+#else
 #include <time.h>
+#endif
 
 #ifdef WIN32
 #include <windows.h>
@@ -499,7 +503,14 @@ int main( int argc, char *argv[])
 	the_winw = winw; the_winh = winh;
 	printf( "w=%lu h=%lu winw=%.2f winh=%.2f vx=%f vy=%f vz=%f level_max=%d\n", w, h, winw, winh, vx, vy, vz, level_max);
 	unsigned long i, j;
-	unsigned long old_t = time( 0);
+	double old_t;
+#ifndef USETIMEOFDAY
+	old_t = time( 0);
+#else
+	struct timeval tv;
+	gettimeofday( &tv, 0);
+	old_t = tv.tv_sec + tv.tv_usec / 1000000.0;
+#endif
 	for (j = 0; j < h; j++)
 	{
 		double _vx, _vy, _vz;
@@ -556,7 +567,13 @@ int main( int argc, char *argv[])
 			printf( "\n");
 		dprintf( "\n");
 	}
-	unsigned long cur_t = time( 0);
+	double cur_t;
+#ifndef USETIMEOFDAY
+	cur_t = time( 0);
+#else
+	gettimeofday( &tv, 0);
+	cur_t = tv.tv_sec + tv.tv_usec / 1000000.0;
+#endif
 	printf( "\n");
 	if (do_tga)
 	{
@@ -573,11 +590,11 @@ int main( int argc, char *argv[])
 	dprintf( "tga_index=%lu\n", (unsigned long)tga_index);
 	printf( "traced=%lu intersected=%lu\n", traced, intersected);
 	printf( "reflected=%lu level_max=%d level_max_reached=%d\n", reflected, level_max, level_max_reached);
-	unsigned long duration = cur_t - old_t;
+	double duration = cur_t - old_t;
 	if (!duration)
 		duration = 1;
 	unsigned long perf = (w * h) / duration;
-	printf( "perf : %lu ray/s duration=%lus (old_t=%lu cur_t=%lu)\n", perf, duration, old_t, cur_t);
+	printf( "perf : %lu ray/s duration=%.2fs (old_t=%.2f cur_t=%.2f)\n", perf, duration, old_t, cur_t);
 	
 	return 0;
 }
