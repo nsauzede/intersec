@@ -48,7 +48,7 @@ sphere_t spheres[] = {
 	{ .cx = 0.5, .cy = -0.05, .cz = -0.7, .sr = 0.2, .r = 0.1, .g = 0.1, .b = 1.0, .rdatt = D, .gdatt = D, .bdatt = D, .rratt = R, .gratt = R, .bratt = R },
 	{ .cx = 0.0, .cy = 0.0, .cz = 0.0, .sr = 0.03, .r = 1.0, .g = 1.0, .b = 1.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #endif
-#define RFL 1.0
+#define RFL 0.0
 #define RFR 1.0
 	{ .cx = 0.0, .cy = 0.0, .cz = 0.3, .sr = 0.1, .r = 1.0, .g = 1.0, .b = 1.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = RFL, .gratt = RFL, .bratt = RFL, .rfatt = RFR, .gfatt = RFR, .bfatt = RFR },
 #elif 1
@@ -435,21 +435,27 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 			batt *= loss;
 			
 			refracted++;
-#if 0
+#if 1
 // normal at intersec
-		nvx = spheres[smin].cx - rx;
-		nvy = spheres[smin].cy - ry;
-		nvz = spheres[smin].cz - rz;
+		nvx = rx - spheres[smin].cx;
+		nvy = ry - spheres[smin].cy;
+		nvz = rz - spheres[smin].cz;
 		n = sqrt( nvx * nvx + nvy * nvy + nvz * nvz);
 		nvx /= n;
 		nvy /= n;
 		nvz /= n;
 
 		double dot = 1.0;
-		dot = (_vx * nvx + _vy * nvy + _vz * nvz);
-		rvx = 2 * dot * nvx - _vx;
-		rvy = 2 * dot * nvy - _vy;
-		rvz = 2 * dot * nvz - _vz;
+		dot = (-_vx * nvx + -_vy * nvy + -_vz * nvz);
+		rvx = -dot * nvx - _vx;
+		rvy = -dot * nvy - _vy;
+		rvz = -dot * nvz - _vz;
+		rvx *= -0.5;
+		rvy *= -0.5;
+		rvz *= -0.5;
+		rvx += _vx;
+		rvy += _vy;
+		rvz += _vz;
 		n = sqrt( rvx * rvx + rvy * rvy + rvz * rvz);
 		rvx /= n;
 		rvy /= n;
