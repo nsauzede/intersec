@@ -35,13 +35,14 @@ typedef struct {
 	double rdatt, gdatt, bdatt;		// diffuse
 	double rratt, gratt, bratt;		// reflection
 	double rfatt, gfatt, bfatt;		// refraction
+	double rindex;					// refraction index
 } sphere_t;
 
 sphere_t spheres[] = {
 #if 1
 #if 1
 	{ .cx = 0.05, .cy = 0.3, .cz = -0.8, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
-#define D1 0.5
+#define D1 1.0
 	{ .cx = -0.2, .cy = -0.1, .cz = -0.6, .sr = 0.1, .r = 0.0, .g = 1.0, .b = 0.0, .rdatt = D1, .gdatt = D1, .bdatt = D1, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #define D 0.8
 #define R 0.0
@@ -50,7 +51,8 @@ sphere_t spheres[] = {
 #endif
 #define RFL 0.0
 #define RFR 1.0
-	{ .cx = 0.0, .cy = 0.0, .cz = 0.3, .sr = 0.1, .r = 1.0, .g = 1.0, .b = 1.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = RFL, .gratt = RFL, .bratt = RFL, .rfatt = RFR, .gfatt = RFR, .bfatt = RFR },
+#define RINDEX 1.0
+	{ .cx = 0.0, .cy = 0.0, .cz = 0.3, .sr = 0.1, .r = 1.0, .g = 1.0, .b = 1.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = RFL, .gratt = RFL, .bratt = RFL, .rfatt = RFR, .gfatt = RFR, .bfatt = RFR, .rindex = RINDEX },
 #elif 1
 #define SR 0.05
 #define R 0.4
@@ -304,6 +306,7 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 	double rdatt = 0.0, gdatt = 0.0, bdatt = 0.0;	// diffuse
 	double rratt = 0.0, gratt = 0.0, bratt = 0.0;	// reflected
 	double rfatt = 0.0, gfatt = 0.0, bfatt = 0.0;	// refracted
+	double rindex = 0.0;
 	
 	for (s = 0; s < nsph; s++)
 	{
@@ -334,6 +337,7 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 				rfatt = spheres[s].rfatt;
 				gfatt = spheres[s].gfatt;
 				bfatt = spheres[s].bfatt;
+				rindex = spheres[s].rindex;
 //				pix = '0' + s;
 				if (spheres[s].r > 0)
 					*pix = 'r';
@@ -450,9 +454,9 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 		rvx = -dot * nvx - _vx;
 		rvy = -dot * nvy - _vy;
 		rvz = -dot * nvz - _vz;
-		rvx *= -0.5;
-		rvy *= -0.5;
-		rvz *= -0.5;
+		rvx *= 1.0 - rindex;
+		rvy *= 1.0 - rindex;
+		rvz *= 1.0 - rindex;
 		rvx += _vx;
 		rvy += _vy;
 		rvz += _vz;
