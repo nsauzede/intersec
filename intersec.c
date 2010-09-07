@@ -41,7 +41,7 @@ typedef struct {
 } sphere_t;
 
 sphere_t spheres[] = {
-#if 0
+#if 1
 #if 1
 	{ .cx = 0.05, .cy = 0.3, .cz = -0.8, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #define D1 1.0
@@ -105,7 +105,7 @@ sphere_t spheres[] = {
 #define CY 0.013*WINSCALE
 #define CZ 0.05*WINSCALE
 #undef Z
-#define Z 3
+#define Z 1
 	{ .cx = -11*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -9*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = 0*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
@@ -113,7 +113,7 @@ sphere_t spheres[] = {
 	{ .cx = 11*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 
 #undef Z
-#define Z 2
+#define Z 1
 	{ .cx = -11*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -7*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -2*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
@@ -131,7 +131,7 @@ sphere_t spheres[] = {
 	{ .cx = 9*CX, .cy = -15*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 
 #undef Z
-#define Z 0
+#define Z 1
 	{ .cx = -11*CX, .cy = -20*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -7*CX, .cy = -20*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -2*CX, .cy = -20*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
@@ -339,7 +339,8 @@ int level_max_reached = -1;
 int level_max = LEV_MAX;
 int traceray( int level, double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b, char *pix, double ratt, double gatt, double batt)
 {
-	traced++;
+	if (level == 0)
+		traced++;
 	if (level > level_max_reached)
 		level_max_reached = level;
 	unsigned long smin = -1, s;
@@ -406,7 +407,8 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 		double rrefl = 0.0, grefl = 0.0, brefl = 0.0;
 		double rrefr = 0.0, grefr = 0.0, brefr = 0.0;
 	
-		intersected++;
+		if (level > 0)
+			intersected++;
 //		printf( "object\n");
 // compute intersections here
 		double rx, ry, rz, rx2, ry2, rz2;		// coord of intersec
@@ -445,8 +447,9 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 			ratt *= loss;
 			gatt *= loss;
 			batt *= loss;
-			
-			reflected++;
+		
+			if (level > 0)
+				reflected++;
 // normal at intersec
 		nvx = rx - spheres[smin].cx;
 		nvy = ry - spheres[smin].cy;
@@ -479,8 +482,9 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 			ratt *= loss;
 			gatt *= loss;
 			batt *= loss;
-			
-			refracted++;
+		
+			if (level > 0)
+				refracted++;
 #if 1
 // normal at intersec
 		nvx = rx - spheres[smin].cx;
@@ -532,6 +536,34 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 	*r = rmin;
 	*g = gmin;
 	*b = bmin;
+	return 0;
+}
+
+int stats()
+{
+	double cur_t;
+#ifndef USETIMEOFDAY
+	cur_t = time( 0);
+#else
+	struct timeval tv;
+	gettimeofday( &tv, 0);
+	cur_t = tv.tv_sec + tv.tv_usec / 1000000.0;
+#endif
+	static double old_t = SMALL / 2;
+	if (old_t <= SMALL)
+		old_t = cur_t;
+	printf( " trcd=%lu intr=%lu ", traced, intersected);
+	printf( "refl=%lu refr=%lu MAX=%d max=%d ", reflected, refracted, level_max, level_max_reached);
+	double duration = cur_t - old_t;
+	unsigned long last_traced = 0;
+	unsigned long perf = (traced - last_traced) / duration;
+	if (duration > 0)
+	{
+		printf( "- %lu ray/s dur=%.2fs", perf, duration);
+	}
+	printf( "\n");
+//	old_t = cur_t;
+	last_traced = traced;
 	return 0;
 }
 
@@ -617,6 +649,8 @@ int main( int argc, char *argv[])
 	printf( "w=%lu h=%lu winw=%.2f winh=%.2f vx=%f vy=%f vz=%f level_max=%d\n", w, h, winw, winh, vx, vy, vz, level_max);
 	unsigned long i, j;
 	double old_t;
+	double last_t;
+	double cur_t;
 #ifndef USETIMEOFDAY
 	old_t = time( 0);
 #else
@@ -624,6 +658,7 @@ int main( int argc, char *argv[])
 	gettimeofday( &tv, 0);
 	old_t = tv.tv_sec + tv.tv_usec / 1000000.0;
 #endif
+	last_t = old_t;
 	for (j = 0; j < h; j++)
 	{
 		double _vx, _vy, _vz;
@@ -633,14 +668,24 @@ int main( int argc, char *argv[])
 
 		for (i = 0; ; i++)
 		{
+#ifndef USETIMEOFDAY
+			cur_t = time( 0);
+#else
+			gettimeofday( &tv, 0);
+			cur_t = tv.tv_sec + tv.tv_usec / 1000000.0;
+#endif
 			int percent = (double)100.0 * (j * w + i) / (w * h);
 			static int old_percent = -1;
-			if (percent != old_percent)
+			if ((percent != old_percent) || (cur_t >= (last_t + 1)))
 			{
+				if (cur_t >= (last_t + 1))
+					last_t = cur_t;
 				old_percent = percent;
 				if (!(old_percent % 10))
 				{
-					printf( " %d%%", old_percent);fflush( stdout);
+					printf( " %d%%", old_percent);
+					stats();
+					fflush( stdout);
 				}
 			}
 			if (i >= w)
@@ -682,7 +727,6 @@ int main( int argc, char *argv[])
 			printf( "\n");
 		//dprintf( "\n");
 	}
-	double cur_t;
 #ifndef USETIMEOFDAY
 	cur_t = time( 0);
 #else
