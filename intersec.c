@@ -23,6 +23,8 @@
 #define SMALL	0.001
 #define BIG		10.0
 
+#define WINSCALE 1.0
+
 #ifdef DEBUG
 #define dprintf(...) do{printf(__VA_ARGS__);}while(0)
 #else
@@ -39,7 +41,7 @@ typedef struct {
 } sphere_t;
 
 sphere_t spheres[] = {
-#if 1
+#if 0
 #if 1
 	{ .cx = 0.05, .cy = 0.3, .cz = -0.8, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #define D1 1.0
@@ -55,73 +57,91 @@ sphere_t spheres[] = {
 	{ .cx = 0.0, .cy = 0.0, .cz = 0.3, .sr = 0.1, .r = 1.0, .g = 1.0, .b = 1.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = RFL, .gratt = RFL, .bratt = RFL, .rfatt = RFR, .gfatt = RFR, .bfatt = RFR, .rindex = RINDEX },
 #elif 1
 #define SR 0.05
-#define R 0.4
-#define G 0.4
-#define B 0.4
-#define CX 0.05
-#define CY 0.08
-#define CZ 0.1
+#define R 1.0
+#define G 1.0
+#define B 1.0
+#define Z 0
+#define CX 0.05*WINSCALE
+#define CY 0.08*WINSCALE
+#define CZ 0.1*WINSCALE
+//	{ .cx = 0*CX, .cy = 0*CY, .cz = -50*CZ, .sr = 5.0*WINSCALE, .r = 1*R, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #if 1 /* ioccc ray */
-	{ .cx = -7*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = B },
-	{ .cx = -3*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = 1*G, .b = B },
-	{ .cx = 2*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = 1*B },
-	{ .cx = 5*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = B },
-	{ .cx = 8*CX, .cy = 5*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = 1*G, .b = B },
+	{ .cx = -7*CX, .cy = 4*CY, .cz = Z*CZ, .sr = SR, .r = 1*R, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = -3*CX, .cy = 4*CY, .cz = Z*CZ, .sr = SR, .r = 1*R, .g = 1*G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 2*CX, .cy = 4*CY, .cz = Z*CZ, .sr = SR, .r = 1*R, .g = G, .b = 1*B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 5*CX, .cy = 4*CY, .cz = Z*CZ, .sr = SR, .r = 1*R, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 8*CX, .cy = 4*CY, .cz = Z*CZ, .sr = SR, .r = 1*R, .g = 1*G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 
-	{ .cx = -7*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = 1*B },
-	{ .cx = -4*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = 1*G, .b = B },
-	{ .cx = -2*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = B },
-	{ .cx = 1*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = 1*B },
-	{ .cx = 4*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = 1*G, .b = B },
-	{ .cx = 7*CX, .cy = 4*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = B },
+	{ .cx = -7*CX, .cy = 3*CY, .cz = Z*CZ, .sr = SR, .r = R, .g = 1*G, .b = 1*B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = -4*CX, .cy = 3*CY, .cz = Z*CZ, .sr = SR, .r = 1*R, .g = 1*G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = -2*CX, .cy = 3*CY, .cz = Z*CZ, .sr = SR, .r = R, .g = 1*G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 1*CX, .cy = 3*CY, .cz = Z*CZ, .sr = SR, .r = R, .g = 1*G, .b = 1*B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 4*CX, .cy = 3*CY, .cz = Z*CZ, .sr = SR, .r = 1*R, .g = 1*G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 7*CX, .cy = 3*CY, .cz = Z*CZ, .sr = SR, .r = R, .g = 1*G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 
-	{ .cx = -7*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 1*B },
-	{ .cx = -4*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = 1*B },
-	{ .cx = -2*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = 1*B },
-	{ .cx = 1*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 1*B },
-	{ .cx = 4*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = 1*B },
-	{ .cx = 7*CX, .cy = 3*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = 1*B },
+	{ .cx = -7*CX, .cy = 2*CY, .cz = Z*CZ, .sr = SR, .r = R, .g = G, .b = 1*B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = -4*CX, .cy = 2*CY, .cz = Z*CZ, .sr = SR, .r = 1*R, .g = G, .b = 1*B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = -2*CX, .cy = 2*CY, .cz = Z*CZ, .sr = SR, .r = R, .g = 1*G, .b = 1*B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 1*CX, .cy = 2*CY, .cz = Z*CZ, .sr = SR, .r = R, .g = G, .b = 1*B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 4*CX, .cy = 2*CY, .cz = Z*CZ, .sr = SR, .r = 1*R, .g = G, .b = 1*B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 7*CX, .cy = 2*CY, .cz = Z*CZ, .sr = SR, .r = R, .g = 1*G, .b = 1*B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 
-	{ .cx = -7*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 1*B },
-	{ .cx = -3*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = B },
-	{ .cx = 2*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = 1*G, .b = B },
-	{ .cx = 5*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = R, .g = G, .b = 1*B },
-	{ .cx = 8*CX, .cy = 2*CY, .cz = 0*CZ, .sr = SR, .r = 1*R, .g = G, .b = B },
+	{ .cx = -7*CX, .cy = 1*CY, .cz = Z*CZ, .sr = SR, .r = R, .g = G, .b = 1*B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = -3*CX, .cy = 1*CY, .cz = Z*CZ, .sr = SR, .r = 1*R, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 2*CX, .cy = 1*CY, .cz = Z*CZ, .sr = SR, .r = R, .g = 1*G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 5*CX, .cy = 1*CY, .cz = Z*CZ, .sr = SR, .r = R, .g = G, .b = 1*B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 8*CX, .cy = 1*CY, .cz = Z*CZ, .sr = SR, .r = 1*R, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 
 #undef CX
 #undef CY
-#define CX 0.025
-#define CY 0.013
-	{ .cx = -10*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
-	{ .cx = -8*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
-	{ .cx = 1*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
-	{ .cx = 8*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
-	{ .cx = 13*CX, .cy = 0*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
+#undef CZ
+#undef R
+#undef G
+#undef B
+#define R 0.0
+#define G 0.0
+#define B 0.0
+#define CX 0.025*WINSCALE
+#define CY 0.013*WINSCALE
+#define CZ 0.05*WINSCALE
+#undef Z
+#define Z 0
+	{ .cx = -11*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = -9*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 0*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 7*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 11*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 
-	{ .cx = -10*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
-	{ .cx = -6*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
-	{ .cx = -1*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
-	{ .cx = 3*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
-	{ .cx = 8*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
-	{ .cx = 13*CX, .cy = -5*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
+#undef Z
+#define Z 0
+	{ .cx = -11*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = -7*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = -2*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 2*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 7*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 11*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 
-	{ .cx = -10*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
-	{ .cx = -8*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
-	{ .cx = -1*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
-	{ .cx = 1*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
-	{ .cx = 3*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
-	{ .cx = 10*CX, .cy = -10*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
+#undef Z
+#define Z 0
+	{ .cx = -11*CX, .cy = -15*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = -9*CX, .cy = -15*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = -2*CX, .cy = -15*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 0*CX, .cy = -15*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 2*CX, .cy = -15*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 9*CX, .cy = -15*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 
-	{ .cx = -10*CX, .cy = -15*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
-	{ .cx = -6*CX, .cy = -15*CY, .cz = 0*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B },
-	{ .cx = -1*CX, .cy = -15*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
-	{ .cx = 3*CX, .cy = -15*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B },
-	{ .cx = 10*CX, .cy = -15*CY, .cz = 0*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1 },
+#undef Z
+#define Z 0
+	{ .cx = -11*CX, .cy = -20*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = -7*CX, .cy = -20*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = -2*CX, .cy = -20*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 2*CX, .cy = -20*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 9*CX, .cy = -20*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #endif
 #else
-	{ .cx = 0.0, .cy = -0.1, .cz = 0.0, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0 },
-	{ .cx = 0.0, .cy = 0.1, .cz = 0.0, .sr = 0.2, .r = 0.0, .g = 1.0, .b = 0.0 },
-	{ .cx = 0.0, .cy = 0.4, .cz = 0.0, .sr = 0.2, .r = 0.0, .g = 0.0, .b = 1.0 },
+	{ .cx = 0.0, .cy = -0.1, .cz = 0.0, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 0.0, .cy = 0.1, .cz = 0.0, .sr = 0.2, .r = 0.0, .g = 1.0, .b = 0.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
+	{ .cx = 0.0, .cy = 0.4, .cz = 0.0, .sr = 0.2, .r = 0.0, .g = 0.0, .b = 1.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #endif
 };
 int nsph = sizeof (spheres) / sizeof (spheres[0]);
@@ -203,67 +223,89 @@ int intersec_sphere( double cx, double cy, double cz, double sr, double ex, doub
 #define ATT_MIN 0.001
 #define LEV_MAX -1
 
-unsigned long the_winw, the_winh;
-int sky_color( double ex, double ey, double ez, double _vx, double _vy, double _vz, double *_r, double *_g, double *_b)
+int sky_color( int level, double ex, double ey, double ez, double _vx, double _vy, double _vz, double *_r, double *_g, double *_b)
 {
 	double rmin = 0, gmin = 0, bmin = 0;
 #ifdef USE_SKY
 	double coef2;
-	double th, ph, n;
+	double th;
+//	double ph;
+	double n = 1;
 	n = sqrt( _vx * _vx + _vy * _vy + _vz * _vz);
-	ph = asin( _vx / n) * 180 / M_PI;
-	th = acos( _vy / n) * 180 / M_PI;
-	coef2 = (fmod( th, 180)) / 180;
-//	coef2 = 1.0 - (_vy + 0.5) / (the_winh);
+	th = asin( _vy / n) * 180 / M_PI;
+//	th = acos( _vx / n) * 180 / M_PI;
+//	th = atan( _vy / _vx) * 180 / M_PI;
+#define THR 180
+	double thr = THR;
+#if 1
+	if (level == 0)
+	{
+		thr /= 3;
+		coef2 = (fmod( fabs( th - thr / 2) , thr)) / thr;
+	}
+	else
+#endif
+	coef2 = (fmod( fabs( th - thr / 2) , thr)) / thr;
 	double a, b;
 	double x1, x2, y1, y2;
 	if (coef2 <= 0.333)
 	{
 		x1 = 0; x2 = 0.333;
-		y1 = 6; y2 = 255;
-		a = x2 - x1;
 		coef2 -= x1;
-		b = y1 - a * x1;
+
+		y1 = 6; y2 = 255;
+		a = (y2 - y1) / (x2 - x1);
+		b = y1;
 		rmin = a * coef2 + b;
+
 		y1 = 105; y2 = 255;
-		b = y1 - a * x1;
+		a = (y2 - y1) / (x2 - x1);
+		b = y1;
 		gmin = a * coef2 + b;
+
 		y1 = 155; y2 = 255;
-		b = y1 - a * x1;
+		a = (y2 - y1) / (x2 - x1);
+		b = y1;
 		bmin = a * coef2 + b;
 	}
 	else if (coef2 <= 0.666)
 	{
 		x1 = 0.333; x2 = 0.666;
-		y1 = 255; y2 = 218;
 		coef2 -= x1;
-		a = x2 - x1;
-		b = y1 - a * x1;
+
+		y1 = 255; y2 = 218;
+		a = (y2 - y1) / (x2 - x1);
+		b = y1;
 		rmin = a * coef2 + b;
+
 		y1 = 255; y2 = 178;
-		a = x2 - x1;
-		b = y1 - a * x1;
+		a = (y2 - y1) / (x2 - x1);
+		b = y1;
 		gmin = a * coef2 + b;
+
 		y1 = 255; y2 = 127;
-		a = x2 - x1;
-		b = y1 - a * x1;
+		a = (y2 - y1) / (x2 - x1);
+		b = y1;
 		bmin = a * coef2 + b;
 	}
 	else if (coef2 <= 1.0)
 	{
 		x1 = 0.666; x2 = 1.0;
-		y1 = 218; y2 = 103;
 		coef2 -= x1;
-		a = x2 - x1;
-		b = y1 - a * x1;
+
+		y1 = 218; y2 = 103;
+		a = (y2 - y1) / (x2 - x1);
+		b = y1;
 		rmin = a * coef2 + b;
+
 		y1 = 178; y2 = 55;
-		a = x2 - x1;
-		b = y1 - a * x1;
+		a = (y2 - y1) / (x2 - x1);
+		b = y1;
 		gmin = a * coef2 + b;
+
 		y1 = 127; y2 = 26;
-		a = x2 - x1;
-		b = y1 - a * x1;
+		a = (y2 - y1) / (x2 - x1);
+		b = y1;
 		bmin = a * coef2 + b;
 	}
 	else
@@ -352,7 +394,7 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 	}
 	if (tmin >= BIG)	// sky
 	{
-		sky_color( ex, ey, ez, _vx, _vy, _vz, &rmin, &gmin, &bmin);
+		sky_color( level, ex, ey, ez, _vx, _vy, _vz, &rmin, &gmin, &bmin);
 #if 1
 		if (level > 0)
 			dprintf( "sky color %f %f %f\n", rmin, gmin, bmin);
@@ -497,11 +539,11 @@ int main( int argc, char *argv[])
 {
 	double ex, ey, ez, vx, vy, vz;
 	
-	ex = 0; ey = 0; ez = 1; vx = 0.0; vy = 0.0; vz = -1;
+	ex = 0*WINSCALE; ey = 0*WINSCALE; ez = 1*WINSCALE; vx = 0.0; vy = 0.0; vz = -1*WINSCALE;
 	unsigned long w, h;
 	w = W; h = H;
 	double winw, winh;
-	double winscale = 1.0;
+	double winscale = WINSCALE;
 	int do_tga = 1;
 	int do_txt = 0;
 	int bpp = 24;
@@ -572,7 +614,6 @@ int main( int argc, char *argv[])
 		printf( "eye: e(%f;%f;%f) v(%f;%f;%f)\n", ex, ey, ez, vx, vy, vz);
 	}
 	
-	the_winw = winw; the_winh = winh;
 	printf( "w=%lu h=%lu winw=%.2f winh=%.2f vx=%f vy=%f vz=%f level_max=%d\n", w, h, winw, winh, vx, vy, vz, level_max);
 	unsigned long i, j;
 	double old_t;
