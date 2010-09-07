@@ -105,7 +105,7 @@ sphere_t spheres[] = {
 #define CY 0.013*WINSCALE
 #define CZ 0.05*WINSCALE
 #undef Z
-#define Z 0
+#define Z 3
 	{ .cx = -11*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -9*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = 0*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
@@ -113,7 +113,7 @@ sphere_t spheres[] = {
 	{ .cx = 11*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 
 #undef Z
-#define Z 0
+#define Z 2
 	{ .cx = -11*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -7*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -2*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
@@ -122,7 +122,7 @@ sphere_t spheres[] = {
 	{ .cx = 11*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 
 #undef Z
-#define Z 0
+#define Z 1
 	{ .cx = -11*CX, .cy = -15*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -9*CX, .cy = -15*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -2*CX, .cy = -15*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
