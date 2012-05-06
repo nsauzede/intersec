@@ -1,3 +1,9 @@
+/*
+ * intersec : small naive ray tracer
+ * copyright 2012 Nicolas Sauzede (nsauzede@laposte.net)
+ * This code is GPLv3
+ *
+ */
 #include <stdio.h>
 #include <math.h>
 #include <unistd.h>
@@ -18,8 +24,18 @@
 #include <sys/mman.h>
 #endif
 
+#ifdef USE_SDL
+#include <SDL.h>
+#endif
+
+#if 0
 #define W 60
 #define H 60
+#else
+#define W 640
+#define H 480
+#endif
+
 #define SMALL	0.001
 #define BIG		10.0
 
@@ -569,6 +585,10 @@ int stats()
 
 int main( int argc, char *argv[])
 {
+#ifdef USE_SDL
+	SDL_Surface *screen = 0;
+	int do_sdl = 1;
+#endif
 	double ex, ey, ez, vx, vy, vz;
 	
 	ex = 0*WINSCALE; ey = 0*WINSCALE; ez = 1*WINSCALE; vx = 0.0; vy = 0.0; vz = -1*WINSCALE;
@@ -597,6 +617,15 @@ int main( int argc, char *argv[])
 			}
 		}
 	}
+#ifdef USE_SDL
+	if (do_sdl)
+	{
+		SDL_Init( SDL_INIT_VIDEO);
+		screen = SDL_SetVideoMode( w, h, bpp, 0);
+		if (screen)
+			atexit( SDL_Quit);
+	}
+#endif
 	winw = 1.0 * winscale; winh = winw * h / w;
 	if (do_tga)
 	{
@@ -687,6 +716,12 @@ int main( int argc, char *argv[])
 					stats();
 					fflush( stdout);
 				}
+#ifdef USE_SDL
+				if (screen)
+				{
+					SDL_UpdateRect( screen, 0, 0, 0, 0);
+				}
+#endif
 			}
 			if (i >= w)
 				break;
@@ -697,6 +732,22 @@ int main( int argc, char *argv[])
 			double r = 0.0, g = 0.0, b = 0.0;
 
 			traceray( 0, ex, ey, ez, _vx, _vy, _vz, &r, &g, &b, &pix, 1.0, 1.0, 1.0);
+			unsigned char cr, cg, cb;
+			cr = (double)255 * r;
+			cg = (double)255 * g;
+			cb = (double)255 * b;
+#ifdef USE_SDL
+			if (screen)
+			{
+				Uint32 col;
+				SDL_Rect rect;
+				rect.x = i;
+				rect.y = j;
+				rect.w = rect.h = 1;
+				col = SDL_MapRGB( screen->format, cr, cg, cb);
+				SDL_FillRect( screen, &rect, col);
+			}
+#endif
 			//dprintf( "  (r=%f g=%f b=%f)", r, g, b);
 			if (do_tga)
 			{
@@ -710,10 +761,6 @@ int main( int argc, char *argv[])
 				}
 				count++;
 #endif
-				unsigned char cr, cg, cb;
-				cr = (double)255 * r;
-				cg = (double)255 * g;
-				cb = (double)255 * b;
 			//	dprintf( "{%02x:%02x:%02x}", cr, cg, cb);
 				TGA_BYTE( cb);
 				TGA_BYTE( cg);
@@ -754,6 +801,18 @@ int main( int argc, char *argv[])
 		duration = 1;
 	unsigned long perf = (w * h) / duration;
 	printf( "perf : %lu ray/s duration=%.2fs (old_t=%.2f cur_t=%.2f)\n", perf, duration, old_t, cur_t);
+#ifdef USE_SDL
+	if (screen)
+	{
+		SDL_Event event;
+		while (1)
+		{
+			SDL_WaitEvent( &event);
+			if (event.type == SDL_QUIT)
+				break;
+		}
+	}
+#endif
 	
 	return 0;
 }
