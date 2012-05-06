@@ -805,11 +805,24 @@ int main( int argc, char *argv[])
 	if (screen)
 	{
 		SDL_Event event;
-		while (1)
+		int end = 0;
+		while (!end)
 		{
 			SDL_WaitEvent( &event);
-			if (event.type == SDL_QUIT)
-				break;
+			switch (event.type)
+			{
+				case SDL_QUIT:
+					end = 1;
+					break;
+				case SDL_KEYDOWN:
+					end = 1;
+					break;
+				case SDL_MOUSEBUTTONDOWN:
+					end = 1;
+					break;
+				default:
+					break;
+			}
 		}
 	}
 #endif
