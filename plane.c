@@ -1,15 +1,17 @@
 #include <stdio.h>
 #include <math.h>
 
+#define dprintf(...) do{}while(0)
+
 typedef double v3[3];
 
 // plane : (p - po) . n = 0
 // line : p = dl + l0
-int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *t)
+int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 {
 	int result = 0;
-	printf( "l0 is %f,%f,%f l is %f,%f,%f\n", l0[0], l0[1], l0[2], l[0], l[1], l[2]);
-	printf( "p0 is %f,%f,%f p1 is %f,%f,%f p2 is %f,%f,%f\n", p0[0], p0[1], p0[2], p1[0], p1[1], p1[2], p2[0], p2[1], p2[2]);
+	dprintf( "l0 is %f,%f,%f l is %f,%f,%f\n", l0[0], l0[1], l0[2], l[0], l[1], l[2]);
+	dprintf( "p0 is %f,%f,%f p1 is %f,%f,%f p2 is %f,%f,%f\n", p0[0], p0[1], p0[2], p1[0], p1[1], p1[2], p2[0], p2[1], p2[2]);
 	// plane normal :
 	v3 v1, v2;
 	v1[0] = p1[0] - p0[0];
@@ -18,7 +20,7 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *t)
 	v2[0] = p2[0] - p0[0];
 	v2[1] = p2[1] - p0[1];
 	v2[2] = p2[2] - p0[2];
-	printf( "v1 is %f,%f,%f v2 is %f,%f,%f\n", v1[0], v1[1], v1[2], v2[0], v2[1], v2[2]);
+	dprintf( "v1 is %f,%f,%f v2 is %f,%f,%f\n", v1[0], v1[1], v1[2], v2[0], v2[1], v2[2]);
 	v3 n;
 	n[0] = v1[1] * v2[2] - v1[2] * v2[1];
 	n[1] = v1[2] * v2[0] - v1[0] * v2[2];
@@ -28,7 +30,7 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *t)
 	n[0] /= nn;
 	n[1] /= nn;
 	n[2] /= nn;
-	printf( "normal is %f,%f,%f\n", n[0], n[1], n[2]);
+	dprintf( "normal is %f,%f,%f\n", n[0], n[1], n[2]);
 	// t = ((p0 - l0) . n) / (l . n)
 	double num;
 	v3 p;
@@ -36,29 +38,31 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *t)
 	p[1] = p0[1] - l0[1];
 	p[2] = p0[2] - l0[2];
 	num = p[0] * n[0] + p[1] * n[1] + p[2] * n[2];
-	printf( "num is %f\n", num);
+	dprintf( "num is %f\n", num);
 	double den;
 	den = l[0] * n[0] + l[1] * n[1] + l[2] * n[2];
-	printf( "den is %f\n", den);
+	dprintf( "den is %f\n", den);
 	if (den == 0)
 	{
 		if (num == 0)
 		{
-			printf( "all intersections\n");
+			dprintf( "all intersections\n");
 		}
 		else
 		{
-			printf( "no intersections\n");
+			dprintf( "no intersections\n");
 		}
 	}
 	else
 	{
+#if 0
 		double _t = num / den;
-		printf( "one intersection at %f\n", _t);
+		dprintf( "one intersection at %f\n", _t);
 		double x = l0[0] + _t * l[0];
 		double y = l0[1] + _t * l[1];
 		double z = l0[2] + _t * l[2];
-		printf( "inters is %f,%f,%f\n", x, y, z);
+		dprintf( "inters is %f,%f,%f\n", x, y, z);
+#endif
 		double det;
 		double a, b, c, d, e, f, g, h, i;
 		v3 lb;
@@ -75,7 +79,7 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *t)
 		h = p1[2] - p0[2];
 		i = p2[2] - p0[2];
 		det = a * (e * i - f * h) - b * (i * d - f * g) + c * (d * h - e * g);
-		printf( "det=%f\n", det);
+		dprintf( "det=%f\n", det);
 		if (det > 0.001) // matrix is invertible
 		{
 			double A, B, C, D, E, F, G, H, I;
@@ -88,19 +92,19 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *t)
 			G = (b * f - c * e);
 			H = -(a * f - c * d);
 			I = (a * e - b * d);
-			double tt, u = 0, v = 0;
+			double t, u = 0, v = 0;
 			// p=p0+u*v1+v*v2
-			tt = (A * (l0[0] - p0[0]) + D * (l0[1] - p0[1]) + G * (l0[2] - p0[2])) / det;
+			t = (A * (l0[0] - p0[0]) + D * (l0[1] - p0[1]) + G * (l0[2] - p0[2])) / det;
 			u = (B * (l0[0] - p0[0]) + E * (l0[1] - p0[1]) + H * (l0[2] - p0[2])) /det;
 			v = (C * (l0[0] - p0[0]) + F * (l0[1] - p0[1]) + I * (l0[2] - p0[2])) / det;
-			printf( "tt=%f u=%f v=%f\n", tt, u, v);
+			dprintf( "t=%f u=%f v=%f\n", t, u, v);
 			if ((u >= 0 && u <= 1) && (v >= 0 && v <= 1) && ((u + v) <= 1))
 			{
-				printf( "inters inside triangle, yay !\n");
-				if (_t > 1) // _t must not be too small
+				dprintf( "inters inside triangle, yay !\n");
+				if (t > 1) // _t must not be too small
 				{
-					if (t)
-						*t = _t;
+					if (pt)
+						*pt = t;
 					result = 1;
 				}
 			}
@@ -115,17 +119,36 @@ int main()
 	v3 p0 = { 1, 0, 0 };
 	v3 p1 = { 0, 1, 0 };
 	v3 p2 = { 0, 0, 1 };
-	v3 e = { 4, 5, 5 };
+	v3 e = { 5, 5, 5 };
 	v3 v = { -1, -1, -1 };
 	double t = 0;
-	int res = intersec_plane( p0, p1, p2, e, v, &t);
-	printf( "result=%d t=%f\n", res, t);
-	if (res)
+	int i, j, w, h;
+	w = 20;
+	h = 20;
+	for (j = 0; j < h; j++)
 	{
-		double x = e[0] + t * v[0];
-		double y = e[1] + t * v[1];
-		double z = e[2] + t * v[2];
-		printf( "inters is %f,%f,%f\n", x, y, z);
+		for (i = 0; i < w; i++)
+		{
+			v3 _v;
+			//_v[0] = v[0] + ((double)i - w / 2) / w;
+			_v[0] = v[0] - 0.5 + (double)1.0 * (double)i / (w - 1);
+			//_v[1] = v[1] + ((double)j - h / 2) / h;
+			_v[1] = v[1] - 0.5 + 1.0 * (double)(h - j - 1) / (h - 1);
+			_v[2] = v[2];
+			int res = intersec_plane( p0, p1, p2, e, _v, &t);
+			dprintf( "result=%d t=%f\n", res, t);
+			if (res)
+			{
+#if 0
+				double x = e[0] + t * v[0];
+				double y = e[1] + t * v[1];
+				double z = e[2] + t * v[2];
+				dprintf( "inters is %f,%f,%f\n", x, y, z);
+#endif
+			}
+			printf( "%c", res ? '1' : '0');
+		}
+		printf( "\n");
 	}
 	return 0;
 }
