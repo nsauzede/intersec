@@ -31,6 +31,18 @@ double dot3( v3 p, v3 n)
 	return p[0] * n[0] + p[1] * n[1] + p[2] * n[2];
 }
 
+double norm3( v3 n)
+{
+	return sqrt( n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);	
+}
+
+void div3( v3 n, double nn)
+{
+	n[0] /= nn;
+	n[1] /= nn;
+	n[2] /= nn;
+}
+
 // plane : (p - po) . n = 0
 // line : p = dl + l0
 int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
@@ -46,10 +58,8 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 	v3 n;
 	cross3( n, v1, v2);
 	double nn;
-	nn = sqrt( n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
-	n[0] /= nn;
-	n[1] /= nn;
-	n[2] /= nn;
+	nn = norm3( n);
+	div3( n, nn);
 	dprintf( "normal is %f,%f,%f\n", n[0], n[1], n[2]);
 	// t = ((p0 - l0) . n) / (l . n)
 	double num;
