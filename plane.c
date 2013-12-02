@@ -146,12 +146,12 @@ int main()
 	v3 p1 = { 0, 1, 0 };
 	v3 p2 = { 0, 0, 1 };
 #define E 2
-	v3 e = { E, E, E };
+	v3 e = { 0, 0, E };
 #define V -1
-	v3 v = { V, V, V };
+	v3 v = { 0, 0, V };
 	int i, j, w, h;
 	w = 40;
-	h = 30;
+	h = 40;
 	for (j = 0; j < h; j++)
 	{
 		for (i = 0; i < w; i++)
@@ -172,8 +172,13 @@ int main()
 			sum3( s1, s0, up);
 			sum3( s2, s0, right);
 			double u, v;
+#if 0
 			v = (double)0.5 - (double)1.0 * (double)i / ((double)w - 1);
 			u = -(double)0.5 + (double)1.0 * (double)(h - j - 1) / ((double)h - 1);
+#else
+			v = -(double)0.5 + (double)1.0 * (double)i / ((double)w - 1);
+			u = -(double)0.5 + (double)1.0 * (double)(h - j - 1) / ((double)h - 1);
+#endif
 			s[0] = s0[0] + (s1[0] - s0[0]) * u + (s2[0] - s0[0]) * v;
 			s[1] = s0[1] + (s1[1] - s0[1]) * u + (s2[1] - s0[1]) * v;
 			s[2] = s0[2] + (s1[2] - s0[2]) * u + (s2[2] - s0[2]) * v;
