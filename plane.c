@@ -5,6 +5,27 @@
 
 typedef double v3[3];
 
+void cross3( v3 dest, v3 src1, v3 src2)
+{
+	dest[0] = src1[1] * src2[2] - src1[2] * src2[1];
+	dest[1] = src1[2] * src2[0] - src1[0] * src2[2];
+	dest[2] = src1[0] * src2[1] - src1[1] * src2[0];
+}
+
+void sum3( v3 dest, v3 src1, v3 src2)
+{
+	dest[0] = src1[0] + src2[0];
+	dest[1] = src1[1] + src2[1];
+	dest[2] = src1[2] + src2[2];
+}
+
+void diff3( v3 dest, v3 src1, v3 src2)
+{
+	dest[0] = src1[0] - src2[0];
+	dest[1] = src1[1] - src2[1];
+	dest[2] = src1[2] - src2[2];
+}
+
 // plane : (p - po) . n = 0
 // line : p = dl + l0
 int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
@@ -14,12 +35,8 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 	dprintf( "p0 is %f,%f,%f p1 is %f,%f,%f p2 is %f,%f,%f\n", p0[0], p0[1], p0[2], p1[0], p1[1], p1[2], p2[0], p2[1], p2[2]);
 	// plane normal :
 	v3 v1, v2;
-	v1[0] = p1[0] - p0[0];
-	v1[1] = p1[1] - p0[1];
-	v1[2] = p1[2] - p0[2];
-	v2[0] = p2[0] - p0[0];
-	v2[1] = p2[1] - p0[1];
-	v2[2] = p2[2] - p0[2];
+	diff3( v1, p1, p0);
+	diff3( v2, p2, p0);
 	dprintf( "v1 is %f,%f,%f v2 is %f,%f,%f\n", v1[0], v1[1], v1[2], v2[0], v2[1], v2[2]);
 	v3 n;
 	n[0] = v1[1] * v2[2] - v1[2] * v2[1];
@@ -34,9 +51,7 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 	// t = ((p0 - l0) . n) / (l . n)
 	double num;
 	v3 p;
-	p[0] = p0[0] - l0[0];
-	p[1] = p0[1] - l0[1];
-	p[2] = p0[2] - l0[2];
+	diff3( p, p0, l0);
 	num = p[0] * n[0] + p[1] * n[1] + p[2] * n[2];
 	dprintf( "num is %f\n", num);
 	double den;
@@ -66,9 +81,7 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 		double det;
 		double a, b, c, d, e, f, g, h, i;
 		v3 lb;
-		lb[0] = l0[0] + l[0];
-		lb[1] = l0[1] + l[1];
-		lb[2] = l0[2] + l[2];
+		sum3( lb, l0, l);
 		a = l0[0] - lb[0];
 		b = p1[0] - p0[0];
 		c = p2[0] - p0[0];
@@ -111,27 +124,6 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 		}
 	}
 	return result;
-}
-
-void cross3( v3 dest, v3 src1, v3 src2)
-{
-	dest[0] = src1[1] * src2[2] - src1[2] * src2[1];
-	dest[1] = src1[2] * src2[0] - src1[0] * src2[2];
-	dest[2] = src1[0] * src2[1] - src1[1] * src2[0];
-}
-
-void sum3( v3 dest, v3 src1, v3 src2)
-{
-	dest[0] = src1[0] + src2[0];
-	dest[1] = src1[1] + src2[1];
-	dest[2] = src1[2] + src2[2];
-}
-
-void diff3( v3 dest, v3 src1, v3 src2)
-{
-	dest[0] = src1[0] - src2[0];
-	dest[1] = src1[1] - src2[1];
-	dest[2] = src1[2] - src2[2];
 }
 
 int main()
