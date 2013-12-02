@@ -1,4 +1,5 @@
 TARGET=intersec.exe
+TARGET+=plane.exe
 
 CFLAGS=-Wall -Werror
 
@@ -56,7 +57,8 @@ intersec.exe: CFLAGS+=-DUSE_SDL
 intersec.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
 intersec.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
 endif
-intersec.exe: intersec.o
+
+%.exe: %.o
 	$(CC) -o $@ $< $(LDFLAGS)
 
 sdlr3:CFLAGS=`$(SDLCONFIG) --cflags` -g -O2

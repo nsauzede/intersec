@@ -113,40 +113,99 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 	return result;
 }
 
+void cross3( v3 dest, v3 src1, v3 src2)
+{
+	dest[0] = src1[1] * src2[2] - src1[2] * src2[1];
+	dest[1] = src1[2] * src2[0] - src1[0] * src2[2];
+	dest[2] = src1[0] * src2[1] - src1[1] * src2[0];
+}
+
+void sum3( v3 dest, v3 src1, v3 src2)
+{
+	dest[0] = src1[0] + src2[0];
+	dest[1] = src1[1] + src2[1];
+	dest[2] = src1[2] + src2[2];
+}
+
+void diff3( v3 dest, v3 src1, v3 src2)
+{
+	dest[0] = src1[0] - src2[0];
+	dest[1] = src1[1] - src2[1];
+	dest[2] = src1[2] - src2[2];
+}
+
 int main()
 {
 	printf( "hello plane\n");
 	v3 p0 = { 1, 0, 0 };
 	v3 p1 = { 0, 1, 0 };
 	v3 p2 = { 0, 0, 1 };
-	v3 e = { 5, 5, 5 };
-	v3 v = { -1, -1, -1 };
-	double t = 0;
+#define E 2
+	v3 e = { E, E, E };
+#define V -1
+	v3 v = { V, V, V };
 	int i, j, w, h;
-	w = 20;
-	h = 20;
+	w = 40;
+	h = 30;
 	for (j = 0; j < h; j++)
 	{
 		for (i = 0; i < w; i++)
 		{
 			v3 _v;
-			//_v[0] = v[0] + ((double)i - w / 2) / w;
-			_v[0] = v[0] - 0.5 + (double)1.0 * (double)i / (w - 1);
-			//_v[1] = v[1] + ((double)j - h / 2) / h;
-			_v[1] = v[1] - 0.5 + 1.0 * (double)(h - j - 1) / (h - 1);
+#if 0
+			_v[0] = v[0] + (double)0.5 - (double)1.0 * (double)i / ((double)w - 1);
+			_v[1] = v[1] - (double)0.5 + (double)1.0 * (double)(h - j - 1) / ((double)h - 1);
 			_v[2] = v[2];
+#else
+			// p=p0+(p1-p0)u+(p2-p0)v
+			v3 up = { 0, 1, 0};
+			v3 right;
+			cross3( right, v, up);
+			cross3( up, right, v);
+			v3 s0, s1, s2, s;
+			sum3( s0, e, v);
+			sum3( s1, s0, up);
+			sum3( s2, s0, right);
+			double u, v;
+			v = (double)0.5 - (double)1.0 * (double)i / ((double)w - 1);
+			u = -(double)0.5 + (double)1.0 * (double)(h - j - 1) / ((double)h - 1);
+			s[0] = s0[0] + (s1[0] - s0[0]) * u + (s2[0] - s0[0]) * v;
+			s[1] = s0[1] + (s1[1] - s0[1]) * u + (s2[1] - s0[1]) * v;
+			s[2] = s0[2] + (s1[2] - s0[2]) * u + (s2[2] - s0[2]) * v;
+			diff3( _v, s, e);
+#endif
+			double t = 0;
 			int res = intersec_plane( p0, p1, p2, e, _v, &t);
 			dprintf( "result=%d t=%f\n", res, t);
+			char c = '0';
 			if (res)
 			{
-#if 0
-				double x = e[0] + t * v[0];
-				double y = e[1] + t * v[1];
-				double z = e[2] + t * v[2];
+				c = '1';
+				double x = e[0] + t * _v[0];
+				double y = e[1] + t * _v[1];
+				double z = e[2] + t * _v[2];
 				dprintf( "inters is %f,%f,%f\n", x, y, z);
-#endif
+#define EPS 0.2
+				if (
+						(x >= (1.0 - EPS) && x <= (1.0 + EPS)) && 
+						(y >= (0.0 - EPS) && y <= (0.0 + EPS)) &&
+						(z >= (0.0 - EPS) && z <= (0.0 + EPS))
+				   )
+					c = 'R';
+				else if (
+						(x >= (0.0 - EPS) && x <= (0.0 + EPS)) && 
+						(y >= (1.0 - EPS) && y <= (1.0 + EPS)) &&
+						(z >= (0.0 - EPS) && z <= (0.0 + EPS))
+				   )
+					c = 'G';
+				else if (
+						(x >= (0.0 - EPS) && x <= (0.0 + EPS)) && 
+						(y >= (0.0 - EPS) && y <= (0.0 + EPS)) &&
+						(z >= (1.0 - EPS) && z <= (1.0 + EPS))
+				   )
+					c = 'B';
 			}
-			printf( "%c", res ? '1' : '0');
+			printf( "%c", c);
 		}
 		printf( "\n");
 	}
