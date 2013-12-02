@@ -26,6 +26,11 @@ void diff3( v3 dest, v3 src1, v3 src2)
 	dest[2] = src1[2] - src2[2];
 }
 
+double dot3( v3 p, v3 n)
+{
+	return p[0] * n[0] + p[1] * n[1] + p[2] * n[2];
+}
+
 // plane : (p - po) . n = 0
 // line : p = dl + l0
 int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
@@ -39,9 +44,7 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 	diff3( v2, p2, p0);
 	dprintf( "v1 is %f,%f,%f v2 is %f,%f,%f\n", v1[0], v1[1], v1[2], v2[0], v2[1], v2[2]);
 	v3 n;
-	n[0] = v1[1] * v2[2] - v1[2] * v2[1];
-	n[1] = v1[2] * v2[0] - v1[0] * v2[2];
-	n[2] = v1[0] * v2[1] - v1[1] * v2[0];
+	cross3( n, v1, v2);
 	double nn;
 	nn = sqrt( n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
 	n[0] /= nn;
@@ -52,10 +55,10 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 	double num;
 	v3 p;
 	diff3( p, p0, l0);
-	num = p[0] * n[0] + p[1] * n[1] + p[2] * n[2];
+	num = dot3( p, n);
 	dprintf( "num is %f\n", num);
 	double den;
-	den = l[0] * n[0] + l[1] * n[1] + l[2] * n[2];
+	den = dot3( l, n);
 	dprintf( "den is %f\n", den);
 	if (den == 0)
 	{
