@@ -577,6 +577,32 @@ int stats()
 	return 0;
 }
 
+#define USE_CAMERA
+#ifdef USE_CAMERA
+typedef double v3[3];
+
+void cross3( v3 dest, v3 src1, v3 src2)
+{
+	dest[0] = src1[1] * src2[2] - src1[2] * src2[1];
+	dest[1] = src1[2] * src2[0] - src1[0] * src2[2];
+	dest[2] = src1[0] * src2[1] - src1[1] * src2[0];
+}
+
+void sum3( v3 dest, v3 src1, v3 src2)
+{
+	dest[0] = src1[0] + src2[0];
+	dest[1] = src1[1] + src2[1];
+	dest[2] = src1[2] + src2[2];
+}
+
+void diff3( v3 dest, v3 src1, v3 src2)
+{
+	dest[0] = src1[0] - src2[0];
+	dest[1] = src1[1] - src2[1];
+	dest[2] = src1[2] - src2[2];
+}
+#endif
+
 int main( int argc, char *argv[])
 {
 #ifdef USE_SDL
@@ -720,7 +746,38 @@ int main( int argc, char *argv[])
 			if (i >= w)
 				break;
 			char pix = '.';
+#ifndef USE_CAMERA
 			_vx = vx - winw / 2 + winw * (double)i / (w - 1);
+#else
+			v3 v;
+			v[0] = vx;
+			v[1] = vy;
+			v[2] = vz;
+			v3 e;
+			e[0] = ex;
+			e[1] = ey;
+			e[2] = ez;
+			// p=p0+(p1-p0)u+(p2-p0)v
+			v3 up = { 0, 1, 0};
+			v3 right;
+			cross3( right, v, up);
+			cross3( up, right, v);
+			v3 s0, s1, s2, s;
+			sum3( s0, e, v);
+			sum3( s1, s0, up);
+			sum3( s2, s0, right);
+			double u, vv;
+			vv = -(double)0.5 + (double)1.0 * (double)i / ((double)w - 1);
+			u = -(double)0.5 + (double)1.0 * (double)(h - j - 1) / ((double)h - 1);
+			s[0] = s0[0] + (s1[0] - s0[0]) * u + (s2[0] - s0[0]) * vv;
+			s[1] = s0[1] + (s1[1] - s0[1]) * u + (s2[1] - s0[1]) * vv;
+			s[2] = s0[2] + (s1[2] - s0[2]) * u + (s2[2] - s0[2]) * vv;
+			v3 _v;
+			diff3( _v, s, e);
+			_vx = _v[0];
+			_vy = _v[1];
+			_vz = _v[2];
+#endif
 
 //			printf( "j=%lu i=%lu vy=%f vx=%f\n", j, i, _vy, _vx);
 			double r = 0.0, g = 0.0, b = 0.0;
