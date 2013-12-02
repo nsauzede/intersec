@@ -5,25 +5,44 @@
 
 typedef double v3[3];
 
-void cross3( v3 dest, v3 src1, v3 src2)
+double* cross3( v3 dest, v3 src1, v3 src2)
 {
 	dest[0] = src1[1] * src2[2] - src1[2] * src2[1];
 	dest[1] = src1[2] * src2[0] - src1[0] * src2[2];
 	dest[2] = src1[0] * src2[1] - src1[1] * src2[0];
+	return dest;
 }
 
-void sum3( v3 dest, v3 src1, v3 src2)
+double* sum3( v3 dest, v3 src1, v3 src2)
 {
 	dest[0] = src1[0] + src2[0];
 	dest[1] = src1[1] + src2[1];
 	dest[2] = src1[2] + src2[2];
+	return dest;
 }
 
-void diff3( v3 dest, v3 src1, v3 src2)
+double* diff3( v3 dest, v3 src1, v3 src2)
 {
 	dest[0] = src1[0] - src2[0];
 	dest[1] = src1[1] - src2[1];
 	dest[2] = src1[2] - src2[2];
+	return dest;
+}
+
+double* div3( v3 n, double nn)
+{
+	n[0] /= nn;
+	n[1] /= nn;
+	n[2] /= nn;
+	return n;
+}
+
+double* mult3( v3 n, double nn)
+{
+	n[0] *= nn;
+	n[1] *= nn;
+	n[2] *= nn;
+	return n;
 }
 
 double dot3( v3 p, v3 n)
@@ -33,14 +52,7 @@ double dot3( v3 p, v3 n)
 
 double norm3( v3 n)
 {
-	return sqrt( n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);	
-}
-
-void div3( v3 n, double nn)
-{
-	n[0] /= nn;
-	n[1] /= nn;
-	n[2] /= nn;
+	return sqrt( dot3( n, n));	
 }
 
 // plane : (p - po) . n = 0
@@ -157,11 +169,6 @@ int main()
 		for (i = 0; i < w; i++)
 		{
 			v3 _v;
-#if 0
-			_v[0] = v[0] + (double)0.5 - (double)1.0 * (double)i / ((double)w - 1);
-			_v[1] = v[1] - (double)0.5 + (double)1.0 * (double)(h - j - 1) / ((double)h - 1);
-			_v[2] = v[2];
-#else
 			// p=p0+(p1-p0)u+(p2-p0)v
 			v3 up = { 0, 1, 0};
 			v3 right;
@@ -172,18 +179,12 @@ int main()
 			sum3( s1, s0, up);
 			sum3( s2, s0, right);
 			double u, v;
-#if 0
-			v = (double)0.5 - (double)1.0 * (double)i / ((double)w - 1);
-			u = -(double)0.5 + (double)1.0 * (double)(h - j - 1) / ((double)h - 1);
-#else
 			v = -(double)0.5 + (double)1.0 * (double)i / ((double)w - 1);
 			u = -(double)0.5 + (double)1.0 * (double)(h - j - 1) / ((double)h - 1);
-#endif
 			s[0] = s0[0] + (s1[0] - s0[0]) * u + (s2[0] - s0[0]) * v;
 			s[1] = s0[1] + (s1[1] - s0[1]) * u + (s2[1] - s0[1]) * v;
 			s[2] = s0[2] + (s1[2] - s0[2]) * u + (s2[2] - s0[2]) * v;
 			diff3( _v, s, e);
-#endif
 			double t = 0;
 			int res = intersec_plane( p0, p1, p2, e, _v, &t);
 			dprintf( "result=%d t=%f\n", res, t);
