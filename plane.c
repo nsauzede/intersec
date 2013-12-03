@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 
 #define dprintf(...) do{}while(0)
@@ -151,12 +152,58 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 	return result;
 }
 
-int main()
-{
-	printf( "hello plane\n");
 	v3 p0 = { 1, 0, 0 };
 	v3 p1 = { 0, 1, 0 };
 	v3 p2 = { 0, 0, 1 };
+void traceray( v3 e, v3 _v, v3 col)
+{
+	memset( &col, 0, sizeof( col));
+	double t = 0;
+	int res = intersec_plane( p0, p1, p2, e, _v, &t);
+	dprintf( "result=%d t=%f\n", res, t);
+	char c = '0';
+	if (res)
+	{
+		c = '1';
+		double x = e[0] + t * _v[0];
+		double y = e[1] + t * _v[1];
+		double z = e[2] + t * _v[2];
+		dprintf( "inters is %f,%f,%f\n", x, y, z);
+#define EPS 0.2
+		if (
+				(x >= (1.0 - EPS) && x <= (1.0 + EPS)) && 
+				(y >= (0.0 - EPS) && y <= (0.0 + EPS)) &&
+				(z >= (0.0 - EPS) && z <= (0.0 + EPS))
+		   )
+		{
+			c = 'R';
+			col[0] = 1;
+		}
+		else if (
+				(x >= (0.0 - EPS) && x <= (0.0 + EPS)) && 
+				(y >= (1.0 - EPS) && y <= (1.0 + EPS)) &&
+				(z >= (0.0 - EPS) && z <= (0.0 + EPS))
+				)
+		{
+			c = 'G';
+			col[1] = 1;
+		}
+		else if (
+				(x >= (0.0 - EPS) && x <= (0.0 + EPS)) && 
+				(y >= (0.0 - EPS) && y <= (0.0 + EPS)) &&
+				(z >= (1.0 - EPS) && z <= (1.0 + EPS))
+				)
+		{
+			c = 'B';
+			col[2] = 1;
+		}
+	}
+//	printf( "%c", c);
+}
+
+int main()
+{
+	printf( "hello plane\n");
 #define E 2
 	v3 e = { 0, 0, E };
 #define V -1
@@ -185,38 +232,41 @@ int main()
 			s[1] = s0[1] + (s1[1] - s0[1]) * u + (s2[1] - s0[1]) * v;
 			s[2] = s0[2] + (s1[2] - s0[2]) * u + (s2[2] - s0[2]) * v;
 			diff3( _v, s, e);
-			double t = 0;
-			int res = intersec_plane( p0, p1, p2, e, _v, &t);
-			dprintf( "result=%d t=%f\n", res, t);
-			char c = '0';
-			if (res)
+
+			v3 col;
+			traceray( e, _v, col);
+
+			char c = ' ';
+			if (col[0] > col[1]) // R>G
 			{
-				c = '1';
-				double x = e[0] + t * _v[0];
-				double y = e[1] + t * _v[1];
-				double z = e[2] + t * _v[2];
-				dprintf( "inters is %f,%f,%f\n", x, y, z);
-#define EPS 0.2
-				if (
-						(x >= (1.0 - EPS) && x <= (1.0 + EPS)) && 
-						(y >= (0.0 - EPS) && y <= (0.0 + EPS)) &&
-						(z >= (0.0 - EPS) && z <= (0.0 + EPS))
-				   )
-					c = 'R';
-				else if (
-						(x >= (0.0 - EPS) && x <= (0.0 + EPS)) && 
-						(y >= (1.0 - EPS) && y <= (1.0 + EPS)) &&
-						(z >= (0.0 - EPS) && z <= (0.0 + EPS))
-				   )
-					c = 'G';
-				else if (
-						(x >= (0.0 - EPS) && x <= (0.0 + EPS)) && 
-						(y >= (0.0 - EPS) && y <= (0.0 + EPS)) &&
-						(z >= (1.0 - EPS) && z <= (1.0 + EPS))
-				   )
-					c = 'B';
+				if (col[1] > col[2]) // G>B
+				{
+					c = 'R';	// R>G>B
+				}
+				else if (col[0] > col[2]) // R>B
+				{
+					c = 'r';	// R>B>G
+				}
+				else // B>G, B>R
+				{
+					c = 'b';	// B>R>G
+				}
 			}
-			printf( "%c", c);
+			else if (col[1] > col[2]) // G>R, G>B
+			{
+				if (col[0] > col[2]) // R>B
+				{
+					c = 'G';	// G>R>B
+				}
+				else	// B>R
+				{
+					c = 'g';	// G>B>R
+				}
+			}
+			else // G>R, B>G
+			{
+				c = 'B'; // B>G>R
+			}
 		}
 		printf( "\n");
 	}
