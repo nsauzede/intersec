@@ -152,19 +152,39 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 	return result;
 }
 
-	v3 p0 = { 1, 0, 0 };
-	v3 p1 = { 0, 1, 0 };
-	v3 p2 = { 0, 0, 1 };
+// camera is : eye coordinate (vector e)..
+#define E 2
+	v3 e = { 0, 0, E };
+// ..a direction (vector v)..
+#define V -1
+	v3 v = { 0, 0, V };
+// ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
+v3 up = { 0, 1, 0};
+// camera screen size
+int w = 80, h = 40;
+
+// 3d scene : a simple triangle, 3 points3
+v3 p0 = { 1, 0, 0 };
+v3 p1 = { 0, 1, 0 };
+v3 p2 = { 0, 0, 1 };
+
 void traceray( v3 e, v3 _v, v3 col)
 {
-	memset( &col, 0, sizeof( col));
+	memset( col, 0, sizeof( v3));
+	
 	double t = 0;
 	int res = intersec_plane( p0, p1, p2, e, _v, &t);
 	dprintf( "result=%d t=%f\n", res, t);
-	char c = '0';
+	
+	char c = '.';
 	if (res)
 	{
-		c = '1';
+		if (t <= 0)
+		{
+			printf( "boom ! detected point behind camera screen\n");
+			getchar();
+		}
+		c = ' ';
 		double x = e[0] + t * _v[0];
 		double y = e[1] + t * _v[1];
 		double z = e[2] + t * _v[2];
@@ -198,39 +218,39 @@ void traceray( v3 e, v3 _v, v3 col)
 			col[2] = 1;
 		}
 	}
-//	printf( "%c", c);
+	printf( "%c", c);
 }
 
 int main()
 {
 	printf( "hello plane\n");
-#define E 2
-	v3 e = { 0, 0, E };
-#define V -1
-	v3 v = { 0, 0, V };
-	int i, j, w, h;
-	w = 40;
-	h = 40;
+	int i, j;
+
+	// compute camera screen as three vectors of a plane : s0, s1 and s2
+	v3 s0, s1, s2;
+	v3 right;
+	cross3( right, v, up);
+	cross3( up, right, v);
+	sum3( s0, e, v);
+	sum3( s1, s0, up);
+	sum3( s2, s0, right);
+
 	for (j = 0; j < h; j++)
 	{
 		for (i = 0; i < w; i++)
 		{
-			v3 _v;
-			// p=p0+(p1-p0)u+(p2-p0)v
-			v3 up = { 0, 1, 0};
-			v3 right;
-			cross3( right, v, up);
-			cross3( up, right, v);
-			v3 s0, s1, s2, s;
-			sum3( s0, e, v);
-			sum3( s1, s0, up);
-			sum3( s2, s0, right);
+
 			double u, v;
 			v = -(double)0.5 + (double)1.0 * (double)i / ((double)w - 1);
 			u = -(double)0.5 + (double)1.0 * (double)(h - j - 1) / ((double)h - 1);
+			// compute a point s in camera screen plane based on {u,v}
+			v3 s;
+			// p=p0+(p1-p0)u+(p2-p0)v
 			s[0] = s0[0] + (s1[0] - s0[0]) * u + (s2[0] - s0[0]) * v;
 			s[1] = s0[1] + (s1[1] - s0[1]) * u + (s2[1] - s0[1]) * v;
 			s[2] = s0[2] + (s1[2] - s0[2]) * u + (s2[2] - s0[2]) * v;
+			// compute final camera=> pixel vector _v
+			v3 _v;
 			diff3( _v, s, e);
 
 			v3 col;
@@ -267,6 +287,8 @@ int main()
 			{
 				c = 'B'; // B>G>R
 			}
+			c = c;
+//			printf( "%c", c);
 		}
 		printf( "\n");
 	}

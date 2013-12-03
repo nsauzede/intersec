@@ -13,14 +13,14 @@ endif
 CC=$(CCCROSS)gcc
 SDLCONFIG=$(SDLCROSS)sdl-config
 
-OPTIM=1
+#OPTIM=1
 ifdef OPTIM
 CFLAGS+=-O2
 else
 CFLAGS+=-g -O0
 endif
 
-USE32=1
+#USE32=1
 ifdef USE32
 ifndef USE_CROSS
 CFLAGS+=-m32
