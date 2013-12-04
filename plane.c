@@ -152,6 +152,88 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 	return result;
 }
 
+#define SMALL 0.001
+int solvetri( double a, double b, double c, double *t1, double *t2)
+{
+	int result = 0;
+	double d, sd;
+	d = b * b - 4 * a * c;
+	sd = sqrt( d);
+	
+	if (d > 0)
+	{
+		*t1 = (-b - sd) / 2 / a;
+		*t2 = (-b + sd) / 2 / a;
+		result = 2;
+	}
+	else if (d == 0)
+	{
+		*t1 = -b / 2 / a;
+		result = 1;
+	}
+	else
+	{
+		result = 0;
+	}
+	return result;
+}
+
+int intersec_sphere( v3 cs, double sr, v3 e, v3 v, double *tmin, double *tmax)
+{
+	double ex = e[0];
+	double ey = e[1];
+	double ez = e[2];
+	double cx = cs[0];
+	double cy = cs[1];
+	double cz = cs[2];
+	double vx = v[0];
+	double vy = v[1];
+	double vz = v[2];
+	
+	int result = 0;
+	double a, b, c;
+	double t1, t2;
+	
+	double tx, ty, tz;
+	double n;
+	n = sr * sr;
+	tx = ex - cx;
+	ty = ey - cy;
+	tz = ez - cz;
+	a = vx * vx + vy * vy + vz * vz;
+	b = 2 * ( vx * tx + vy * ty + vz * tz);
+	c = (tx * tx + ty * ty + tz * tz) - n;
+	int sol;
+	sol = solvetri( a, b, c, &t1, &t2);
+	if (sol == 2)
+	{
+		if (fabs( t1) > fabs( t2))
+		{
+			double temp = t1;
+			t1 = t2;
+			t2 = temp;
+		}
+	}
+	else if (sol == 1)
+	{
+		t2 = t1;
+	}
+	else
+	{
+//		printf( "no solutions\n");
+	}
+	if (sol && (t1 > SMALL))
+	{
+		result = 1;
+		if (tmin)
+			*tmin = t1;
+		if (tmax)
+			*tmax = t2;
+	}
+
+	return result;
+}
+
 // camera is : eye coordinate (vector e)..
 #define E 2
 	v3 e = { 0, 0, E };
@@ -163,61 +245,108 @@ v3 up = { 0, 1, 0};
 // camera screen size
 int w = 80, h = 40;
 
-// 3d scene : a simple triangle, 3 points3
+// 3d scene :
+
+#if 0
+// a simple triangle, 3 points3
 v3 p0 = { 1, 0, 0 };
 v3 p1 = { 0, 1, 0 };
 v3 p2 = { 0, 0, 1 };
+// a sphere
+v3 cs = { 0, 0, 0 };
+double sr = 0.3;
+#else
+// multiple facets (3 vertex3 + 1 color3 each)
+v3 facets[][4] = {
+	{
+		{ 1, 0, 0 },
+		{ 0, 1, 0 },
+		{ 0, 0, 1 },
+		{ 1, 0, 0 },	// color
+	},
+	{
+		{ 0, 0, 1 },
+		{ 0, 1, 0 },
+		{ -1, 0, 0 },
+		{ 0, 1, 0 },	// color
+	},
+};
+int nfacets = sizeof(facets) / sizeof(facets[0]);
+// multiple spheres
+v3 spheres[][3] = {
+	{
+		{ 0, -0.5, 0 },
+		{ 0.5, 0, 0 },	// radius
+		{ 0, 0, 1 },	// color
+	},
+};
+int nspheres = sizeof(spheres) / sizeof(spheres[0]);
+#endif
 
+#define EPS 0.1
+#define BIG 10.0
+#define COMP_EPS(x,val) (x >= ((val) - EPS) && x <= ((val) + EPS))
 void traceray( v3 e, v3 _v, v3 col)
 {
-	memset( col, 0, sizeof( v3));
-	
-	double t = 0;
-	int res = intersec_plane( p0, p1, p2, e, _v, &t);
-	dprintf( "result=%d t=%f\n", res, t);
-	
+	v3 *pcol = 0;
 	char c = '.';
-	if (res)
+	double tmin = BIG;
+	double t;
+	double *p0, *p1, *p2;
+	int res;
+	int i;
+	for (i = 0; i < nfacets; i++)
 	{
-		if (t <= 0)
+		p0 = facets[i][0];
+		p1 = facets[i][1];
+		p2 = facets[i][2];
+		t = 0;
+		res = intersec_plane( p0, p1, p2, e, _v, &t);
+		dprintf( "result=%d t=%f\n", res, t);
+		if (res && (t < tmin))
 		{
-			printf( "boom ! detected point behind camera screen\n");
-			getchar();
-		}
-		c = ' ';
-		double x = e[0] + t * _v[0];
-		double y = e[1] + t * _v[1];
-		double z = e[2] + t * _v[2];
-		dprintf( "inters is %f,%f,%f\n", x, y, z);
-#define EPS 0.2
-		if (
-				(x >= (1.0 - EPS) && x <= (1.0 + EPS)) && 
-				(y >= (0.0 - EPS) && y <= (0.0 + EPS)) &&
-				(z >= (0.0 - EPS) && z <= (0.0 + EPS))
-		   )
-		{
-			c = 'R';
-			col[0] = 1;
-		}
-		else if (
-				(x >= (0.0 - EPS) && x <= (0.0 + EPS)) && 
-				(y >= (1.0 - EPS) && y <= (1.0 + EPS)) &&
-				(z >= (0.0 - EPS) && z <= (0.0 + EPS))
-				)
-		{
-			c = 'G';
-			col[1] = 1;
-		}
-		else if (
-				(x >= (0.0 - EPS) && x <= (0.0 + EPS)) && 
-				(y >= (0.0 - EPS) && y <= (0.0 + EPS)) &&
-				(z >= (1.0 - EPS) && z <= (1.0 + EPS))
-				)
-		{
-			c = 'B';
-			col[2] = 1;
+			tmin = t;
+			c = '0' + i;
+			pcol = &facets[i][3];
+#if 0
+			double x = e[0] + t * _v[0];
+			double y = e[1] + t * _v[1];
+			double z = e[2] + t * _v[2];
+			dprintf( "inters is %f,%f,%f\n", x, y, z);
+			if (COMP_EPS( x, 1.0) && COMP_EPS( y, 0.0) && COMP_EPS( z, 0.0))
+			{
+				c = 'R';
+				col[0] = 1;
+			}
+			else if (COMP_EPS( x, 0.0) && COMP_EPS( y, 1.0) && COMP_EPS( z, 0.0))
+			{
+				c = 'G';
+				col[1] = 1;
+			}
+			else if (COMP_EPS( x, 0.0) && COMP_EPS( y, 0.0) && COMP_EPS( z, 1.0))
+			{
+				c = 'B';
+				col[2] = 1;
+			}
+#endif
 		}
 	}
+	for (i = 0; i < nspheres; i++)
+	{
+		p0 = spheres[i][0];		// sphere center
+		p1 = spheres[i][1];		// sphere radius
+		t = 0;
+		res = intersec_sphere( p0, *p1, e, _v, &t, 0);
+		dprintf( "result=%d t=%f\n", res, t);
+		if (res && (t < tmin))
+		{
+			tmin = t;
+			c = '0' + i;
+			pcol = &spheres[i][2];
+		}
+	}
+	if (pcol)
+		memcpy( col, pcol, sizeof( col));
 	printf( "%c", c);
 }
 
