@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <malloc.h>
 #include <string.h>
 #include <math.h>
 
@@ -235,7 +236,7 @@ int intersec_sphere( v3 cs, double sr, v3 e, v3 v, double *tmin, double *tmax)
 }
 
 // camera is : eye coordinate (vector e)..
-#define E 2
+#define E 80
 	v3 e = { 0, 0, E };
 // ..a direction (vector v)..
 #define V -1
@@ -244,9 +245,7 @@ int intersec_sphere( v3 cs, double sr, v3 e, v3 v, double *tmin, double *tmax)
 v3 up = { 0, 1, 0};
 // camera screen size
 int w = 80, h = 40;
-
 // 3d scene :
-
 #if 0
 // a simple triangle, 3 points3
 v3 p0 = { 1, 0, 0 };
@@ -256,39 +255,44 @@ v3 p2 = { 0, 0, 1 };
 v3 cs = { 0, 0, 0 };
 double sr = 0.3;
 #else
+#define LOAD_SCENE
 // multiple facets (3 vertex3 + 1 color3 each)
-v3 facets[][4] = {
-	{
+#ifndef LOAD_SCENE
+v3 facets[] = {
 		{ 1, 0, 0 },
 		{ 0, 1, 0 },
 		{ 0, 0, 1 },
 		{ 1, 0, 0 },	// color
-	},
-	{
+
 		{ 0, 0, 1 },
 		{ 0, 1, 0 },
 		{ -1, 0, 0 },
 		{ 0, 1, 0 },	// color
-	},
 };
-int nfacets = sizeof(facets) / sizeof(facets[0]);
+int nfacets = sizeof(facets) / sizeof(facets[0]) / 4;
+#else
+v3 *facets = 0;
+int nfacets = 0;
+#endif
 // multiple spheres
 v3 spheres[][3] = {
+#if 0
 	{
 		{ 0, -0.5, 0 },
 		{ 0.5, 0, 0 },	// radius
 		{ 0, 0, 1 },	// color
 	},
+#endif
 };
 int nspheres = sizeof(spheres) / sizeof(spheres[0]);
 #endif
 
 #define EPS 0.1
-#define BIG 10.0
+#define BIG 1000.0
 #define COMP_EPS(x,val) (x >= ((val) - EPS) && x <= ((val) + EPS))
 void traceray( v3 e, v3 _v, v3 col)
 {
-	v3 *pcol = 0;
+	double *pcol = 0;
 	char c = '.';
 	double tmin = BIG;
 	double t;
@@ -297,9 +301,9 @@ void traceray( v3 e, v3 _v, v3 col)
 	int i;
 	for (i = 0; i < nfacets; i++)
 	{
-		p0 = facets[i][0];
-		p1 = facets[i][1];
-		p2 = facets[i][2];
+		p0 = facets[i * 4 + 0];
+		p1 = facets[i * 4 + 1];
+		p2 = facets[i * 4 + 2];
 		t = 0;
 		res = intersec_plane( p0, p1, p2, e, _v, &t);
 		dprintf( "result=%d t=%f\n", res, t);
@@ -307,7 +311,7 @@ void traceray( v3 e, v3 _v, v3 col)
 		{
 			tmin = t;
 			c = '0' + i;
-			pcol = &facets[i][3];
+			pcol = &facets[i * 4][3];
 #if 0
 			double x = e[0] + t * _v[0];
 			double y = e[1] + t * _v[1];
@@ -342,7 +346,7 @@ void traceray( v3 e, v3 _v, v3 col)
 		{
 			tmin = t;
 			c = '0' + i;
-			pcol = &spheres[i][2];
+			pcol = &spheres[i][2][0];
 		}
 	}
 	if (pcol)
@@ -350,11 +354,66 @@ void traceray( v3 e, v3 _v, v3 col)
 	printf( "%c", c);
 }
 
-int main()
+int main( int argc, char *argv[])
 {
+	char *scene = "scene.stl";
+	
 	printf( "hello plane\n");
+	int arg = 1;
+	if (arg < argc)
+	{
+		scene = argv[arg++];
+	}
+	
 	int i, j;
-
+#ifdef LOAD_SCENE
+	// load scene ?
+	if (scene)
+	{
+	FILE *in = fopen( scene, "rt");
+	if (in)
+	{
+		char buf[1024];
+		char *ptr;
+		while (!feof( in))
+		{
+			fgets( buf, sizeof( buf), in);
+			ptr = strstr( buf, "endfacet");
+			if (ptr)
+				nfacets++;
+		}
+		printf( "read nfacets=%d\n", nfacets);
+		rewind( in);
+		if (nfacets)
+		{
+		facets = malloc( nfacets * sizeof(v3[4]));
+		i = 0;
+		j = 0;
+		while (!feof( in))
+		{
+			fgets( buf, sizeof( buf), in);
+			ptr = strstr( buf, "vertex");
+			if (ptr)
+			{
+				float p[3];
+				sscanf( ptr, "%*s %f %f %f", &p[0], &p[1], &p[2]);
+				printf( "read p: %f,%f,%f\n", p[0], p[1], p[2]);
+				facets[i * 4 + j][0] = p[0];
+				facets[i * 4 + j][1] = p[1];
+				facets[i * 4 + j][2] = p[2];
+				if (++j >= 3)
+				{
+					i++;
+					j = 0;
+				}
+			}
+		}
+		}
+		fclose( in);
+	}
+	}
+#endif
+	printf( "nfacets=%d\n", nfacets);
 	// compute camera screen as three vectors of a plane : s0, s1 and s2
 	v3 s0, s1, s2;
 	v3 right;
