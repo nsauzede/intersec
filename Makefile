@@ -56,6 +56,10 @@ ifdef USE_SDL
 intersec.exe: CFLAGS+=-DUSE_SDL
 intersec.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
 intersec.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
+
+#plane.exe: CFLAGS+=-DUSE_SDL
+#plane.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
+#plane.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
 endif
 
 %.exe: %.o
