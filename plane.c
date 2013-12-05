@@ -347,7 +347,7 @@ void traceray( v3 e, v3 _v, v3 col)
 	}
 	if (pcol)
 	{
-		memcpy( col, pcol, sizeof( col));
+		memcpy( col, pcol, 3 * sizeof( col[0]));
 		if (COMP_EPS( pcol[0], 1.0) && COMP_EPS( pcol[1], 0.0) && COMP_EPS( pcol[2], 0.0))
 			c = 'R';
 		if (COMP_EPS( pcol[0], 0.0) && COMP_EPS( pcol[1], 1.0) && COMP_EPS( pcol[2], 0.0))
