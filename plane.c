@@ -3,10 +3,6 @@
 #include <string.h>
 #include <math.h>
 
-#ifdef USE_SDL
-#include <SDL.h>
-#endif
-
 #define dprintf(...) do{}while(0)
 
 typedef double v3[3];
@@ -101,14 +97,6 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 	}
 	else
 	{
-#if 0
-		double _t = num / den;
-		dprintf( "one intersection at %f\n", _t);
-		double x = l0[0] + _t * l[0];
-		double y = l0[1] + _t * l[1];
-		double z = l0[2] + _t * l[2];
-		dprintf( "inters is %f,%f,%f\n", x, y, z);
-#endif
 		double det;
 		double a, b, c, d, e, f, g, h, i;
 		v3 lb;
@@ -246,7 +234,7 @@ int intersec_sphere( v3 cs, double sr, v3 e, v3 v, double *tmin, double *tmax)
 #define E 20
 	v3 e = { 2*E, E, 2*E };
 // ..a direction (vector v)..
-#define V 10
+#define V E/2
 	v3 v = { -2*V, -V, -2*V };
 // ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
 v3 up = { 0, 1, 0};
@@ -262,55 +250,40 @@ int w = 1920, h = 1080;
 // 3d scene :
 //#define LOAD_SCENE
 // multiple facets (3 vertex3 + 1 color3 each)
-#ifndef LOAD_SCENE
-#define F 20
-v3 facets[] = {
-#if 1
+#define F 40
+v3 _facets[] = {
 		{ 0, 0, 0 },
 		{ F, 0, 0 },
 		{ 0, F, 0 },
 		{ 1, 0, 0 },	// color
-#endif
-#if 1
+
 		{ 0, 0, 0 },
 		{ 0, F, 0 },
 		{ 0, 0, F },
 		{ 0, 1, 0 },	// color
-#endif
+
 		{ 0, 0, 0 },
-#if 0
-		{ F, 0, 0 },
-		{ 0, 0, F },
-#else
 		{ 0, 0, F },	// WARNING : visible faces must have normal pointing to eye !
 		{ F, 0, 0 },
-#endif
 		{ 0, 0, 1 },	// color
 
 };
-int nfacets = sizeof(facets) / sizeof(facets[0]) / 4;
+int nfacets = sizeof( _facets) / sizeof( _facets[0]) / 4;
 // multiple spheres
-v3 spheres[][3] = {
-#if 1
-	{
-		{ F, F, F },
-		{ F/4, 0, 0 },	// radius
-		{ 1, 0, 1 },	// color
-	},
-#endif
+#define S 20
+v3 _spheres[] = {
+	{ S, S, S },
+	{ S/4, 0, 0 },	// radius
+	{ 1, 0, 1 },	// color
 };
-int nspheres = sizeof(spheres) / sizeof(spheres[0]);
-#else
-v3 *facets = 0;
-int nfacets = 0;
-v3 **spheres = 0;
-int nspheres = 0;
-#endif
+int nspheres = sizeof( _spheres) / sizeof( _spheres[0]);
+
+v3 *facets = _facets;
+v3 *spheres = _spheres;
 
 void traceray( v3 e, v3 _v, v3 col)
 {
 	double *pcol = 0;
-	char c = '.';
 	double tmin = BIG;
 	double t;
 	double *p0, *p1, *p2;
@@ -327,42 +300,29 @@ void traceray( v3 e, v3 _v, v3 col)
 		if (res && (t < tmin))
 		{
 			tmin = t;
-			c = '0' + i % 24;
 			pcol = &facets[i * 4 + 3][0];
 		}
 	}
 	for (i = 0; i < nspheres; i++)
 	{
-		p0 = spheres[i][0];		// sphere center
-		p1 = spheres[i][1];		// sphere radius
+		p0 = spheres[i * 3 + 0];		// sphere center
+		p1 = spheres[i * 3 + 1];		// sphere radius
 		t = 0;
 		res = intersec_sphere( p0, *p1, e, _v, &t, 0);
 		dprintf( "result=%d t=%f\n", res, t);
 		if (res && (t < tmin))
 		{
 			tmin = t;
-			c = '0' + i;
-			pcol = &spheres[i][2][0];
+			pcol = &spheres[i * 3 + 2][0];
 		}
 	}
 	if (pcol)
-	{
 		memcpy( col, pcol, 3 * sizeof( col[0]));
-		if (COMP_EPS( pcol[0], 1.0) && COMP_EPS( pcol[1], 0.0) && COMP_EPS( pcol[2], 0.0))
-			c = 'R';
-		if (COMP_EPS( pcol[0], 0.0) && COMP_EPS( pcol[1], 1.0) && COMP_EPS( pcol[2], 0.0))
-			c = 'G';
-		if (COMP_EPS( pcol[0], 0.0) && COMP_EPS( pcol[1], 0.0) && COMP_EPS( pcol[2], 1.0))
-			c = 'B';
-	}
-	c = c;
-	printf( "%c", c);
-	fflush( stdout);
 }
 
 int main( int argc, char *argv[])
 {
-	char *scene = "scene.stl";
+	char *scene = 0;
 	
 	printf( "hello plane\n");
 	int arg = 1;
@@ -371,34 +331,14 @@ int main( int argc, char *argv[])
 		scene = argv[arg++];
 	}
 	
-#ifdef USE_SDL
-	SDL_Init( SDL_INIT_VIDEO);
-	atexit( SDL_Quit);
-	SDL_Delay( 1000);
-	int done = 0;
-	while (!done)
-	{
-		SDL_Event event;
-		while (SDL_PollEvent( &event))
-		{
-			if (event.type == SDL_KEYUP)
-			{
-				done = 1;
-				break;
-			}
-		}
-		SDL_Delay( 100);
-	}
-#endif
-
 	int i, j;
-	// load scene ?
-	if (scene)
+	if (scene)	// load scene ?
 	{
-#ifdef LOAD_SCENE
 	FILE *in = fopen( scene, "rt");
 	if (in)
 	{
+		nfacets = 0;
+		nspheres = 0;
 		char buf[1024];
 		char *ptr;
 		while (!feof( in))
@@ -437,7 +377,6 @@ int main( int argc, char *argv[])
 		}
 		fclose( in);
 	}
-#endif
 	}
 	printf( "nfacets=%d\n", nfacets);
 	// compute camera screen as three vectors of a plane : s0, s1 and s2
@@ -470,41 +409,21 @@ int main( int argc, char *argv[])
 			diff3( _v, s, e);
 
 			v3 col;
+			memset( col, 0, sizeof( col));
 			traceray( e, _v, col);
 
-			char c = ' ';
-			if (col[0] > col[1]) // R>G
-			{
-				if (col[1] > col[2]) // G>B
-				{
-					c = 'R';	// R>G>B
-				}
-				else if (col[0] > col[2]) // R>B
-				{
-					c = 'r';	// R>B>G
-				}
-				else // B>G, B>R
-				{
-					c = 'b';	// B>R>G
-				}
-			}
-			else if (col[1] > col[2]) // G>R, G>B
-			{
-				if (col[0] > col[2]) // R>B
-				{
-					c = 'G';	// G>R>B
-				}
-				else	// B>R
-				{
-					c = 'g';	// G>B>R
-				}
-			}
-			else // G>R, B>G
-			{
-				c = 'B'; // B>G>R
-			}
+			char c = '?';
+			if (COMP_EPS( col[0], 0.0) && COMP_EPS( col[1], 0.0) && COMP_EPS( col[2], 0.0))
+				c = '.';
+			if (COMP_EPS( col[0], 1.0) && COMP_EPS( col[1], 0.0) && COMP_EPS( col[2], 0.0))
+				c = 'R';
+			if (COMP_EPS( col[0], 0.0) && COMP_EPS( col[1], 1.0) && COMP_EPS( col[2], 0.0))
+				c = 'G';
+			if (COMP_EPS( col[0], 0.0) && COMP_EPS( col[1], 0.0) && COMP_EPS( col[2], 1.0))
+				c = 'B';
 			c = c;
-//			printf( "%c", c);
+			printf( "%c", c);
+			fflush( stdout);
 		}
 		printf( "\n");
 	}
