@@ -231,11 +231,19 @@ int intersec_sphere( v3 cs, double sr, v3 e, v3 v, double *tmin, double *tmax)
 #define BIG 1000.0
 #define COMP_EPS(x,val) (x >= ((val) - EPS) && x <= ((val) + EPS))
 // camera is : eye coordinate (vector e)..
+#if 0
 #define E 20
 	v3 e = { 2*E, E, 2*E };
 // ..a direction (vector v)..
 #define V E/2
 	v3 v = { -2*V, -V, -2*V };
+#else
+#define E 10
+	v3 e = { 0*E, 0*E, 1*E };
+// ..a direction (vector v)..
+#define V E/2
+	v3 v = { -0*V, -0*V, -1*V };
+#endif
 // ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
 v3 up = { 0, 1, 0};
 // camera screen size
@@ -355,9 +363,24 @@ int main( int argc, char *argv[])
 		facets = malloc( nfacets * sizeof(v3[4]));
 		i = 0;
 		j = 0;
+#ifdef USE_NORMAL
+		float normal[3] = { 0, 0, 0};
+#endif
 		while (!feof( in))
 		{
 			fgets( buf, sizeof( buf), in);
+#ifdef USE_NORMAL
+			ptr = strstr( buf, "facet");
+			if (ptr)
+			{
+				float p[3];
+				sscanf( ptr, "facet normal %f %f %f", &p[0], &p[1], &p[2]);
+				printf( "read normal: %f,%f,%f\n", p[0], p[1], p[2]);
+				normal[0] = p[0];
+				normal[1] = p[1];
+				normal[2] = p[2];
+			}
+#endif
 			ptr = strstr( buf, "vertex");
 			if (ptr)
 			{
@@ -369,6 +392,15 @@ int main( int argc, char *argv[])
 				facets[i * 4 + j][2] = p[2];
 				if (++j >= 3)
 				{
+#ifndef USE_NORMAL
+					facets[i * 4 + j][0] = !(i % 3);	// fake facet color with facet index r
+					facets[i * 4 + j][1] = !((i + 1) % 3);	// g
+					facets[i * 4 + j][2] = !((i + 2) % 3);	// b
+#else
+					facets[i * 4 + j][0] = normal[0];	// fake facet color with facet normal r
+					facets[i * 4 + j][1] = normal[1];	// g
+					facets[i * 4 + j][2] = normal[2];	// b
+#endif
 					i++;
 					j = 0;
 				}
@@ -415,12 +447,26 @@ int main( int argc, char *argv[])
 			char c = '?';
 			if (COMP_EPS( col[0], 0.0) && COMP_EPS( col[1], 0.0) && COMP_EPS( col[2], 0.0))
 				c = '.';
-			if (COMP_EPS( col[0], 1.0) && COMP_EPS( col[1], 0.0) && COMP_EPS( col[2], 0.0))
+			else if (COMP_EPS( col[0], 1.0) && COMP_EPS( col[1], 0.0) && COMP_EPS( col[2], 0.0))
 				c = 'R';
-			if (COMP_EPS( col[0], 0.0) && COMP_EPS( col[1], 1.0) && COMP_EPS( col[2], 0.0))
+			else if (COMP_EPS( col[0], 0.0) && COMP_EPS( col[1], 1.0) && COMP_EPS( col[2], 0.0))
 				c = 'G';
-			if (COMP_EPS( col[0], 0.0) && COMP_EPS( col[1], 0.0) && COMP_EPS( col[2], 1.0))
+			else if (COMP_EPS( col[0], 0.0) && COMP_EPS( col[1], 0.0) && COMP_EPS( col[2], 1.0))
 				c = 'B';
+			else
+			{
+				if (col[0] > col[1])
+				{
+					if (col[0] > col[2])
+						c = 'r';
+					else
+						c = 'b';
+				}
+				else if (col[1] > col[2])
+					c = 'g';
+				else
+					c = 'b';
+			}
 			c = c;
 			printf( "%c", c);
 			fflush( stdout);
