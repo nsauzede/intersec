@@ -48,15 +48,6 @@ int thr( void *opaque)
 		SDL_SemPost( ti->sem_init);		// signal master we have done with reading thr init
 	}
 
-	SDL_Surface *screen = p->screen;
-	int w = p->w;
-	int h = p->h;
-	int tot = p->tot;
-	SDL_mutex *mutex = p->mutex;
-	SDL_cond *cond = p->cond;
-	int *workers_done = p->workers_done;
-	SDL_mutex *mutex_go = p->mutex_go;
-	SDL_cond *cond_go = p->cond_go;
 	int x1, y1, x2, y2;
 	int x;
 	int y;
@@ -70,8 +61,8 @@ int thr( void *opaque)
 		int end = 0;
 		while (!end)
 		{
-			SDL_LockMutex( mutex_go);
-			while (((*p->start == start) && !running && !*p->quit) && SDL_CondWait( cond_go, mutex_go) == 0)				// this blocks without hogging cpu
+			SDL_LockMutex( p->mutex_go);
+			while (((*p->start == start) && !running && !*p->quit) && SDL_CondWait( p->cond_go, p->mutex_go) == 0)				// this blocks without hogging cpu
 				continue;
 			if ((*p->start != start) || running || *p->quit)
 				end = 1;
@@ -80,7 +71,7 @@ int thr( void *opaque)
 				running = 0;
 				start = *p->start;
 			}
-			SDL_UnlockMutex( mutex_go);
+			SDL_UnlockMutex( p->mutex_go);
 		}
 		if (*p->quit)
 		{
@@ -92,9 +83,9 @@ int thr( void *opaque)
 			dprintf( "thr %d starting %d\n", num, start);
 			c++;
 			x1 = 0;
-			x2 = w - 1;
-			y1 = num * h / tot;
-			y2 = (num + 1) * h / tot - 1;
+			x2 = p->w - 1;
+			y1 = num * p->h / p->tot;
+			y2 = (num + 1) * p->h / p->tot - 1;
 			x = x1;
 			y = y1;
 			// start working
@@ -108,8 +99,8 @@ int thr( void *opaque)
 		rect.y = y;
 		rect.w = 1;
 		rect.h = 1;
-		col = SDL_MapRGB( screen->format, (c+num)&1?2555:0, (c+num)&2?255:0, (c+num)&4?255:0);
-		SDL_FillRect( screen, &rect, col);
+		col = SDL_MapRGB( p->screen->format, (c+num)&1?2555:0, (c+num)&2?255:0, (c+num)&4?255:0);
+		SDL_FillRect( p->screen, &rect, col);
 		SDL_Delay( 1);
 		if (x < x2)
 			x++;
@@ -122,11 +113,11 @@ int thr( void *opaque)
 			{
 				running = 0;
 				// now signal master we're done
-				SDL_LockMutex( mutex);
+				SDL_LockMutex( p->mutex);
 				dprintf( "thr %d done %d\n", num, start);
-				(*workers_done)++;
-				SDL_UnlockMutex( mutex);
-				SDL_CondSignal( cond);
+				(*p->workers_done)++;
+				SDL_UnlockMutex( p->mutex);
+				SDL_CondSignal( p->cond);
 			}
 		}
 	}
