@@ -13,7 +13,7 @@ endif
 CC=$(CCCROSS)gcc
 SDLCONFIG=$(SDLCROSS)sdl-config
 
-#OPTIM=1
+OPTIM=1
 ifdef OPTIM
 CFLAGS+=-O2
 else
@@ -56,6 +56,8 @@ ifdef USE_SDL
 intersec.exe: CFLAGS+=-DUSE_SDL
 intersec.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
 intersec.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
+%.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
+%.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
 
 #plane.exe: CFLAGS+=-DUSE_SDL
 #plane.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
