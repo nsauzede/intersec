@@ -787,6 +787,53 @@ int main( int argc, char *argv[])
 			cr = (double)255 * r;
 			cg = (double)255 * g;
 			cb = (double)255 * b;
+#define LO 3
+#define HI 253
+			if ((cr <= LO) && (cg <= LO) && (cb <= LO))
+			{
+				static int count = 0;
+				if (!count)
+				{
+					printf( "got black ! x=%lu y=%lu\n", i, j);
+					count++;
+				}
+			}
+			if ((cr >= HI) && (cg >= HI) && (cb >= HI))
+			{
+				static int count = 0;
+				if (!count)
+				{
+					printf( "got white ! x=%lu y=%lu r=%u g=%u b=%u\n", i, j, cr, cg, cb);
+					count++;
+				}
+			}
+			if ((cr >= HI) && (cg <= LO) && (cb <= LO))
+			{
+				static int count = 0;
+				if (!count)
+				{
+					printf( "got red ! x=%lu y=%lu r=%u g=%u b=%u\n", i, j, cr, cg, cb);
+					count++;
+				}
+			}
+			if ((cr <= LO) && (cg >= HI) && (cb <= LO))
+			{
+				static int count = 0;
+				if (!count)
+				{
+					printf( "got green ! x=%lu y=%lu r=%u g=%u b=%u\n", i, j, cr, cg, cb);
+					count++;
+				}
+			}
+			if ((cr <= LO) && (cg <= LO) && (cb >= HI))
+			{
+				static int count = 0;
+				if (!count)
+				{
+					printf( "got blue ! x=%lu y=%lu r=%u g=%u b=%u\n", i, j, cr, cg, cb);
+					count++;
+				}
+			}
 #ifdef USE_SDL
 			if (screen)
 			{

@@ -351,7 +351,8 @@ int main( int argc, char *argv[])
 		char *ptr;
 		while (!feof( in))
 		{
-			fgets( buf, sizeof( buf), in);
+			if (!fgets( buf, sizeof( buf), in))
+				break;
 			ptr = strstr( buf, "endfacet");
 			if (ptr)
 				nfacets++;
@@ -368,7 +369,8 @@ int main( int argc, char *argv[])
 #endif
 		while (!feof( in))
 		{
-			fgets( buf, sizeof( buf), in);
+			if (!fgets( buf, sizeof( buf), in))
+				break;
 #ifdef USE_NORMAL
 			ptr = strstr( buf, "facet");
 			if (ptr)
