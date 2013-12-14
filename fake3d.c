@@ -10,13 +10,14 @@
 #define dprintf(...) do{}while(0)
 #endif
 
-// non-mutable, or protected (workers_done, start..)
 typedef struct {
-	SDL_Surface *screen;
-	int w;
-	int h;
-	int tot;
+// mutable, protected by sem_init
+	int num;
+	SDL_sem *sem_init;
 
+// non-mutable, common, or protected data (workers_done, start..)
+	int tot;
+	void *payload;		// opaque user ptr to store useful common payload data
 	SDL_mutex *mutex;
 	SDL_cond *cond;
 	int *workers_done;
@@ -25,35 +26,32 @@ typedef struct {
 	SDL_cond *cond_go;
 	int *start;
 	int *quit;
-} payload_t;
+} worker_t;
 
 typedef struct {
-	int num;
-	void *payload;
-	SDL_sem *sem_init;
-} thr_init_t;
+	SDL_Surface *screen;
+	int w;
+	int h;
+} payload_t;
 
 int thr( void *opaque)
 {
+	worker_t *w = opaque;
 	payload_t *p = 0;
 	int num = -1;
 
-	if (!opaque)
+	if (!w)
 		return -1;
-	else
-	{
-		thr_init_t *ti = opaque;
-		p = ti->payload;
-		num = ti->num;
-		SDL_SemPost( ti->sem_init);		// signal master we have done with reading thr init
-	}
+	num = w->num;
+	SDL_SemPost( w->sem_init);		// signal master we have done with reading worker data
 
+	p = w->payload;
 	int x1, y1, x2, y2;
 	int x;
 	int y;
 	int c = 0;
 	int running = 0;
-	int start = *p->start;
+	int start = *w->start;
 	dprintf( "thr %d ready to work\n", num);	
 	while (1)
 	{
@@ -61,19 +59,19 @@ int thr( void *opaque)
 		int end = 0;
 		while (!end)
 		{
-			SDL_LockMutex( p->mutex_go);
-			while (((*p->start == start) && !running && !*p->quit) && SDL_CondWait( p->cond_go, p->mutex_go) == 0)				// this blocks without hogging cpu
+			SDL_LockMutex( w->mutex_go);
+			while (((*w->start == start) && !running && !*w->quit) && SDL_CondWait( w->cond_go, w->mutex_go) == 0)				// this blocks without hogging cpu
 				continue;
-			if ((*p->start != start) || running || *p->quit)
+			if ((*w->start != start) || running || *w->quit)
 				end = 1;
-			if (*p->start != start)
+			if (*w->start != start)
 			{
 				running = 0;
-				start = *p->start;
+				start = *w->start;
 			}
-			SDL_UnlockMutex( p->mutex_go);
+			SDL_UnlockMutex( w->mutex_go);
 		}
-		if (*p->quit)
+		if (*w->quit)
 		{
 			dprintf( "thr %d will quit\n", num);	
 			break;
@@ -84,8 +82,8 @@ int thr( void *opaque)
 			c++;
 			x1 = 0;
 			x2 = p->w - 1;
-			y1 = num * p->h / p->tot;
-			y2 = (num + 1) * p->h / p->tot - 1;
+			y1 = num * p->h / w->tot;
+			y2 = (num + 1) * p->h / w->tot - 1;
 			x = x1;
 			y = y1;
 			// start working
@@ -113,11 +111,11 @@ int thr( void *opaque)
 			{
 				running = 0;
 				// now signal master we're done
-				SDL_LockMutex( p->mutex);
+				SDL_LockMutex( w->mutex);
 				dprintf( "thr %d done %d\n", num, start);
-				(*p->workers_done)++;
-				SDL_UnlockMutex( p->mutex);
-				SDL_CondSignal( p->cond);
+				(*w->workers_done)++;
+				SDL_UnlockMutex( w->mutex);
+				SDL_CondSignal( w->cond);
 			}
 		}
 	}
@@ -147,26 +145,26 @@ int main( int argc, char *argv[])
 	int start = 0;
 	int quit = 0;
 	SDL_sem *sem_init = SDL_CreateSemaphore( 0);
+	worker_t wo;
 	payload_t p;
 	p.screen = screen;
 	p.w = w;
 	p.h = h;
-	p.tot = n;
-	p.mutex = mutex;
-	p.cond = cond;
-	p.workers_done = &workers_done;
-	p.start = &start;
-	p.quit = &quit;
-	p.mutex_go = mutex_go;
-	p.cond_go = cond_go;
-	thr_init_t ti;
-	ti.payload = &p;
-	ti.sem_init = sem_init;
+	wo.tot = n;
+	wo.mutex = mutex;
+	wo.cond = cond;
+	wo.workers_done = &workers_done;
+	wo.start = &start;
+	wo.quit = &quit;
+	wo.mutex_go = mutex_go;
+	wo.cond_go = cond_go;
+	wo.payload = &p;
+	wo.sem_init = sem_init;
 	SDL_Thread **thrs = malloc( n * sizeof( SDL_Thread*));
 	for (i = 0; i < n; i++)
 	{
-		ti.num = i;
-		thrs[i] = SDL_CreateThread( thr, &ti);
+		wo.num = i;
+		thrs[i] = SDL_CreateThread( thr, &wo);
 		SDL_SemWait( sem_init);
 	}
 	SDL_DestroySemaphore( sem_init);
