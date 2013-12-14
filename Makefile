@@ -1,5 +1,6 @@
 TARGET=intersec.exe
 TARGET+=plane.exe
+TARGET+=fake3d.exe
 
 CFLAGS=-Wall -Werror
 
@@ -56,7 +57,7 @@ ifdef USE_SDL
 intersec.exe: CFLAGS+=-DUSE_SDL
 intersec.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
 intersec.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
-%.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
+%.exe:CFLAGS+=`$(SDLCONFIG) --cflags` -g -O0
 %.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
 
 #plane.exe: CFLAGS+=-DUSE_SDL
