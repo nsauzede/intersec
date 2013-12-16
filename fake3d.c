@@ -408,9 +408,9 @@ int main( int argc, char *argv[])
 	int arg = 1;
 	if (arg < argc)
 	{
-		sscanf( argv[arg++], "%d", &n);
+		scene_file = argv[arg++];
 		if (arg < argc)
-			scene_file = argv[arg++];
+			sscanf( argv[arg++], "%d", &n);
 	}
 	int i;
 	SDL_mutex *mutex;
@@ -453,6 +453,7 @@ int main( int argc, char *argv[])
 	p.screen = screen;
 	p.w = w;
 	p.h = h;
+	n = h;
 	wo.tot = n;
 	wo.mutex = mutex;
 	wo.cond = cond;
