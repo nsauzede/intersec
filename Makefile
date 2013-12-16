@@ -14,11 +14,12 @@ endif
 CC=$(CCCROSS)gcc
 SDLCONFIG=$(SDLCROSS)sdl-config
 
-OPTIM=1
+CFLAGS+=-g
+#OPTIM=1
 ifdef OPTIM
 CFLAGS+=-O2
 else
-CFLAGS+=-g -O0
+CFLAGS+=-O0
 endif
 
 #USE32=1
@@ -57,7 +58,7 @@ ifdef USE_SDL
 intersec.exe: CFLAGS+=-DUSE_SDL
 intersec.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
 intersec.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
-%.exe:CFLAGS+=`$(SDLCONFIG) --cflags` -g -O0
+%.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
 %.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
 
 #plane.exe: CFLAGS+=-DUSE_SDL
@@ -65,8 +66,10 @@ intersec.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
 #plane.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
 endif
 
+fake3d.exe: fake3d.o vec.o
+
 %.exe: %.o
-	$(CC) -o $@ $< $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 sdlr3:CFLAGS=`$(SDLCONFIG) --cflags` -g -O2
 sdlr3:LDFLAGS+=`$(SDLCONFIG) --libs`
