@@ -47,6 +47,14 @@ double* mult3( v3 n, double nn)
 	return n;
 }
 
+double* add3( v3 n, double nn)
+{
+	n[0] += nn;
+	n[1] += nn;
+	n[2] += nn;
+	return n;
+}
+
 double dot3( v3 p, v3 n)
 {
 	return p[0] * n[0] + p[1] * n[1] + p[2] * n[2];
