@@ -15,7 +15,7 @@ CC=$(CCCROSS)gcc
 SDLCONFIG=$(SDLCROSS)sdl-config
 
 CFLAGS+=-g
-#OPTIM=1
+OPTIM=1
 ifdef OPTIM
 CFLAGS+=-O2
 else
