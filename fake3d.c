@@ -17,8 +17,8 @@
 #define dprintf(...) do{}while(0)
 #endif
 
-#define W 640
-#define H 480
+#define W 1024
+#define H 768
 
 typedef struct {
 // mutable, protected by sem_init
@@ -123,7 +123,7 @@ v3 _spheres[] = {
 	{ S/4, 0, 0 },	// radius
 	{ 1, 0, 1 },	// color
 };
-int nspheres = sizeof( _spheres) / sizeof( _spheres[0]);
+int nspheres = sizeof( _spheres) / sizeof( _spheres[0]) / 3;
 
 v3 *facets = _facets;
 v3 *spheres = _spheres;
@@ -306,9 +306,9 @@ int thr( void *opaque)
 	SDL_SemPost( w->sem_init);		// signal master we have done with reading worker data
 
 	p = w->payload;
-	int x1, y1, x2, y2;
-	int x;
-	int y;
+	int x1, y1, x2 = 0, y2 = 0;
+	int x = 0;
+	int y = 0;
 #ifndef RAYTRACE
 	int c = 0;
 #endif
@@ -427,6 +427,7 @@ int main( int argc, char *argv[])
 	SDL_Init( SDL_INIT_VIDEO);
 	atexit( SDL_Quit);
 	screen = SDL_SetVideoMode( w, h, bpp, 0);
+	SDL_EnableKeyRepeat( SDL_DEFAULT_REPEAT_DELAY / 2, SDL_DEFAULT_REPEAT_INTERVAL);
 	mutex = SDL_CreateMutex();
 	cond = SDL_CreateCond();
 	mutex_go = SDL_CreateMutex();
@@ -482,8 +483,25 @@ int main( int argc, char *argv[])
 			switch (event.type)
 			{
 				case SDL_QUIT:
-				case SDL_KEYUP:
 					end = 1;
+					break;
+				case SDL_KEYUP:
+					switch (event.key.keysym.sym)
+					{
+						case SDLK_ESCAPE:
+							end = 1;
+							break;
+						case SDLK_UP:
+							go = 1;
+							add3( e, -0.5);
+							break;
+						case SDLK_DOWN:
+							go = 1;
+							add3( e, +0.5);
+							break;
+						default:
+							break;
+					}
 					break;
 				case SDL_MOUSEBUTTONUP:
 	//				if (done)
@@ -544,14 +562,9 @@ int main( int argc, char *argv[])
 		
 //		if (done)
 		{
-#ifdef USE_TIME
-			Uint32 t = SDL_GetTicks();
-#define DELAY_RESTART_WORKERS 1000
-			if (t > (old_t + DELAY_RESTART_WORKERS))
-#else
 			if (go)
-#endif
 			{
+#if 0
 				rect.x = 0;
 				rect.y = 0;
 				rect.w = w;
@@ -559,6 +572,7 @@ int main( int argc, char *argv[])
 				r = g = b = 128;
 				col = SDL_MapRGB( screen->format, r, g, b);
 				SDL_FillRect( screen, &rect, col);
+#endif
 
 				rect.x = w - _w;
 				rect.y = h - _h;
