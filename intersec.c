@@ -1,3 +1,9 @@
+/*
+ * intersec : small naive ray tracer
+ * copyright 2012 Nicolas Sauzede (nsauzede@laposte.net)
+ * This code is GPLv3
+ *
+ */
 #include <stdio.h>
 #include <math.h>
 #include <unistd.h>
@@ -18,8 +24,18 @@
 #include <sys/mman.h>
 #endif
 
+#ifdef USE_SDL
+#include <SDL.h>
+#endif
+
+#if 0
 #define W 60
 #define H 60
+#else
+#define W 640
+#define H 480
+#endif
+
 #define SMALL	0.001
 #define BIG		10.0
 
@@ -41,7 +57,7 @@ typedef struct {
 } sphere_t;
 
 sphere_t spheres[] = {
-#if 1
+#if 0
 #if 1
 	{ .cx = 0.05, .cy = 0.3, .cz = -0.8, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #define D1 1.0
@@ -105,15 +121,13 @@ sphere_t spheres[] = {
 #define CY 0.013*WINSCALE
 #define CZ 0.05*WINSCALE
 #undef Z
-#define Z 1
+#define Z 5
 	{ .cx = -11*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -9*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = 0*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = 7*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = 11*CX, .cy = -5*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 
-#undef Z
-#define Z 1
 	{ .cx = -11*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -7*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -2*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
@@ -121,8 +135,6 @@ sphere_t spheres[] = {
 	{ .cx = 7*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = 11*CX, .cy = -10*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 
-#undef Z
-#define Z 1
 	{ .cx = -11*CX, .cy = -15*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -9*CX, .cy = -15*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -2*CX, .cy = -15*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
@@ -130,8 +142,6 @@ sphere_t spheres[] = {
 	{ .cx = 2*CX, .cy = -15*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = 9*CX, .cy = -15*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = G, .b = 1, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 
-#undef Z
-#define Z 1
 	{ .cx = -11*CX, .cy = -20*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -7*CX, .cy = -20*CY, .cz = Z*CZ, .sr = 1*SR, .r = 1, .g = G, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 	{ .cx = -2*CX, .cy = -20*CY, .cz = Z*CZ, .sr = 1*SR, .r = R, .g = 1, .b = B, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
@@ -567,8 +577,38 @@ int stats()
 	return 0;
 }
 
+#define USE_CAMERA
+#ifdef USE_CAMERA
+typedef double v3[3];
+
+void cross3( v3 dest, v3 src1, v3 src2)
+{
+	dest[0] = src1[1] * src2[2] - src1[2] * src2[1];
+	dest[1] = src1[2] * src2[0] - src1[0] * src2[2];
+	dest[2] = src1[0] * src2[1] - src1[1] * src2[0];
+}
+
+void sum3( v3 dest, v3 src1, v3 src2)
+{
+	dest[0] = src1[0] + src2[0];
+	dest[1] = src1[1] + src2[1];
+	dest[2] = src1[2] + src2[2];
+}
+
+void diff3( v3 dest, v3 src1, v3 src2)
+{
+	dest[0] = src1[0] - src2[0];
+	dest[1] = src1[1] - src2[1];
+	dest[2] = src1[2] - src2[2];
+}
+#endif
+
 int main( int argc, char *argv[])
 {
+#ifdef USE_SDL
+	SDL_Surface *screen = 0;
+	int do_sdl = 1;
+#endif
 	double ex, ey, ez, vx, vy, vz;
 	
 	ex = 0*WINSCALE; ey = 0*WINSCALE; ez = 1*WINSCALE; vx = 0.0; vy = 0.0; vz = -1*WINSCALE;
@@ -597,6 +637,15 @@ int main( int argc, char *argv[])
 			}
 		}
 	}
+#ifdef USE_SDL
+	if (do_sdl)
+	{
+		SDL_Init( SDL_INIT_VIDEO);
+		screen = SDL_SetVideoMode( w, h, bpp, 0);
+		if (screen)
+			atexit( SDL_Quit);
+	}
+#endif
 	winw = 1.0 * winscale; winh = winw * h / w;
 	if (do_tga)
 	{
@@ -687,16 +736,116 @@ int main( int argc, char *argv[])
 					stats();
 					fflush( stdout);
 				}
+#ifdef USE_SDL
+				if (screen)
+				{
+					SDL_UpdateRect( screen, 0, 0, 0, 0);
+				}
+#endif
 			}
 			if (i >= w)
 				break;
 			char pix = '.';
+#ifndef USE_CAMERA
 			_vx = vx - winw / 2 + winw * (double)i / (w - 1);
+#else
+			v3 v;
+			v[0] = vx;
+			v[1] = vy;
+			v[2] = vz;
+			v3 e;
+			e[0] = ex;
+			e[1] = ey;
+			e[2] = ez;
+			// p=p0+(p1-p0)u+(p2-p0)v
+			v3 up = { 0, 1, 0};
+			v3 right;
+			cross3( right, v, up);
+			cross3( up, right, v);
+			v3 s0, s1, s2, s;
+			sum3( s0, e, v);
+			sum3( s1, s0, up);
+			sum3( s2, s0, right);
+			double u, vv;
+			vv = -(double)0.5 + (double)1.0 * (double)i / ((double)w - 1);
+			u = -(double)0.5 + (double)1.0 * (double)(h - j - 1) / ((double)h - 1);
+			s[0] = s0[0] + (s1[0] - s0[0]) * u + (s2[0] - s0[0]) * vv;
+			s[1] = s0[1] + (s1[1] - s0[1]) * u + (s2[1] - s0[1]) * vv;
+			s[2] = s0[2] + (s1[2] - s0[2]) * u + (s2[2] - s0[2]) * vv;
+			v3 _v;
+			diff3( _v, s, e);
+			_vx = _v[0];
+			_vy = _v[1];
+			_vz = _v[2];
+#endif
 
 //			printf( "j=%lu i=%lu vy=%f vx=%f\n", j, i, _vy, _vx);
 			double r = 0.0, g = 0.0, b = 0.0;
 
 			traceray( 0, ex, ey, ez, _vx, _vy, _vz, &r, &g, &b, &pix, 1.0, 1.0, 1.0);
+			unsigned char cr, cg, cb;
+			cr = (double)255 * r;
+			cg = (double)255 * g;
+			cb = (double)255 * b;
+#define LO 3
+#define HI 253
+			if ((cr <= LO) && (cg <= LO) && (cb <= LO))
+			{
+				static int count = 0;
+				if (!count)
+				{
+					printf( "got black ! x=%lu y=%lu\n", i, j);
+					count++;
+				}
+			}
+			if ((cr >= HI) && (cg >= HI) && (cb >= HI))
+			{
+				static int count = 0;
+				if (!count)
+				{
+					printf( "got white ! x=%lu y=%lu r=%u g=%u b=%u\n", i, j, cr, cg, cb);
+					count++;
+				}
+			}
+			if ((cr >= HI) && (cg <= LO) && (cb <= LO))
+			{
+				static int count = 0;
+				if (!count)
+				{
+					printf( "got red ! x=%lu y=%lu r=%u g=%u b=%u\n", i, j, cr, cg, cb);
+					count++;
+				}
+			}
+			if ((cr <= LO) && (cg >= HI) && (cb <= LO))
+			{
+				static int count = 0;
+				if (!count)
+				{
+					printf( "got green ! x=%lu y=%lu r=%u g=%u b=%u\n", i, j, cr, cg, cb);
+					count++;
+				}
+			}
+			if ((cr <= LO) && (cg <= LO) && (cb >= HI))
+			{
+				static int count = 0;
+				if (!count)
+				{
+					printf( "got blue ! x=%lu y=%lu r=%u g=%u b=%u\n", i, j, cr, cg, cb);
+					count++;
+				}
+			}
+#ifdef USE_SDL
+			if (screen)
+			{
+				Uint32 col;
+				SDL_Rect rect;
+				rect.x = i;
+				rect.y = j;
+				rect.w = rect.h = 1;
+				col = SDL_MapRGB( screen->format, cr, cg, cb);
+				SDL_FillRect( screen, &rect, col);
+			}
+#endif
 			//dprintf( "  (r=%f g=%f b=%f)", r, g, b);
 			if (do_tga)
 			{
@@ -710,10 +859,6 @@ int main( int argc, char *argv[])
 				}
 				count++;
 #endif
-				unsigned char cr, cg, cb;
-				cr = (double)255 * r;
-				cg = (double)255 * g;
-				cb = (double)255 * b;
 			//	dprintf( "{%02x:%02x:%02x}", cr, cg, cb);
 				TGA_BYTE( cb);
 				TGA_BYTE( cg);
@@ -754,6 +899,31 @@ int main( int argc, char *argv[])
 		duration = 1;
 	unsigned long perf = (w * h) / duration;
 	printf( "perf : %lu ray/s duration=%.2fs (old_t=%.2f cur_t=%.2f)\n", perf, duration, old_t, cur_t);
+#ifdef USE_SDL
+	if (screen)
+	{
+		SDL_Event event;
+		int end = 0;
+		while (!end)
+		{
+			SDL_WaitEvent( &event);
+			switch (event.type)
+			{
+				case SDL_QUIT:
+					end = 1;
+					break;
+				case SDL_KEYDOWN:
+					end = 1;
+					break;
+				case SDL_MOUSEBUTTONDOWN:
+					end = 1;
+					break;
+				default:
+					break;
+			}
+		}
+	}
+#endif
 	
 	return 0;
 }
