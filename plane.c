@@ -238,7 +238,7 @@ int intersec_sphere( v3 cs, double sr, v3 e, v3 v, double *tmin, double *tmax)
 #define V E/2
 	v3 v = { -2*V, -2*V, -2*V };
 #else
-#define E 10
+#define E 50
 	v3 e = { 0*E, 0*E, 1*E };
 // ..a direction (vector v)..
 #define V E/2
