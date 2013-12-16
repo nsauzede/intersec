@@ -24,7 +24,7 @@ typedef struct {
 
 	SDL_mutex *mutex_go;
 	SDL_cond *cond_go;
-	int *start;
+	int *start;			// incrementing
 	int *quit;
 } worker_t;
 
