@@ -17,8 +17,8 @@
 #define dprintf(...) do{}while(0)
 #endif
 
-#define W 1024
-#define H 768
+#define W 800
+#define H 600
 
 typedef struct {
 // mutable, protected by sem_init
@@ -319,7 +319,7 @@ int thr( void *opaque)
 	{
 		// now wait for master to signal go
 		int end = 0;
-		while (!end)
+		while (!end && !running && !*w->quit)
 		{
 			SDL_LockMutex( w->mutex_go);
 			while (((*w->start == start) && !running && !*w->quit) && SDL_CondWait( w->cond_go, w->mutex_go) == 0)				// this blocks without hogging cpu
@@ -404,7 +404,7 @@ int main( int argc, char *argv[])
 	int w = W;
 	int h = H;
 	int bpp = 32;
-	int n = 2;
+	int n = 1;
 	int arg = 1;
 	if (arg < argc)
 	{
@@ -453,7 +453,6 @@ int main( int argc, char *argv[])
 	p.screen = screen;
 	p.w = w;
 	p.h = h;
-	n = h;
 	wo.tot = n;
 	wo.mutex = mutex;
 	wo.cond = cond;
