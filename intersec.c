@@ -56,8 +56,207 @@ typedef struct {
 	double rindex;					// refraction index
 } sphere_t;
 
-sphere_t spheres[] = {
-#if 0
+typedef double v3[3];
+
+typedef struct {
+	sphere_t *spheres;
+	int nspheres;
+	v3 *facets;
+	int nfacets;
+} scene_t;
+
+int load_scene( scene_t *scene, char *file)
+{
+	int i, j;
+	FILE *in = fopen( file, "rt");
+	if (!in)
+	{
+		printf( "couln't open scene file '%s' !\n", file);
+		exit( 1);
+	}
+	else
+	{
+		enum { UNKNOWN = 0, STL = 1, POV = 2 } type= UNKNOWN;
+		scene->nfacets = 0;
+		scene->nspheres = 0;
+		char buf[1024];
+		char *ptr;
+		while (!feof( in))
+		{
+			if (!fgets( buf, sizeof( buf), in))
+				break;
+			ptr = strstr( buf, "endfacet");
+			if (ptr)
+			{
+				if (type &= ~STL)
+				{
+					printf( "bad scene file : type=%x and STL token found\n", type);
+					exit( 1);
+				}
+				type = STL;
+				scene->nfacets++;
+			}
+			ptr = strstr( buf, "camera");
+			if (ptr)
+			{
+				if (type &= ~POV)
+				{
+					printf( "bad scene file : type=%x and POV token found\n", type);
+					exit( 1);
+				}
+				type = POV;
+			}
+			ptr = strstr( buf, "sphere");
+			if (ptr)
+			{
+				if (type &= ~POV)
+				{
+					printf( "bad scene file : type=%x and POV token found\n", type);
+					exit( 1);
+				}
+				type = POV;
+				scene->nspheres++;
+			}
+		}
+		printf( "type=%x (%s)\n", type, type == STL ? "STL" : type == POV ? "POV" : "unknown");
+		printf( "read nfacets=%d\n", scene->nfacets);
+		printf( "read nspheres=%d\n", scene->nspheres);
+		rewind( in);
+		if ((type == POV) && scene->nspheres)
+		{
+			scene->spheres = malloc( scene->nspheres * sizeof(*scene->spheres));
+			memset( scene->spheres, 0, scene->nspheres * sizeof(*scene->spheres));
+			i = -1;
+			while (!feof( in))
+			{
+				float p[4];
+				if (!fgets( buf, sizeof( buf), in))
+					break;
+				ptr = strstr( buf, "sphere");
+				if (ptr)
+				{
+					if (!fgets( buf, sizeof( buf), in))
+						break;
+					ptr = strchr( buf, '<');
+					printf( "sphere=[%s]\n", ptr);
+					sscanf( ptr, "<%f, %f, %f>, %f", &p[0], &p[1], &p[2], &p[3]);
+					printf( "read s: %f,%f,%f %f\n", p[0], p[1], p[2], p[3]);
+					i++;
+					scene->spheres[i].cx = p[0];
+					scene->spheres[i].cy = p[1];
+					scene->spheres[i].cz = p[2];
+					scene->spheres[i].sr = p[3];
+					continue;
+				}
+				ptr = strstr( buf, "rgb");
+				if (ptr)
+				{
+					ptr = strchr( buf, '<');
+					printf( "rgb=[%s]\n", ptr);
+					sscanf( ptr, "<%f, %f, %f>", &p[0], &p[1], &p[2]);
+					printf( "read c: %f,%f,%f\n", p[0], p[1], p[2]);
+					scene->spheres[i].r = p[0];
+					scene->spheres[i].g = p[1];
+					scene->spheres[i].b = p[2];
+					continue;
+				}
+				ptr = strstr( buf, "diffuse");
+				if (ptr)
+				{
+					printf( "diffuse=[%s]\n", ptr);
+					sscanf( ptr, "diffuse %f", &p[0]);
+					printf( "read d: %f\n", p[0]);
+					scene->spheres[i].rdatt = p[0];
+					scene->spheres[i].gdatt = p[0];
+					scene->spheres[i].bdatt = p[0];
+					continue;
+				}
+				ptr = strstr( buf, "reflection");
+				if (ptr)
+				{
+					printf( "reflection=[%s]\n", ptr);
+					sscanf( ptr, "reflection %f", &p[0]);
+					printf( "read r: %f\n", p[0]);
+					scene->spheres[i].rratt = p[0];
+					scene->spheres[i].gratt = p[0];
+					scene->spheres[i].bratt = p[0];
+					continue;
+				}
+				ptr = strstr( buf, "specular");
+				if (ptr)
+				{
+					printf( "specular=[%s]\n", ptr);
+					sscanf( ptr, "specular %f", &p[0]);
+					printf( "read r: %f\n", p[0]);
+					scene->spheres[i].rfatt = p[0];
+					scene->spheres[i].gfatt = p[0];
+					scene->spheres[i].bfatt = p[0];
+					continue;
+				}
+			}
+		}
+		if ((type == STL) && scene->nfacets)
+		{
+		scene->facets = malloc( scene->nfacets * sizeof(v3[4]));
+		memset( scene->spheres, 0, scene->nspheres * sizeof(*scene->spheres));
+		i = 0;
+		j = 0;
+#ifdef USE_NORMAL
+		float normal[3] = { 0, 0, 0};
+#endif
+		while (!feof( in))
+		{
+			if (!fgets( buf, sizeof( buf), in))
+				break;
+#ifdef USE_NORMAL
+			ptr = strstr( buf, "facet");
+			if (ptr)
+			{
+				float p[3];
+				sscanf( ptr, "facet normal %f %f %f", &p[0], &p[1], &p[2]);
+				printf( "read normal: %f,%f,%f\n", p[0], p[1], p[2]);
+				normal[0] = p[0];
+				normal[1] = p[1];
+				normal[2] = p[2];
+			}
+#endif
+			ptr = strstr( buf, "vertex");
+			if (ptr)
+			{
+				float p[3];
+				sscanf( ptr, "%*s %f %f %f", &p[0], &p[1], &p[2]);
+//				printf( "read p: %f,%f,%f\n", p[0], p[1], p[2]);
+				scene->facets[i * 4 + j][0] = p[0];
+				scene->facets[i * 4 + j][1] = p[1];
+				scene->facets[i * 4 + j][2] = p[2];
+				if (++j >= 3)
+				{
+#ifndef USE_NORMAL
+					scene->facets[i * 4 + j][0] = !(i % 3);	// fake facet color with facet index r
+					scene->facets[i * 4 + j][1] = !((i + 1) % 3);	// g
+					scene->facets[i * 4 + j][2] = !((i + 2) % 3);	// b
+#else
+					scene->facets[i * 4 + j][0] = normal[0];	// fake facet color with facet normal r
+					scene->facets[i * 4 + j][1] = normal[1];	// g
+					scene->facets[i * 4 + j][2] = normal[2];	// b
+#endif
+					i++;
+					j = 0;
+				}
+			}
+		}
+		}
+		fclose( in);
+	}
+	printf( "nfacets=%d\n", scene->nfacets);
+	printf( "nspheres=%d\n", scene->nspheres);
+////
+	return 0;
+}
+scene_t scene;
+
+sphere_t _spheres[] = {
+#if 1
 #if 1
 	{ .cx = 0.05, .cy = 0.3, .cz = -0.8, .sr = 0.2, .r = 1.0, .g = 0.0, .b = 0.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #define D1 1.0
@@ -154,7 +353,8 @@ sphere_t spheres[] = {
 	{ .cx = 0.0, .cy = 0.4, .cz = 0.0, .sr = 0.2, .r = 0.0, .g = 0.0, .b = 1.0, .rdatt = 1.0, .gdatt = 1.0, .bdatt = 1.0, .rratt = 1.0, .gratt = 1.0, .bratt = 1.0 },
 #endif
 };
-int nsph = sizeof (spheres) / sizeof (spheres[0]);
+int __nsph = sizeof (_spheres) / sizeof (_spheres[0]);
+sphere_t *__spheres = _spheres;
 
 int solvetri( double a, double b, double c, double *t1, double *t2)
 {
@@ -349,6 +549,8 @@ int level_max_reached = -1;
 int level_max = LEV_MAX;
 int traceray( int level, double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b, char *pix, double ratt, double gatt, double batt)
 {
+	int nsph = scene.nspheres;
+	sphere_t *spheres = scene.spheres;
 	if (level == 0)
 		traced++;
 	if (level > level_max_reached)
@@ -610,6 +812,7 @@ int main( int argc, char *argv[])
 	int do_sdl = 1;
 #endif
 	double ex, ey, ez, vx, vy, vz;
+	char *scene_file = 0;	
 	
 	ex = 0*WINSCALE; ey = 0*WINSCALE; ez = 1*WINSCALE; vx = 0.0; vy = 0.0; vz = -1*WINSCALE;
 	unsigned long w, h;
@@ -625,18 +828,52 @@ int main( int argc, char *argv[])
 	size_t tga_index = 0;
 
 	int arg = 1;
-	if (argc > arg)
+	while (arg < argc)
 	{
-		sscanf( argv[arg++], "%lu", &w);
-		if (argc > arg)
+		if (!strcmp( argv[arg], "-w"))
 		{
-			sscanf( argv[arg++], "%lu", &h);
-			if (argc > arg)
+			if (++arg >= argc)
 			{
-				sscanf( argv[arg++], "%d", &level_max);
+				printf( "missing width argument\n");
+				exit( 1);
 			}
+			sscanf( argv[arg++], "%lu", &w);
+		}
+		else if (!strcmp( argv[arg], "-h"))
+		{
+			if (++arg >= argc)
+			{
+				printf( "missing height argument\n");
+				exit( 1);
+			}
+			sscanf( argv[arg++], "%lu", &h);
+		}
+		else if (!strcmp( argv[arg], "-d"))
+		{
+			if (++arg >= argc)
+			{
+				printf( "missing depth argument\n");
+				exit( 1);
+			}
+			sscanf( argv[arg++], "%d", &level_max);
+		}
+		else
+		{
+			if (scene_file)
+			{
+				printf( "scene file can't be set twice (already set as '%s')\n", scene_file);
+				exit( 1);
+			}
+			scene_file = argv[arg++];
 		}
 	}
+	scene.spheres = __spheres;
+	scene.nspheres = __nsph;
+	if (scene_file)
+	{
+		load_scene( &scene, scene_file);
+	}
+	printf( "nspheres=%d\n", scene.nspheres);
 #ifdef USE_SDL
 	if (do_sdl)
 	{
