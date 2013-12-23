@@ -57,6 +57,7 @@ check: $(TARGET)
 ifdef USE_SDL
 intersec.exe: CFLAGS+=-DUSE_SDL
 intersec.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
+#intersec.exe:LDFLAGS+=`$(SDLCONFIG) --libs` -mno-windows
 intersec.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
 fake3d.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
 fake3d.exe:LDFLAGS+=`$(SDLCONFIG) --libs`

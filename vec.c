@@ -190,31 +190,55 @@ int solvetri( double a, double b, double c, double *t1, double *t2)
 	return result;
 }
 
+#if 0
+// taken from "fractal prog & ray tracing with c++" book
 int intersec_sphere( v3 cs, double sr, v3 e, v3 v, double *tmin, double *tmax)
 {
-	double ex = e[0];
-	double ey = e[1];
-	double ez = e[2];
-	double cx = cs[0];
-	double cy = cs[1];
-	double cz = cs[2];
-	double vx = v[0];
-	double vy = v[1];
-	double vz = v[2];
-	
+	// already computed ?
+	double n1 = sr * sr;
+
+	double a, b, c, d;
+	v3 temp;
+
+	double t1, t2;
+
+	diff3( temp, cs, e);
+	c = dot3( temp, temp) - n1;
+	b = -2 * dot3( v, temp);
+	a = dot3( v, v);
+	d = b * b - 4 * a * c;
+	if (d <= 0)
+		return 0;
+	d = sqrt( d);
+	t1 = (-b + d) / (a + a);
+	t2 = (-b - d) / (a + a);
+	if (t1 <= SMALL && t2 <= SMALL)
+		return 0;
+	if (t1 < t2)
+	{
+		*tmin = t1;
+	}
+	else
+	{
+		*tmin = t2;
+	}
+
+	return 1;
+}
+#else
+int intersec_sphere( v3 cs, double sr, v3 e, v3 v, double *tmin, double *tmax)
+{
 	int result = 0;
 	double a, b, c;
 	double t1, t2;
 	
-	double tx, ty, tz;
+	v3 t;
 	double n;
 	n = sr * sr;
-	tx = ex - cx;
-	ty = ey - cy;
-	tz = ez - cz;
-	a = vx * vx + vy * vy + vz * vz;
-	b = 2 * ( vx * tx + vy * ty + vz * tz);
-	c = (tx * tx + ty * ty + tz * tz) - n;
+	diff3( t, e, cs);
+	a = dot3( v, v);
+	b = 2 * dot3( v, t);
+	c = dot3( t, t) - n;
 	int sol;
 	sol = solvetri( a, b, c, &t1, &t2);
 	if (sol == 2)
@@ -245,3 +269,5 @@ int intersec_sphere( v3 cs, double sr, v3 e, v3 v, double *tmin, double *tmax)
 
 	return result;
 }
+#endif
+

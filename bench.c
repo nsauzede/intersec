@@ -5,6 +5,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <time.h>
+#include <sys/time.h>
 
 #ifdef WIN32
 #include <windows.h>
@@ -30,7 +32,7 @@ v3 spheres[] = {
 	{1, 0, 1},
 	{2},
 };
-int nsph = sizeof (spheres) / sizeof (spheres[0]);
+int nsph = sizeof (spheres) / sizeof (spheres[0]) / 2;
 
 int main( int argc, char *argv[])
 {
@@ -64,5 +66,38 @@ int main( int argc, char *argv[])
 	printf( "dot=%f\n", dot);
 	disp3( "r", r);
 
+{
+	int i, num = 2000000;
+	printf( "generating %d rand spheres\n", num);
+	v3 *spheres2 = malloc( num * 2 * sizeof (v3));
+	memset( spheres2, 0, num * 2 * sizeof (v3));
+	int *res = malloc( num * sizeof( int));
+	double *t = malloc( num * sizeof( double));
+	srand( time( 0));
+	double old_tm, tm;
+	struct timeval old_tv, tv;
+	for (i = 0; i < num; i++)
+	{
+		v3 v;
+		v[0] = 0.01 * (rand() % 100);
+		v[1] = 0.01 * (rand() % 100);
+		v[2] = 0.01 * (rand() % 100);
+		sum3( spheres2[i * 2], spheres[0], v);
+		spheres2[i * 2 + 1][0] = spheres[1][0] + 0.01 * (rand() % 100);
+	}
+	printf( "intersecting %d rand spheres\n", num);
+	gettimeofday( &old_tv, 0);
+	for (i = 0; i < num; i++)
+	{
+		res[i] = intersec_sphere( spheres2[i * 2], spheres2[i * 2 + 1][0], e, v, &t[i], 0);
+	}
+	gettimeofday( &tv, 0);
+	old_tm = (double)old_tv.tv_sec * 1000000 + old_tv.tv_usec;
+	tm = (double)tv.tv_sec * 1000000 + tv.tv_usec;
+	double del = tm - old_tm;
+	double interss = 1000000 * del / num;
+	printf( "delay=%f inter/s=%f\n", del, interss);
+	printf( "t=%f\n", t[num - 1]);
+}
 	return 0;
 }
