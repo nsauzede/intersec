@@ -12,6 +12,7 @@ double* add3( v3 n, double nn);
 double dot3( v3 p, v3 n);
 double norm3( v3 n);
 double *copy3( v3 dest, const v3 src);
+void set3( v3 dest, double x, double y, double z);
 void disp3( char *s, const v3 v);
 int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt);
 int solvetri( double a, double b, double c, double *t1, double *t2);

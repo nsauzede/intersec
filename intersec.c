@@ -28,6 +28,8 @@
 #include <SDL.h>
 #endif
 
+#include "vec.h"
+
 #if 0
 #define W 60
 #define H 60
@@ -391,80 +393,6 @@ sphere_t _spheres[] = {
 int __nsph = sizeof (_spheres) / sizeof (_spheres[0]);
 sphere_t *__spheres = _spheres;
 
-int solvetri( double a, double b, double c, double *t1, double *t2)
-{
-	int result = 0;
-	double d, sd;
-	d = b * b - 4 * a * c;
-	sd = sqrt( d);
-	
-	if (d > 0)
-	{
-		*t1 = (-b - sd) / 2 / a;
-		*t2 = (-b + sd) / 2 / a;
-		result = 2;
-	}
-	else if (d == 0)
-	{
-		*t1 = -b / 2 / a;
-		result = 1;
-	}
-	else
-	{
-		result = 0;
-	}
-	return result;
-}
-
-int intersec_sphere( double cx, double cy, double cz, double sr, double ex, double ey, double ez, double vx, double vy, double vz, double *tmin, double *tmax)
-{
-	int result = 0;
-	double a, b, c;
-	double t1, t2;
-	
-	double tx, ty, tz;
-	double n;
-	n = sr * sr;
-	tx = ex - cx;
-	ty = ey - cy;
-	tz = ez - cz;
-	a = vx * vx + vy * vy + vz * vz;
-	b = 2 * ( vx * tx + vy * ty + vz * tz);
-	c = (tx * tx + ty * ty + tz * tz) - n;
-	int sol;
-	sol = solvetri( a, b, c, &t1, &t2);
-	if (sol == 2)
-	{
-//		printf( "two solutions : %f and %f\n", t1, t2);
-		if (fabs( t1) > fabs( t2))
-		{
-			double temp = t1;
-			t1 = t2;
-			t2 = temp;
-		}
-	}
-	else if (sol == 1)
-	{
-//		printf( "one solution : %f\n", t1);
-		t2 = t1;
-	}
-	else
-	{
-//		printf( "no solutions\n");
-	}
-	if (sol && (t1 > SMALL))
-	{
-		result = 1;
-//		printf( "returning %f\n", t1);
-		if (tmin)
-			*tmin = t1;
-		if (tmax)
-			*tmax = t2;
-	}
-
-	return result;
-}
-
 #define ATT_MIN 0.001
 #define LEV_MAX -1
 
@@ -584,6 +512,9 @@ int level_max_reached = -1;
 int level_max = LEV_MAX;
 int traceray( int level, double ex, double ey, double ez, double _vx, double _vy, double _vz, double *r, double *g, double *b, char *pix, double ratt, double gatt, double batt)
 {
+	v3 e, _v;
+	set3( e, ex, ey, ez);
+	set3( _v, _vx, _vy, _vz);
 	int nsph = scene.nspheres;
 	sphere_t *spheres = scene.spheres;
 	int nlamps = scene.nlamps;
@@ -607,12 +538,16 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 	
 	for (s = 0; s < nsph; s++)
 	{
-		double cx, cy, cz, sr;
-		cx = spheres[s].cx; cy = spheres[s].cy; cz = spheres[s].cz; sr = spheres[s].sr;
+//		double cx, cy, cz, sr;
+//		cx = spheres[s].cx; cy = spheres[s].cy; cz = spheres[s].cz; sr = spheres[s].sr;
+		v3 c;
+		double sr;
+		c[0] = spheres[s].cx; c[1] = spheres[s].cy; c[2] = spheres[s].cz; sr = spheres[s].sr;
 //		printf( "sphere: c(%f;%f;%f) r(%f)\n", cx, cy, cz, sr);
 		int res;
 		double t = 0, t2 = 0;
-		res = intersec_sphere( cx, cy, cz, sr, ex, ey, ez, _vx, _vy, _vz, &t, &t2);
+//		res = intersec_sphere( cx, cy, cz, sr, ex, ey, ez, _vx, _vy, _vz, &t, &t2);
+		res = intersec_sphere( c, sr, e, _v, &t, &t2);
 //		printf( "%c", res ? 's' : '.');
 		if (res)
 		{
@@ -857,30 +792,6 @@ int stats()
 }
 
 #define USE_CAMERA
-#ifdef USE_CAMERA
-typedef double v3[3];
-
-void cross3( v3 dest, v3 src1, v3 src2)
-{
-	dest[0] = src1[1] * src2[2] - src1[2] * src2[1];
-	dest[1] = src1[2] * src2[0] - src1[0] * src2[2];
-	dest[2] = src1[0] * src2[1] - src1[1] * src2[0];
-}
-
-void sum3( v3 dest, v3 src1, v3 src2)
-{
-	dest[0] = src1[0] + src2[0];
-	dest[1] = src1[1] + src2[1];
-	dest[2] = src1[2] + src2[2];
-}
-
-void diff3( v3 dest, v3 src1, v3 src2)
-{
-	dest[0] = src1[0] - src2[0];
-	dest[1] = src1[1] - src2[1];
-	dest[2] = src1[2] - src2[2];
-}
-#endif
 
 int main( int argc, char *argv[])
 {
