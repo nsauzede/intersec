@@ -58,8 +58,11 @@ ifdef USE_SDL
 intersec.exe: CFLAGS+=-DUSE_SDL
 intersec.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
 intersec.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
-%.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
-%.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
+fake3d.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
+fake3d.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
+
+#%.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
+#%.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
 
 #plane.exe: CFLAGS+=-DUSE_SDL
 #plane.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
@@ -67,6 +70,7 @@ intersec.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
 endif
 
 fake3d.exe: fake3d.o vec.o
+bench.exe: bench.o vec.o
 
 %.exe: %.o
 	$(CC) -o $@ $^ $(LDFLAGS)

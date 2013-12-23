@@ -24,16 +24,9 @@
 #define dprintf(...) do{}while(0)
 #endif
 
-typedef struct {
-	double cx, cy, cz, sr;
-	double r, g, b;
-} sphere_t;
-
-sphere_t spheres[] = {
-	{ .cx = 1.0, .cy = 0.0, .cz = 1.0, .sr = 2.0, .r = 0.0, .g = 0.0, .b = 1.0 },
-};
-int nsph = sizeof (spheres) / sizeof (spheres[0]);
-
+#if 1
+#include "vec.h"
+#else
 int solvetri( double a, double b, double c, double *t1, double *t2)
 {
 	int result = 0;
@@ -102,52 +95,54 @@ int intersec_sphere( double cx, double cy, double cz, double sr, double ex, doub
 
 	return result;
 }
+#endif
+
+typedef struct {
+	double cx, cy, cz, sr;
+	double r, g, b;
+} sphere_t;
+
+sphere_t spheres[] = {
+	{ .cx = 1.0, .cy = 0.0, .cz = 1.0, .sr = 2.0, .r = 0.0, .g = 0.0, .b = 1.0 },
+};
+int nsph = sizeof (spheres) / sizeof (spheres[0]);
 
 int main( int argc, char *argv[])
 {
-	double ex, ey, ez, vx, vy, vz;
-
-	ex = 7; ey = 0; ez = 5; vx = -1.0; vy = 0.0; vz = -1.0;
-
-	double x = 0.0, y = 0.0, z = 0.0;
+	v3 e = {7,0,5};
+	v3 v = {-1.0,0.0,-1.0};
+	v3 p;
 	double t;
-
 	int ni;
-	double cx, cy, cz, sr;
-	cx = spheres[0].cx; cy = spheres[0].cy; cz = spheres[0].cz; sr = spheres[0].sr;
+	double sr;
+	v3 cs;
+
+	cs[0] = spheres[0].cx; cs[1] = spheres[0].cy; cs[2] = spheres[0].cz; sr = spheres[0].sr;
 	double n;
-	n = sqrt( vx * vx + vy * vy + vz * vz);
-	vx /= n;
-	vy /= n;
-	vz /= n;
-	ni = intersec_sphere( cx, cy, cz, sr, ex, ey, ez, vx, vy, vz, &t);
-	x = ex + t * vx;
-	y = ey + t * vy;
-	z = ez + t * vz;
-	double rx, ry, rz;
-	double nx, ny, nz, dot;
-	nx = x - cx;
-	ny = y - cy;
-	nz = z - cz;
-	n = sqrt( nx * nx + ny * ny + nz * nz);
-	nx /= n;
-	ny /= n;
-	nz /= n;
-	dot = nx * vx + ny * vy + nz * vz;
+	n = norm3( v);
+	div3( v, n);
+	ni = intersec_sphere( cs, sr, e, v, &t, 0);
+	sum3( p, e, mult3( v, t));
+	v3 r;
+	v3 nn;
+	double dot;
+	diff3( nn, p, cs);
+	div3( nn, norm3( nn));
+	dot = dot3( nn, v);
 #if 1
-	rx = vx - 2 * dot * nx;
-	ry = vy - 2 * dot * ny;
-	rz = vz - 2 * dot * nz;
+	diff3( r, v, mult3( nn, 2 * dot));
 #else
-	rx = 2 * dot * nx - vx;
-	ry = 2 * dot * ny - vy;
-	rz = 2 * dot * nz - vz;
+	diff3( r, mult3( nn, 2 * dot), v);
 #endif
-	n = sqrt( rx * rx + ry * ry + rz * rz);
-	rx /= n;
-	ry /= n;
-	rz /= n;
-	printf( "vx=%f vy=%f vz=%f ni=%d t=%f x=%f y=%f z=%f nx=%f ny=%f nz=%f dot=%f rx=%f ry=%f rz=%f\n", vx, vy, vz, ni, t, x, y, z, nx, ny, nz, dot, rx, ry, rz);
+	div3( r, norm3( r));
+	disp3( "e", e);
+	disp3( "v", v);
+	disp3( "cs", cs);
+	printf( "ni=%d\n", ni);
+	disp3( "p", p);
+	disp3( "nn", nn);
+	disp3( "r", r);
+//	printf( "vx=%f vy=%f vz=%f ni=%d t=%f x=%f y=%f z=%f nx=%f ny=%f nz=%f dot=%f rx=%f ry=%f rz=%f\n", vx, vy, vz, ni, t, x, y, z, nx, ny, nz, dot, rx, ry, rz);
 
 	return 0;
 }

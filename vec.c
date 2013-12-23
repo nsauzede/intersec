@@ -65,6 +65,11 @@ double norm3( v3 n)
 	return sqrt( dot3( n, n));	
 }
 
+void disp3( char *s, const v3 v)
+{
+	printf( "%s: %f,%f,%f\n", s, v[0], v[1], v[2]);
+}
+
 // plane : (p - po) . n = 0
 // line : p = dl + l0
 int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
