@@ -129,7 +129,7 @@ int main( int argc, char *argv[])
 	diff3( nn, p, cs);
 	div3( nn, norm3( nn));
 	dot = dot3( nn, v);
-	diff3( r, v, mult3( nn, 2 * dot));
+	diff3( r, v, mult3( copy3( r, nn), 2 * dot));
 	div3( r, norm3( r));
 	disp3( "e", e);
 	disp3( "v", v);
