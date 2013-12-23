@@ -111,7 +111,7 @@ int main( int argc, char *argv[])
 {
 	v3 e = {7,0,5};
 	v3 v = {-1.0,0.0,-1.0};
-	v3 p;
+	v3 p = {9,0,0};
 	double t;
 	int ni;
 	double sr;
@@ -122,25 +122,22 @@ int main( int argc, char *argv[])
 	n = norm3( v);
 	div3( v, n);
 	ni = intersec_sphere( cs, sr, e, v, &t, 0);
-	sum3( p, e, mult3( v, t));
+	sum3( p, e, mult3( copy3( p, v), t));
 	v3 r;
 	v3 nn;
 	double dot;
 	diff3( nn, p, cs);
 	div3( nn, norm3( nn));
 	dot = dot3( nn, v);
-#if 1
 	diff3( r, v, mult3( nn, 2 * dot));
-#else
-	diff3( r, mult3( nn, 2 * dot), v);
-#endif
 	div3( r, norm3( r));
 	disp3( "e", e);
 	disp3( "v", v);
 	disp3( "cs", cs);
-	printf( "ni=%d\n", ni);
+	printf( "ni=%d t=%f\n", ni, t);
 	disp3( "p", p);
 	disp3( "nn", nn);
+	printf( "dot=%f\n", dot);
 	disp3( "r", r);
 //	printf( "vx=%f vy=%f vz=%f ni=%d t=%f x=%f y=%f z=%f nx=%f ny=%f nz=%f dot=%f rx=%f ry=%f rz=%f\n", vx, vy, vz, ni, t, x, y, z, nx, ny, nz, dot, rx, ry, rz);
 
