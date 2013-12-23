@@ -271,3 +271,79 @@ int intersec_sphere( v3 cs, double sr, v3 e, v3 v, double *tmin, double *tmax)
 }
 #endif
 
+#define BIG 3e30
+#define MIN(a,b) (a < b ? a : b)
+#define MAX(a,b) (a > b ? a : b)
+#define MIN3(a,b,c) (a < b ? (a < c ? a : c) : b < c ? b : c)
+#define MAX3(a,b,c) (a > b ? (a > c ? a : c) : b > c ? b : c)
+int intersec_box( v3 lower, v3 upper, v3 e, v3 v, double *_tmin, double *_tmax)
+{
+	double tmin, tmax, tminx, tmaxx, tminy, tmaxy, tminz, tmaxz, t1, t2;
+	if (fabs(v[0]) < SMALL)
+	{
+		if ((lower[0] < e[0]) && (upper[0] > e[0]))
+		{
+			tminx = -BIG;
+			tmaxx = BIG;
+		}
+		else
+			return 0;
+	}
+	else
+	{
+		t1 = (lower[0] - e[0]) / v[0];
+		t2 = (upper[0] - e[0]) / v[0];
+		tminx = MIN( t1, t2);
+		tmaxx = MAX( t1, t2);
+		if (tmaxx < 0)
+			return 0;
+	}
+	if (fabs(v[1]) < SMALL)
+	{
+		if ((lower[1] < e[1]) && (upper[1] > e[1]))
+		{
+			tminy = -BIG;
+			tmaxy = BIG;
+		}
+		else
+			return 0;
+	}
+	else
+	{
+		t1 = (lower[1] - e[1]) / v[1];
+		t2 = (upper[1] - e[1]) / v[1];
+		tminy = MIN( t1, t2);
+		tmaxy = MAX( t1, t2);
+		if (tmaxy < 0)
+			return 0;
+	}
+	if (fabs(v[2]) < SMALL)
+	{
+		if ((lower[2] < e[2]) && (upper[2] > e[2]))
+		{
+			tminz = -BIG;
+			tmaxz = BIG;
+		}
+		else
+			return 0;
+	}
+	else
+	{
+		t1 = (lower[2] - e[2]) / v[2];
+		t2 = (upper[2] - e[2]) / v[2];
+		tminz = MIN( t1, t2);
+		tmaxz = MAX( t1, t2);
+		if (tmaxz < 0)
+			return 0;
+	}
+	tmin = MAX3( tminx, tminy, tminz);
+	tmax = MIN3( tmaxx, tmaxy, tmaxz);
+	if (tmax < tmin)
+		return 0;
+
+	if (_tmin)
+		*_tmin = tmin;
+	if (_tmax)
+		*_tmax = tmax;
+	return 2;
+}
