@@ -67,7 +67,7 @@ double norm3( v3 n)
 
 double *copy3( v3 dest, const v3 src)
 {
-	*dest = *src;
+	memcpy( dest, src, sizeof( v3));
 	return dest;
 }
 
