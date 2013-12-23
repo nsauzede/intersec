@@ -70,6 +70,7 @@ fake3d.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
 #plane.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
 endif
 
+intersec.exe: intersec.o vec.o
 fake3d.exe: fake3d.o vec.o
 bench.exe: bench.o vec.o
 

@@ -71,6 +71,13 @@ double *copy3( v3 dest, const v3 src)
 	return dest;
 }
 
+void set3( v3 dest, double x, double y, double z)
+{
+	dest[0] = x;
+	dest[1] = y;
+	dest[2] = z;
+}
+
 void disp3( char *s, const v3 v)
 {
 	printf( "%s: %f,%f,%f\n", s, v[0], v[1], v[2]);
