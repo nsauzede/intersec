@@ -30,7 +30,7 @@ LDFLAGS+=-m32
 endif
 endif
 
-USE_SKY=1
+#USE_SKY=1
 ifdef USE_SKY
 CFLAGS+=-DUSE_SKY=$(USE_SKY)
 endif

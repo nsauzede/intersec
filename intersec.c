@@ -58,11 +58,15 @@ typedef struct {
 
 typedef double v3[3];
 
+typedef v3 lamp_t;
+
 typedef struct {
 	sphere_t *spheres;
 	int nspheres;
 	v3 *facets;
 	int nfacets;
+	lamp_t *lamps;
+	int nlamps;
 } scene_t;
 
 int load_scene( scene_t *scene, char *file)
@@ -117,21 +121,52 @@ int load_scene( scene_t *scene, char *file)
 				type = POV;
 				scene->nspheres++;
 			}
+			ptr = strstr( buf, "light_source");
+			if (ptr)
+			{
+				if (type &= ~POV)
+				{
+					printf( "bad scene file : type=%x and POV token found\n", type);
+					exit( 1);
+				}
+				type = POV;
+				scene->nlamps++;
+			}
 		}
 		printf( "type=%x (%s)\n", type, type == STL ? "STL" : type == POV ? "POV" : "unknown");
 		printf( "read nfacets=%d\n", scene->nfacets);
 		printf( "read nspheres=%d\n", scene->nspheres);
+		printf( "read nlamps=%d\n", scene->nlamps);
 		rewind( in);
 		if ((type == POV) && scene->nspheres)
 		{
+			if (scene->nlamps)
+			{
+				scene->lamps = malloc( scene->nlamps * sizeof(*scene->lamps));
+				memset( scene->lamps, 0, scene->nlamps * sizeof(*scene->lamps));
+			}
 			scene->spheres = malloc( scene->nspheres * sizeof(*scene->spheres));
 			memset( scene->spheres, 0, scene->nspheres * sizeof(*scene->spheres));
 			i = -1;
+			int l = 0;
 			while (!feof( in))
 			{
 				float p[4];
 				if (!fgets( buf, sizeof( buf), in))
 					break;
+				ptr = strstr( buf, "light_source");
+				if (ptr)
+				{
+					ptr = strchr( buf, '<');
+					printf( "light_source=[%s]\n", ptr);
+					sscanf( ptr, "<%f, %f, %f>", &p[0], &p[1], &p[2]);
+					printf( "read l: %f,%f,%f\n", p[0], p[1], p[2]);
+					scene->lamps[l][0] = p[0];
+					scene->lamps[l][1] = p[1];
+					scene->lamps[l][2] = p[2];
+					l++;
+					continue;
+				}
 				ptr = strstr( buf, "sphere");
 				if (ptr)
 				{
@@ -551,12 +586,19 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 {
 	int nsph = scene.nspheres;
 	sphere_t *spheres = scene.spheres;
+	int nlamps = scene.nlamps;
+	lamp_t *lamps = scene.lamps;
 	if (level == 0)
 		traced++;
 	if (level > level_max_reached)
 		level_max_reached = level;
 	unsigned long smin = -1, s;
-	double tmin = BIG, tmax = 0, srmin = 0;
+	double tmin = BIG, tmax = 0;
+//#define CHEAPO_LIGHTING
+#ifdef CHEAPO_LIGHTING
+	double srmin = 0;
+#endif
+
 	double rmin = 0.0, gmin = 0.0, bmin = 0.0;		// material
 	double rdatt = 0.0, gdatt = 0.0, bdatt = 0.0;	// diffuse
 	double rratt = 0.0, gratt = 0.0, bratt = 0.0;	// reflected
@@ -579,7 +621,10 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 				smin = s;
 				tmin = t;
 				tmax = t2;
+#ifdef CHEAPO_LIGHTING
 				srmin = spheres[s].sr;
+#endif
+
 				rmin = spheres[s].r;
 				gmin = spheres[s].g;
 				bmin = spheres[s].b;
@@ -635,17 +680,49 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 		dprintf( "inters with sphere %lu at (%f,%f,%f)\n", smin, rx, ry, rz);
 		double nvx, nvy, nvz;	// normal vect
 
+		double grad = 1;
+#ifdef CHEAPO_LIGHTING
+		// this is a cheapo way to make ambient light/shadows
 // compute distance between two intersec points
 		nvx = rx - rx2;
 		nvy = ry - ry2;
 		nvz = rz - rz2;
 		n = sqrt( nvx * nvx + nvy * nvy + nvz * nvz);
-		double grad;
 		grad = n / srmin / 2;
 		grad = sqrt( grad);
 		rdiff = rmin * rdatt * grad;
 		gdiff = gmin * gdatt * grad;
 		bdiff = bmin * bdatt * grad;
+#else
+// compute distance between lamp and intersec point
+		int i;
+		for (i = 0; i < nlamps; i++)
+		{
+			rx2 = lamps[i][0];
+			ry2 = lamps[i][1];
+			rz2 = lamps[i][2];
+			nvx = rx2 - rx;
+			nvy = ry2 - ry;
+			nvz = rz2 - rz;
+			n = sqrt( nvx * nvx + nvy * nvy + nvz * nvz);
+#define LIGHT_CONST 0.001
+			n += LIGHT_CONST;
+			grad = 1 / n / n;
+			break;
+		}
+		if (grad > 1)
+		{
+			rdiff = 1;
+			gdiff = 1;
+			bdiff = 1;
+		}
+		else
+		{
+		rdiff = rmin * rdatt * grad;
+		gdiff = gmin * gdatt * grad;
+		bdiff = bmin * bdatt * grad;
+		}
+#endif
 
 		double rvx, rvy, rvz;	// vect of reflected/refracted ray
 
@@ -874,6 +951,7 @@ int main( int argc, char *argv[])
 		load_scene( &scene, scene_file);
 	}
 	printf( "nspheres=%d\n", scene.nspheres);
+	printf( "nlamps=%d\n", scene.nlamps);
 #ifdef USE_SDL
 	if (do_sdl)
 	{
