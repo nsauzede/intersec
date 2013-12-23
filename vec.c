@@ -65,6 +65,12 @@ double norm3( v3 n)
 	return sqrt( dot3( n, n));	
 }
 
+double *copy3( v3 dest, const v3 src)
+{
+	*dest = *src;
+	return dest;
+}
+
 void disp3( char *s, const v3 v)
 {
 	printf( "%s: %f,%f,%f\n", s, v[0], v[1], v[2]);
