@@ -109,15 +109,15 @@ int nsph = sizeof (spheres) / sizeof (spheres[0]);
 
 int main( int argc, char *argv[])
 {
+	v3 p;
 	v3 e = {7,0,5};
 	v3 v = {-1.0,0.0,-1.0};
-	v3 p = {9,0,0};
+	v3 cs;
+	double sr;
+	cs[0] = spheres[0].cx; cs[1] = spheres[0].cy; cs[2] = spheres[0].cz; sr = spheres[0].sr;
 	double t;
 	int ni;
-	double sr;
-	v3 cs;
 
-	cs[0] = spheres[0].cx; cs[1] = spheres[0].cy; cs[2] = spheres[0].cz; sr = spheres[0].sr;
 	double n;
 	n = norm3( v);
 	div3( v, n);
