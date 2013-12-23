@@ -44,6 +44,8 @@ typedef struct {
 	int nfacets;
 	v3 *spheres;
 	int nspheres;
+	v3 *boxes;
+	int nboxes;
 
 // camera is : eye coordinate (vector e)..
 // ..a direction (vector v)..
@@ -119,14 +121,24 @@ int nfacets = sizeof( _facets) / sizeof( _facets[0]) / 4;
 // multiple spheres
 #define S 20
 v3 _spheres[] = {
+#if 0
 	{ S, S, S },
 	{ S/4, 0, 0 },	// radius
 	{ 1, 0, 1 },	// color
+#endif
 };
 int nspheres = sizeof( _spheres) / sizeof( _spheres[0]) / 3;
 
+v3 _boxes[] = {
+	{ -S, -S, -S },	// lower
+	{ S, S, S },	// upper
+	{ 1, 1, 0 },	// color
+};
+int nboxes = sizeof( _boxes) / sizeof( _boxes[0]) / 3;
+
 v3 *facets = _facets;
 v3 *spheres = _spheres;
+v3 *boxes = _boxes;
 
 void traceray( scene_t *scene, v3 _v, v3 col)
 {
@@ -161,6 +173,19 @@ void traceray( scene_t *scene, v3 _v, v3 col)
 		{
 			tmin = t;
 			pcol = &spheres[i * 3 + 2][0];
+		}
+	}
+	for (i = 0; i < nboxes; i++)
+	{
+		p0 = boxes[i * 3 + 0];		// box lower
+		p1 = boxes[i * 3 + 1];		// box upper
+		t = 0;
+		res = intersec_box( p0, p1, e, _v, &t, 0);
+//		dprintf( "result=%d t=%f\n", res, t);
+		if (res && (t < tmin))
+		{
+			tmin = t;
+			pcol = boxes[i * 3 + 2];
 		}
 	}
 	if (pcol)
