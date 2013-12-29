@@ -1,6 +1,8 @@
 TARGET=intersec.exe
 TARGET+=plane.exe
 TARGET+=fake3d.exe
+TARGET+=bench.exe
+TARGET+=fbench.exe
 
 CFLAGS=-Wall -Werror
 
@@ -17,7 +19,8 @@ SDLCONFIG=$(SDLCROSS)sdl-config
 CFLAGS+=-g
 OPTIM=1
 ifdef OPTIM
-CFLAGS+=-O2
+#CFLAGS+=-O2
+CFLAGS+=-O3
 else
 CFLAGS+=-O0
 endif
@@ -43,6 +46,10 @@ endif
 USETIMEOFDAY=1
 ifdef USETIMEOFDAY
 CFLAGS+=-DUSETIMEOFDAY=$(USETIMEOFDAY)
+endif
+
+ifdef USE_DOUBLE
+CFLAGS+=-DUSE_DOUBLE
 endif
 
 MV=mv
@@ -73,11 +80,12 @@ endif
 intersec.exe: intersec.o vec.o
 fake3d.exe: fake3d.o vec.o
 bench.exe: bench.o vec.o
+fbench.exe: fbench.o fvec.o
 
 %.exe: %.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-sdlr3:CFLAGS=`$(SDLCONFIG) --cflags` -g -O2
+sdlr3:CFLAGS=`$(SDLCONFIG) --cflags`
 sdlr3:LDFLAGS+=`$(SDLCONFIG) --libs`
 sdlr3:sdlr3.c
 	$(CC) -o $@ $(CFLAGS) $^ $(LDFLAGS)

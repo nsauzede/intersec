@@ -249,6 +249,7 @@ inline int load_scene( scene_t *scene, char *file)
 	{
 		nfacets = 0;
 		nspheres = 0;
+		nboxes = 0;
 		char buf[1024];
 		char *ptr;
 		while (!feof( in))
