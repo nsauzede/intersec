@@ -47,7 +47,7 @@ int main( int argc, char *argv[])
 	double t;
 	int ni;
 
-#if 0
+{
 	double *cs = spheres[0];
 	double sr = spheres[1][0];
 	double n;
@@ -71,7 +71,7 @@ int main( int argc, char *argv[])
 	disp3( "nn", nn);
 	printf( "dot=%f\n", dot);
 	disp3( "r", r);
-{
+
 	int i, num = 2000000;
 	printf( "generating %d rand spheres\n", num);
 	v3 *spheres2 = malloc( num * 2 * sizeof (v3));
@@ -100,11 +100,30 @@ int main( int argc, char *argv[])
 	old_tm = (double)old_tv.tv_sec * 1000000 + old_tv.tv_usec;
 	tm = (double)tv.tv_sec * 1000000 + tv.tv_usec;
 	double del = tm - old_tm;
-	double interss = 1000000 * del / num;
-	printf( "delay=%f inter/s=%f\n", del, interss);
+	del += 1; // in case we get 0 us
+	double interss = (double)num * 1000000 / del;
+	char *unit = "";
+	double mult = 1;
+	if (interss > 1e9)
+	{
+		mult = 1e9;
+		unit = "G";
+	}
+	else if (interss > 1e6)
+	{
+		mult = 1e6;
+		unit = "M";
+	}
+	else if (interss > 1e3)
+	{
+		mult = 1e3;
+		unit = "K";
+	}
+	interss /= mult;
+	printf( "delay=%f rate=%lu %sinters/s\n", del, (unsigned long)interss, unit);
 	printf( "t=%f\n", t[num - 1]);
 }
-#else
+{
 	double *lower = boxes[0];
 	double *upper = boxes[1];
 	double n;
@@ -122,7 +141,7 @@ int main( int argc, char *argv[])
 	printf( "ni=%d t=%f t2=%f\n", ni, t, t2);
 	disp3( "p", p);
 	disp3( "p2", p2);
-{
+
 	int i, num = 2000000;
 	printf( "generating %d rand boxes\n", num);
 	v3 *boxes2 = malloc( num * 2 * sizeof (v3));
@@ -151,11 +170,29 @@ int main( int argc, char *argv[])
 	old_tm = (double)old_tv.tv_sec * 1000000 + old_tv.tv_usec;
 	tm = (double)tv.tv_sec * 1000000 + tv.tv_usec;
 	double del = tm - old_tm;
-	double interss = 1000000 * del / num;
-	printf( "delay=%f inter/s=%f\n", del, interss);
+	del += 1; // in case we get 0 us
+	double interss = (double)num * 1000000 / del;
+	char *unit = "";
+	double mult = 1;
+	if (interss > 1e9)
+	{
+		mult = 1e9;
+		unit = "G";
+	}
+	else if (interss > 1e6)
+	{
+		mult = 1e6;
+		unit = "M";
+	}
+	else if (interss > 1e3)
+	{
+		mult = 1e3;
+		unit = "K";
+	}
+	interss /= mult;
+	printf( "delay=%f rate=%lu %sinters/s\n", del, (unsigned long)interss, unit);
 	printf( "t=%f\n", t[num - 1]);
 }
-#endif
 
 	return 0;
 }
