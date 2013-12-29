@@ -4,12 +4,9 @@
 #include <SDL_thread.h>
 #include <SDL_mutex.h>
 
-#define RAYTRACE
 //#define DEBUG
 
-#ifdef RAYTRACE
 #include "vec.h"
-#endif
 
 #ifdef DEBUG
 #define dprintf printf
@@ -38,7 +35,6 @@ typedef struct {
 	int *quit;
 } worker_t;
 
-#ifdef RAYTRACE
 typedef struct {
 	v3 *facets;
 	int nfacets;
@@ -57,18 +53,14 @@ typedef struct {
 	// camera screen as three vectors of a plane : s0, s1 and s2
 	v3 s0, s1, s2;
 } scene_t;
-#endif
 
 typedef struct {
 	SDL_Surface *screen;
 	int w;
 	int h;
-#ifdef RAYTRACE
 	scene_t *scene;
-#endif
 } payload_t;
 
-#ifdef RAYTRACE
 #define EPS 0.1
 #define BIG 1000.0
 #define COMP_EPS(x,val) (x >= ((val) - EPS) && x <= ((val) + EPS))
@@ -318,7 +310,6 @@ inline int load_scene( scene_t *scene, char *file)
 ////
 	return 0;
 }
-#endif
 
 int thr( void *opaque)
 {
@@ -335,9 +326,6 @@ int thr( void *opaque)
 	int x1, y1, x2 = 0, y2 = 0;
 	int x = 0;
 	int y = 0;
-#ifndef RAYTRACE
-	int c = 0;
-#endif
 	int running = 0;
 	int start = *w->start;
 	dprintf( "thr %d ready to work\n", num);	
@@ -373,9 +361,6 @@ int thr( void *opaque)
 			y2 = (num + 1) * p->h / w->tot - 1;
 			x = x1;
 			y = y1;
-#ifndef RAYTRACE
-			c++;
-#endif
 			// start working
 			running = 1;
 		}
@@ -388,13 +373,7 @@ int thr( void *opaque)
 		rect.w = 1;
 		rect.h = 1;
 		int r, g, b;
-#ifndef RAYTRACE
-		r = (c+num)&1?255:0;
-		g = (c+num)&2?255:0;
-		b = (c+num)&4?255:0;
-#else
 		compute_scene( p->scene, x, y, &r, &g, &b);
-#endif
 		col = SDL_MapRGB( p->screen->format, r, g, b);
 		SDL_FillRect( p->screen, &rect, col);
 
@@ -461,7 +440,6 @@ int main( int argc, char *argv[])
 	sem_init = SDL_CreateSemaphore( 0);
 	worker_t wo;
 	payload_t p;
-#ifdef RAYTRACE
 	scene_t scene;
 	scene.facets = facets;
 	scene.nfacets = nfacets;
@@ -475,7 +453,6 @@ int main( int argc, char *argv[])
 	p.scene = &scene;
 	if (scene_file)	// load scene ?
 		load_scene( &scene, scene_file);
-#endif
 	p.screen = screen;
 	p.w = w;
 	p.h = h;
@@ -611,9 +588,7 @@ int main( int argc, char *argv[])
 
 				SDL_UpdateRect( screen, 0, 0, 0, 0);
 
-#ifdef RAYTRACE
 				init_scene( &scene);
-#endif
 				// start workers
 				go = 0;
 				done = 0;
