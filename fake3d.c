@@ -67,16 +67,16 @@ typedef struct {
 // camera is : eye coordinate (vector e)..
 #if 1
 #define E 20
-	v3 e = { 2*E, 2*E, 2*E };
+	v3 __e = { 2*E, 2*E, 2*E };
 // ..a direction (vector v)..
 #define V E/2
-	v3 v = { -2*V, -2*V, -2*V };
+	v3 __v = { -2*V, -2*V, -2*V };
 #else
 #define E 10
-	v3 e = { 0*E, 0*E, 1*E };
+	v3 __e = { 0*E, 0*E, 1*E };
 // ..a direction (vector v)..
 #define V E/2
-	v3 v = { -0*V, -0*V, -1*V };
+	v3 __v = { -0*V, -0*V, -1*V };
 #endif
 // ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
 v3 up = { 0, 1, 0};
@@ -132,7 +132,7 @@ v3 *facets = _facets;
 v3 *spheres = _spheres;
 v3 *boxes = _boxes;
 
-void traceray( scene_t *scene, v3 _v, v3 col)
+void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 {
 	double *pcol = 0;
 	double tmin = BIG;
@@ -146,7 +146,7 @@ void traceray( scene_t *scene, v3 _v, v3 col)
 		p1 = facets[i * 4 + 1];
 		p2 = facets[i * 4 + 2];
 		t = 0;
-		res = intersec_plane( p0, p1, p2, e, _v, &t);
+		res = intersec_plane( p0, p1, p2, _e, _v, &t);
 //		dprintf( "result=%d t=%f\n", res, t);
 		if (res && (t < tmin))
 		{
@@ -159,7 +159,7 @@ void traceray( scene_t *scene, v3 _v, v3 col)
 		p0 = spheres[i * 3 + 0];		// sphere center
 		p1 = spheres[i * 3 + 1];		// sphere radius
 		t = 0;
-		res = intersec_sphere( p0, *p1, e, _v, &t, 0);
+		res = intersec_sphere( p0, *p1, _e, _v, &t, 0);
 //		dprintf( "result=%d t=%f\n", res, t);
 		if (res && (t < tmin))
 		{
@@ -172,7 +172,7 @@ void traceray( scene_t *scene, v3 _v, v3 col)
 		p0 = boxes[i * 3 + 0];		// box lower
 		p1 = boxes[i * 3 + 1];		// box upper
 		t = 0;
-		res = intersec_box( p0, p1, e, _v, &t, 0);
+		res = intersec_box( p0, p1, _e, _v, &t, 0);
 //		dprintf( "result=%d t=%f\n", res, t);
 		if (res && (t < tmin))
 		{
@@ -182,22 +182,6 @@ void traceray( scene_t *scene, v3 _v, v3 col)
 	}
 	if (pcol)
 		memcpy( col, pcol, 3 * sizeof( col[0]));
-}
-
-// input : v,up,e
-// output : s0,s1,s2,up,v
-inline int init_scene( scene_t *scene)
-{
-	// compute camera screen as three vectors of a plane : s0, s1 and s2
-	v3 right;
-	// normalize v
-	div3( scene->v, norm3( scene->v));
-	cross3( right, scene->v, scene->up);
-	cross3( scene->up, right, scene->v);
-	sum3( scene->s0, scene->e, scene->v);
-	sum3( scene->s1, scene->s0, scene->up);
-	sum3( scene->s2, scene->s0, right);
-	return 0;
 }
 
 // input : s0,s1,s2,e
@@ -219,7 +203,7 @@ inline int compute_scene( scene_t *scene, int i, int j, int *r, int *g, int *b)
 	diff3( _v, s, scene->e);
 	v3 col;
 	memset( col, 0, sizeof( col));
-	traceray( scene, _v, col);
+	traceray( scene, scene->e, _v, col);
 
 	if ((col[0] < 0) || (col[0] > 1) || (col[1] < 0) || (col[1] > 1) || (col[2] < 0) || (col[2] > 1))
 	{
@@ -230,6 +214,22 @@ inline int compute_scene( scene_t *scene, int i, int j, int *r, int *g, int *b)
 	*g = col[1] * 255;
 	*b = col[2] * 255;
 
+	return 0;
+}
+
+// input : v,up,e
+// output : s0,s1,s2,up,v
+inline int init_scene( scene_t *scene)
+{
+	// compute camera screen as three vectors of a plane : s0, s1 and s2
+	v3 right;
+	// normalize v
+	div3( scene->v, norm3( scene->v));
+	cross3( right, scene->v, scene->up);
+	cross3( scene->up, right, scene->v);
+	sum3( scene->s0, scene->e, scene->v);
+	sum3( scene->s1, scene->s0, scene->up);
+	sum3( scene->s2, scene->s0, right);
 	return 0;
 }
 
@@ -447,8 +447,8 @@ int main( int argc, char *argv[])
 	scene.nspheres = nspheres;
 	scene.w = w;
 	scene.h = h;
-	scene.e = e;
-	scene.v = v;
+	scene.e = __e;
+	scene.v = __v;
 	scene.up = up;
 	p.scene = &scene;
 	if (scene_file)	// load scene ?
@@ -496,11 +496,11 @@ int main( int argc, char *argv[])
 							break;
 						case SDLK_UP:
 							go = 1;
-							add3( e, -0.5);
+							add3( scene.e, -0.5);
 							break;
 						case SDLK_DOWN:
 							go = 1;
-							add3( e, +0.5);
+							add3( scene.e, +0.5);
 							break;
 						default:
 							break;
