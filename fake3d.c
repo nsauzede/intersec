@@ -33,19 +33,15 @@ typedef struct {
 } worker_t;
 
 typedef struct {
-	//	objs
-	//	{
-	//		{
-	//			s type		sphere=0; facet=1; box=2
-	//			s s0		sphere: radius
-	//			s N/A
-	//		}
-	//		v3 loc0		sphere: center;	facet: vertex0; box: lower
-	//		v3 loc1		facet: vertex1; box: upper
-	//		v3 loc2		facet: vertex2
-	//		v3 color
-	//		}
-	//	}
+//		{
+//			s type		sphere=0; facet=1; box=2
+//			s s0		sphere: radius
+//			s N/A
+//		}
+//		v3 loc0		sphere: center;	facet: vertex0; box: lower
+//		v3 loc1		facet: vertex1; box: upper
+//		v3 loc2		facet: vertex2
+//		v3 color
 #define LEN_OBJ 5
 #define OBJ_LOC0 1
 #define OBJ_LOC1 2
@@ -99,7 +95,6 @@ void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 		v3 *cur_obj = &scene->objs[i * LEN_OBJ];
 		double t = 0;
 		res = intersec_obj( cur_obj, _e, _v, &t);
-//		dprintf( "result=%d t=%f\n", res, t);
 		if (res && (t < tmin))
 		{
 			tmin = t;
@@ -211,7 +206,6 @@ inline int load_scene( scene_t *scene, char *file)
 			{
 				float p[3];
 				sscanf( ptr, "%*s %f %f %f", &p[0], &p[1], &p[2]);
-//				printf( "read p: %f,%f,%f\n", p[0], p[1], p[2]);
 				if (j == 0)
 					scene->objs[i * LEN_OBJ][0] = 1; // type
 				scene->objs[i * LEN_OBJ + OBJ_LOC0 + j][0] = p[0];
@@ -415,7 +409,7 @@ int main( int argc, char *argv[])
 	SDL_Init( SDL_INIT_VIDEO);
 	atexit( SDL_Quit);
 	screen = SDL_SetVideoMode( w, h, bpp, 0);
-	SDL_EnableKeyRepeat( SDL_DEFAULT_REPEAT_DELAY / 2, SDL_DEFAULT_REPEAT_INTERVAL);
+	SDL_EnableKeyRepeat( SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 	mutex = SDL_CreateMutex();
 	cond = SDL_CreateCond();
 	mutex_go = SDL_CreateMutex();
@@ -469,19 +463,23 @@ int main( int argc, char *argv[])
 				case SDL_QUIT:
 					end = 1;
 					break;
-				case SDL_KEYUP:
+				case SDL_KEYDOWN:
 					switch (event.key.keysym.sym)
 					{
 						case SDLK_ESCAPE:
 							end = 1;
 							break;
 						case SDLK_UP:
+							if (done){
 							go = 1;
 							add3( scene.e, -0.5);
+							}
 							break;
 						case SDLK_DOWN:
+							if (done){
 							go = 1;
 							add3( scene.e, +0.5);
+							}
 							break;
 						default:
 							break;
