@@ -54,13 +54,6 @@ typedef struct {
 	v3 *objs;
 	int nobjs;
 
-	v3 *facets;
-	int nfacets;
-	v3 *spheres;
-	int nspheres;
-	v3 *boxes;
-	int nboxes;
-
 // camera is : eye coordinate (vector e)..
 // ..a direction (vector v)..
 // ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
@@ -344,25 +337,25 @@ int thr( void *opaque)
 #define S 20
 // multiple objects
 v3 __objs[] = {
-
+// a facet
 	{ 1, 0, 0 },	// 1=facet
 	{ 0, 0, 0 },
 	{ F, 0, 0 },
 	{ 0, F, 0 },
 	{ 1, 0, 0 },	// color
-
+// a facet
 	{ 1, 0, 0 },	// 1=facet
 	{ 0, 0, 0 },
 	{ 0, F, 0 },
 	{ 0, 0, F },
 	{ 0, 1, 0 },	// color
-
+// a facet
 	{ 1, 0, 0 },	// 1=facet
 	{ 0, 0, 0 },
 	{ 0, 0, F },	// WARNING : visible faces must have normal pointing to eye !
 	{ F, 0, 0 },
 	{ 0, 0, 1 },	// color
-
+// a box
 	{ 2, 0, 0 },	// 2=box
 	{ -S, -S, -S },	// lower
 	{ S, S, S },	// upper
@@ -370,50 +363,7 @@ v3 __objs[] = {
 	{ 1, 1, 0 },	// color
 };
 int _nobjs = sizeof( __objs) / sizeof( __objs[0]) / LEN_OBJ;
-// multiple facets (3 vertex3 + 1 color3 each)
-v3 __facets[] = {
-#if 0
-		{ 0, 0, 0 },
-		{ F, 0, 0 },
-		{ 0, F, 0 },
-		{ 1, 0, 0 },	// color
-
-		{ 0, 0, 0 },
-		{ 0, F, 0 },
-		{ 0, 0, F },
-		{ 0, 1, 0 },	// color
-
-		{ 0, 0, 0 },
-		{ 0, 0, F },	// WARNING : visible faces must have normal pointing to eye !
-		{ F, 0, 0 },
-		{ 0, 0, 1 },	// color
-
-#endif
-};
-int _nfacets = sizeof( __facets) / sizeof( __facets[0]) / 4;
-// multiple spheres
-v3 __spheres[] = {
-#if 0
-	{ S, S, S },
-	{ S/4, 0, 0 },	// radius
-	{ 1, 0, 1 },	// color
-#endif
-};
-int _nspheres = sizeof( __spheres) / sizeof( __spheres[0]) / 3;
-
-v3 __boxes[] = {
-#if 0
-	{ -S, -S, -S },	// lower
-	{ S, S, S },	// upper
-	{ 1, 1, 0 },	// color
-#endif
-};
-int _nboxes = sizeof( __boxes) / sizeof( __boxes[0]) / 3;
-
 v3 *_objs = __objs;
-v3 *_facets = __facets;
-v3 *_spheres = __spheres;
-v3 *_boxes = __boxes;
 
 // camera is : eye coordinate (vector e)..
 #if 1
@@ -475,12 +425,6 @@ int main( int argc, char *argv[])
 	scene_t scene;
 	scene.objs = _objs;
 	scene.nobjs = _nobjs;
-	scene.facets = _facets;
-	scene.nfacets = _nfacets;
-	scene.spheres = _spheres;
-	scene.nspheres = _nspheres;
-	scene.boxes = _boxes;
-	scene.nboxes = _nboxes;
 	scene.w = w;
 	scene.h = h;
 	scene.e = _e;
