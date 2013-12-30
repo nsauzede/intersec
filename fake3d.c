@@ -14,9 +14,6 @@
 #define dprintf(...) do{}while(0)
 #endif
 
-#define W 800
-#define H 600
-
 typedef struct {
 // mutable, protected by sem_init
 	int num;
@@ -338,7 +335,7 @@ int thr( void *opaque)
 // 3d scene :
 // multiple facets (3 vertex3 + 1 color3 each)
 #define F 40
-v3 _facets[] = {
+v3 __facets[] = {
 		{ 0, 0, 0 },
 		{ F, 0, 0 },
 		{ 0, F, 0 },
@@ -355,54 +352,48 @@ v3 _facets[] = {
 		{ 0, 0, 1 },	// color
 
 };
-int nfacets = sizeof( _facets) / sizeof( _facets[0]) / 4;
+int _nfacets = sizeof( __facets) / sizeof( __facets[0]) / 4;
 // multiple spheres
 #define S 20
-v3 _spheres[] = {
+v3 __spheres[] = {
 #if 0
 	{ S, S, S },
 	{ S/4, 0, 0 },	// radius
 	{ 1, 0, 1 },	// color
 #endif
 };
-int nspheres = sizeof( _spheres) / sizeof( _spheres[0]) / 3;
+int _nspheres = sizeof( __spheres) / sizeof( __spheres[0]) / 3;
 
-v3 _boxes[] = {
+v3 __boxes[] = {
 	{ -S, -S, -S },	// lower
 	{ S, S, S },	// upper
 	{ 1, 1, 0 },	// color
 };
-int nboxes = sizeof( _boxes) / sizeof( _boxes[0]) / 3;
+int _nboxes = sizeof( __boxes) / sizeof( __boxes[0]) / 3;
 
-v3 *facets = _facets;
-v3 *spheres = _spheres;
-v3 *boxes = _boxes;
+v3 *_facets = __facets;
+v3 *_spheres = __spheres;
+v3 *_boxes = __boxes;
 
 // camera is : eye coordinate (vector e)..
 #if 1
 #define E 20
-	v3 __e = { 2*E, 2*E, 2*E };
+	v3 _e = { 2*E, 2*E, 2*E };
 // ..a direction (vector v)..
 #define V E/2
-	v3 __v = { -2*V, -2*V, -2*V };
+	v3 _v = { -2*V, -2*V, -2*V };
 #else
 #define E 10
-	v3 __e = { 0*E, 0*E, 1*E };
+	v3 _e = { 0*E, 0*E, 1*E };
 // ..a direction (vector v)..
 #define V E/2
-	v3 __v = { -0*V, -0*V, -1*V };
+	v3 _v = { -0*V, -0*V, -1*V };
 #endif
 // ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
-v3 up = { 0, 1, 0};
-// camera screen size
-#if 1
-int w = 110, h = 50;
-#else
-//int w = 640, h = 480;
-//int w = 1024, h = 768;
-int w = 1920, h = 1080;
-#endif
+v3 _up = { 0, 1, 0};
 
+#define W 800
+#define H 600
 int main( int argc, char *argv[])
 {
 	char *scene_file = 0;
@@ -442,17 +433,17 @@ int main( int argc, char *argv[])
 	worker_t wo;
 	payload_t p;
 	scene_t scene;
-	scene.facets = facets;
-	scene.nfacets = nfacets;
-	scene.spheres = spheres;
-	scene.nspheres = nspheres;
-	scene.boxes = boxes;
-	scene.nboxes = nboxes;
+	scene.facets = _facets;
+	scene.nfacets = _nfacets;
+	scene.spheres = _spheres;
+	scene.nspheres = _nspheres;
+	scene.boxes = _boxes;
+	scene.nboxes = _nboxes;
 	scene.w = w;
 	scene.h = h;
-	scene.e = __e;
-	scene.v = __v;
-	scene.up = up;
+	scene.e = _e;
+	scene.v = _v;
+	scene.up = _up;
 	p.scene = &scene;
 	if (scene_file)	// load scene ?
 		load_scene( &scene, scene_file);
