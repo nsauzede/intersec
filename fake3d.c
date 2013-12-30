@@ -33,6 +33,27 @@ typedef struct {
 } worker_t;
 
 typedef struct {
+	//	objs
+	//	{
+	//		{
+	//			s type		sphere=0; facet=1; box=2
+	//			s s0		sphere: radius
+	//			s N/A
+	//		}
+	//		v3 color
+	//		v3 loc0		sphere: center;	facet: vertex0; box: lower
+	//		v3 loc1		facet: vertex1; box: upper
+	//		v3 loc2		facet: vertex2
+	//		}
+	//	}
+#define LEN_OBJ 5
+#define OBJ_COLOR 1
+#define OBJ_LOC0 2
+#define OBJ_LOC1 3
+#define OBJ_LOC2 4
+	v3 *objs;
+	int nobjs;
+
 	v3 *facets;
 	int nfacets;
 	v3 *spheres;
@@ -62,6 +83,18 @@ typedef struct {
 #define BIG 1000.0
 #define COMP_EPS(x,val) (x >= ((val) - EPS) && x <= ((val) + EPS))
 
+int intersec_obj( v3 *obj, v3 e, v3 v, double *tmin)
+{
+	int res = 0;
+	if (obj[0][0] == 0) // sphere
+		res = intersec_sphere( obj[OBJ_LOC0], obj[0][1], e, v, tmin, 0);
+	else if (obj[0][0] == 1) // facet
+		res = intersec_plane( obj[OBJ_LOC0], obj[OBJ_LOC1], obj[OBJ_LOC2], e, v, tmin);
+	else if (obj[0][0] == 2) // box
+		res = intersec_box( obj[OBJ_LOC0], obj[OBJ_LOC1], e, v, tmin, 0);
+	return res;
+}
+
 void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 {
 	double *pcol = 0;
@@ -70,6 +103,17 @@ void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 	double *p0, *p1, *p2;
 	int res;
 	int i;
+	for (i = 0; i < scene->nobjs; i++)
+	{
+		t = 0;
+		res = intersec_obj( &scene->objs[i * LEN_OBJ], _e, _v, &t);
+//		dprintf( "result=%d t=%f\n", res, t);
+		if (res && (t < tmin))
+		{
+			tmin = t;
+			pcol = scene->objs[i * LEN_OBJ + OBJ_COLOR];
+		}
+	}
 	for (i = 0; i < scene->nfacets; i++)
 	{
 		p0 = scene->facets[i * 4 + 0];
@@ -169,6 +213,7 @@ inline int load_scene( scene_t *scene, char *file)
 	FILE *in = fopen( file, "rt");
 	if (in)
 	{
+		scene->nobjs = 0;
 		scene->nfacets = 0;
 		scene->nspheres = 0;
 		scene->nboxes = 0;
