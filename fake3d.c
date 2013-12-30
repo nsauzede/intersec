@@ -40,17 +40,17 @@ typedef struct {
 	//			s s0		sphere: radius
 	//			s N/A
 	//		}
-	//		v3 color
 	//		v3 loc0		sphere: center;	facet: vertex0; box: lower
 	//		v3 loc1		facet: vertex1; box: upper
 	//		v3 loc2		facet: vertex2
+	//		v3 color
 	//		}
 	//	}
 #define LEN_OBJ 5
-#define OBJ_COLOR 1
-#define OBJ_LOC0 2
-#define OBJ_LOC1 3
-#define OBJ_LOC2 4
+#define OBJ_LOC0 1
+#define OBJ_LOC1 2
+#define OBJ_LOC2 3
+#define OBJ_COLOR 4
 	v3 *objs;
 	int nobjs;
 
@@ -100,7 +100,6 @@ void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 	double *pcol = 0;
 	double tmin = BIG;
 	double t;
-	double *p0, *p1, *p2;
 	int res;
 	int i;
 	for (i = 0; i < scene->nobjs; i++)
@@ -112,46 +111,6 @@ void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 		{
 			tmin = t;
 			pcol = scene->objs[i * LEN_OBJ + OBJ_COLOR];
-		}
-	}
-	for (i = 0; i < scene->nfacets; i++)
-	{
-		p0 = scene->facets[i * 4 + 0];
-		p1 = scene->facets[i * 4 + 1];
-		p2 = scene->facets[i * 4 + 2];
-		t = 0;
-		res = intersec_plane( p0, p1, p2, _e, _v, &t);
-//		dprintf( "result=%d t=%f\n", res, t);
-		if (res && (t < tmin))
-		{
-			tmin = t;
-			pcol = &scene->facets[i * 4 + 3][0];
-		}
-	}
-	for (i = 0; i < scene->nspheres; i++)
-	{
-		p0 = scene->spheres[i * 3 + 0];		// sphere center
-		p1 = scene->spheres[i * 3 + 1];		// sphere radius
-		t = 0;
-		res = intersec_sphere( p0, *p1, _e, _v, &t, 0);
-//		dprintf( "result=%d t=%f\n", res, t);
-		if (res && (t < tmin))
-		{
-			tmin = t;
-			pcol = &scene->spheres[i * 3 + 2][0];
-		}
-	}
-	for (i = 0; i < scene->nboxes; i++)
-	{
-		p0 = scene->boxes[i * 3 + 0];		// box lower
-		p1 = scene->boxes[i * 3 + 1];		// box upper
-		t = 0;
-		res = intersec_box( p0, p1, _e, _v, &t, 0);
-//		dprintf( "result=%d t=%f\n", res, t);
-		if (res && (t < tmin))
-		{
-			tmin = t;
-			pcol = scene->boxes[i * 3 + 2];
 		}
 	}
 	if (pcol)
@@ -378,9 +337,39 @@ int thr( void *opaque)
 }
 
 // 3d scene :
-// multiple facets (3 vertex3 + 1 color3 each)
 #define F 40
+#define S 20
+// multiple objects
+v3 __objs[] = {
+
+	{ 1, 0, 0 },	// 1=facet
+	{ 0, 0, 0 },
+	{ F, 0, 0 },
+	{ 0, F, 0 },
+	{ 1, 0, 0 },	// color
+
+	{ 1, 0, 0 },	// 1=facet
+	{ 0, 0, 0 },
+	{ 0, F, 0 },
+	{ 0, 0, F },
+	{ 0, 1, 0 },	// color
+
+	{ 1, 0, 0 },	// 1=facet
+	{ 0, 0, 0 },
+	{ 0, 0, F },	// WARNING : visible faces must have normal pointing to eye !
+	{ F, 0, 0 },
+	{ 0, 0, 1 },	// color
+
+	{ 2, 0, 0 },	// 2=box
+	{ -S, -S, -S },	// lower
+	{ S, S, S },	// upper
+	{},
+	{ 1, 1, 0 },	// color
+};
+int _nobjs = sizeof( __objs) / sizeof( __objs[0]) / LEN_OBJ;
+// multiple facets (3 vertex3 + 1 color3 each)
 v3 __facets[] = {
+#if 0
 		{ 0, 0, 0 },
 		{ F, 0, 0 },
 		{ 0, F, 0 },
@@ -396,10 +385,10 @@ v3 __facets[] = {
 		{ F, 0, 0 },
 		{ 0, 0, 1 },	// color
 
+#endif
 };
 int _nfacets = sizeof( __facets) / sizeof( __facets[0]) / 4;
 // multiple spheres
-#define S 20
 v3 __spheres[] = {
 #if 0
 	{ S, S, S },
@@ -410,12 +399,15 @@ v3 __spheres[] = {
 int _nspheres = sizeof( __spheres) / sizeof( __spheres[0]) / 3;
 
 v3 __boxes[] = {
+#if 0
 	{ -S, -S, -S },	// lower
 	{ S, S, S },	// upper
 	{ 1, 1, 0 },	// color
+#endif
 };
 int _nboxes = sizeof( __boxes) / sizeof( __boxes[0]) / 3;
 
+v3 *_objs = __objs;
 v3 *_facets = __facets;
 v3 *_spheres = __spheres;
 v3 *_boxes = __boxes;
@@ -478,6 +470,8 @@ int main( int argc, char *argv[])
 	worker_t wo;
 	payload_t p;
 	scene_t scene;
+	scene.objs = _objs;
+	scene.nobjs = _nobjs;
 	scene.facets = _facets;
 	scene.nfacets = _nfacets;
 	scene.spheres = _spheres;
