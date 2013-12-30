@@ -90,6 +90,7 @@ int intersec_obj( v3 *obj, v3 e, v3 v, double *tmin)
 void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 {
 	double tmin = BIG;
+//	v3 objnormal;
 	int res;
 	int i;
 	v3 *obj = 0;
@@ -116,16 +117,34 @@ void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 	copy3( vcol, obj[OBJ_COLOR]);
 	for (i = 0; i < scene->nlamps; i++)
 	{
-		v3 vdist;
+		v3 vdist;	// this is shadow (or enlightment) vec for this lamp
 		diff3( vdist, scene->lamps[i], pinter);
-		double att = 900;
-#if 1
-		double dist = norm3( vdist) + 0.01;
-		att /= dist * dist;
-		if (att > 1.0)
-			att = 1.0;
-#endif
-		mult3( vcol, att); 
+
+		int j;
+//		double tshad = BIG;
+		res = 0;
+		v3 nvdist;
+		copy3( nvdist, vdist);
+		div3( nvdist, norm3( nvdist)); // normalize
+		for (j = 0; j < scene->nobjs; j++)
+		{
+			v3 *cur_obj = &scene->objs[i * LEN_OBJ];
+			double t = 0;
+			res = intersec_obj( cur_obj, pinter, vdist, &t);
+			if (res)
+				break;
+		}
+		if (res)	// obj found that shadows lamp
+			mult3( vcol, 0);
+		else
+		{
+			double att = 900;
+			double dist = norm3( vdist) + 0.01;
+			att /= dist * dist;
+			if (att > 1.0)
+				att = 1.0;
+			mult3( vcol, att);
+		}
 	}
 	memcpy( col, vcol, 3 * sizeof( col[0]));
 }
