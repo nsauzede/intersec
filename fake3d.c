@@ -90,24 +90,24 @@ int intersec_obj( v3 *obj, v3 e, v3 v, double *tmin)
 
 void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 {
-	double *pcol = 0;
 	double tmin = BIG;
-	double t;
 	int res;
 	int i;
+	v3 *obj = 0;
 	for (i = 0; i < scene->nobjs; i++)
 	{
-		t = 0;
-		res = intersec_obj( &scene->objs[i * LEN_OBJ], _e, _v, &t);
+		v3 *cur_obj = &scene->objs[i * LEN_OBJ];
+		double t = 0;
+		res = intersec_obj( cur_obj, _e, _v, &t);
 //		dprintf( "result=%d t=%f\n", res, t);
 		if (res && (t < tmin))
 		{
 			tmin = t;
-			pcol = scene->objs[i * LEN_OBJ + OBJ_COLOR];
+			obj = cur_obj;
 		}
 	}
-	if (pcol)
-		memcpy( col, pcol, 3 * sizeof( col[0]));
+	if (obj)
+		memcpy( col, obj[OBJ_COLOR], 3 * sizeof( col[0]));
 }
 
 // input : s0,s1,s2,e
