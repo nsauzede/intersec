@@ -173,9 +173,9 @@ inline int load_scene( scene_t *scene, char *file)
 	if (in)
 	{
 		scene->nobjs = 0;
-		scene->nfacets = 0;
-		scene->nspheres = 0;
-		scene->nboxes = 0;
+		int nspheres = 0;
+		int nfacets = 0;
+		int nboxes = 0;
 		char buf[1024];
 		char *ptr;
 		while (!feof( in))
@@ -184,13 +184,14 @@ inline int load_scene( scene_t *scene, char *file)
 				break;
 			ptr = strstr( buf, "endfacet");
 			if (ptr)
-				scene->nfacets++;
+				nfacets++;
 		}
-		printf( "read nfacets=%d\n", scene->nfacets);
+		printf( "read nfacets=%d\n", nfacets);
 		rewind( in);
-		if (scene->nfacets)
+		scene->nobjs = nspheres + nfacets + nboxes;
+		if (scene->nobjs)
 		{
-		scene->facets = malloc( scene->nfacets * sizeof(v3[4]));
+		scene->objs = malloc( scene->nobjs * sizeof(v3) * LEN_OBJ);
 		i = 0;
 		j = 0;
 #ifdef USE_NORMAL
@@ -218,19 +219,21 @@ inline int load_scene( scene_t *scene, char *file)
 				float p[3];
 				sscanf( ptr, "%*s %f %f %f", &p[0], &p[1], &p[2]);
 //				printf( "read p: %f,%f,%f\n", p[0], p[1], p[2]);
-				scene->facets[i * 4 + j][0] = p[0];
-				scene->facets[i * 4 + j][1] = p[1];
-				scene->facets[i * 4 + j][2] = p[2];
+				if (j == 0)
+					scene->objs[i * LEN_OBJ][0] = 1; // type
+				scene->objs[i * LEN_OBJ + OBJ_LOC0 + j][0] = p[0];
+				scene->objs[i * LEN_OBJ + OBJ_LOC0 + j][1] = p[1];
+				scene->objs[i * LEN_OBJ + OBJ_LOC0 + j][2] = p[2];
 				if (++j >= 3)
 				{
 #ifndef USE_NORMAL
-					scene->facets[i * 4 + j][0] = !(i % 3);	// fake facet color with facet index r
-					scene->facets[i * 4 + j][1] = !((i + 1) % 3);	// g
-					scene->facets[i * 4 + j][2] = !((i + 2) % 3);	// b
+					scene->objs[i * LEN_OBJ + OBJ_COLOR][0] = !(i % 3);	// fake facet color with facet index r
+					scene->objs[i * LEN_OBJ + OBJ_COLOR][1] = !((i + 1) % 3);	// g
+					scene->objs[i * LEN_OBJ + OBJ_COLOR][2] = !((i + 2) % 3);	// b
 #else
-					scene->facets[i * 4 + j][0] = normal[0];	// fake facet color with facet normal r
-					scene->facets[i * 4 + j][1] = normal[1];	// g
-					scene->facets[i * 4 + j][2] = normal[2];	// b
+					scene->objs[i * LEN_OBJ + OBJ_COLOR][0] = normal[0];	// fake facet color with facet normal r
+					scene->objs[i * LEN_OBJ + OBJ_COLOR][1] = normal[1];	// g
+					scene->objs[i * LEN_OBJ + OBJ_COLOR][2] = normal[2];	// b
 #endif
 					i++;
 					j = 0;
@@ -240,7 +243,7 @@ inline int load_scene( scene_t *scene, char *file)
 		}
 		fclose( in);
 	}
-	printf( "nfacets=%d\n", scene->nfacets);
+	printf( "nobjs=%d\n", scene->nobjs);
 ////
 	return 0;
 }
