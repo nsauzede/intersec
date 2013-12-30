@@ -89,49 +89,6 @@ int w = 110, h = 50;
 int w = 1920, h = 1080;
 #endif
 
-// 3d scene :
-// multiple facets (3 vertex3 + 1 color3 each)
-#define F 40
-v3 _facets[] = {
-		{ 0, 0, 0 },
-		{ F, 0, 0 },
-		{ 0, F, 0 },
-		{ 1, 0, 0 },	// color
-
-		{ 0, 0, 0 },
-		{ 0, F, 0 },
-		{ 0, 0, F },
-		{ 0, 1, 0 },	// color
-
-		{ 0, 0, 0 },
-		{ 0, 0, F },	// WARNING : visible faces must have normal pointing to eye !
-		{ F, 0, 0 },
-		{ 0, 0, 1 },	// color
-
-};
-int nfacets = sizeof( _facets) / sizeof( _facets[0]) / 4;
-// multiple spheres
-#define S 20
-v3 _spheres[] = {
-#if 0
-	{ S, S, S },
-	{ S/4, 0, 0 },	// radius
-	{ 1, 0, 1 },	// color
-#endif
-};
-int nspheres = sizeof( _spheres) / sizeof( _spheres[0]) / 3;
-
-v3 _boxes[] = {
-	{ -S, -S, -S },	// lower
-	{ S, S, S },	// upper
-	{ 1, 1, 0 },	// color
-};
-int nboxes = sizeof( _boxes) / sizeof( _boxes[0]) / 3;
-
-v3 *facets = _facets;
-v3 *spheres = _spheres;
-v3 *boxes = _boxes;
-
 void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 {
 	double *pcol = 0;
@@ -140,44 +97,44 @@ void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 	double *p0, *p1, *p2;
 	int res;
 	int i;
-	for (i = 0; i < nfacets; i++)
+	for (i = 0; i < scene->nfacets; i++)
 	{
-		p0 = facets[i * 4 + 0];
-		p1 = facets[i * 4 + 1];
-		p2 = facets[i * 4 + 2];
+		p0 = scene->facets[i * 4 + 0];
+		p1 = scene->facets[i * 4 + 1];
+		p2 = scene->facets[i * 4 + 2];
 		t = 0;
 		res = intersec_plane( p0, p1, p2, _e, _v, &t);
 //		dprintf( "result=%d t=%f\n", res, t);
 		if (res && (t < tmin))
 		{
 			tmin = t;
-			pcol = &facets[i * 4 + 3][0];
+			pcol = &scene->facets[i * 4 + 3][0];
 		}
 	}
-	for (i = 0; i < nspheres; i++)
+	for (i = 0; i < scene->nspheres; i++)
 	{
-		p0 = spheres[i * 3 + 0];		// sphere center
-		p1 = spheres[i * 3 + 1];		// sphere radius
+		p0 = scene->spheres[i * 3 + 0];		// sphere center
+		p1 = scene->spheres[i * 3 + 1];		// sphere radius
 		t = 0;
 		res = intersec_sphere( p0, *p1, _e, _v, &t, 0);
 //		dprintf( "result=%d t=%f\n", res, t);
 		if (res && (t < tmin))
 		{
 			tmin = t;
-			pcol = &spheres[i * 3 + 2][0];
+			pcol = &scene->spheres[i * 3 + 2][0];
 		}
 	}
-	for (i = 0; i < nboxes; i++)
+	for (i = 0; i < scene->nboxes; i++)
 	{
-		p0 = boxes[i * 3 + 0];		// box lower
-		p1 = boxes[i * 3 + 1];		// box upper
+		p0 = scene->boxes[i * 3 + 0];		// box lower
+		p1 = scene->boxes[i * 3 + 1];		// box upper
 		t = 0;
 		res = intersec_box( p0, p1, _e, _v, &t, 0);
 //		dprintf( "result=%d t=%f\n", res, t);
 		if (res && (t < tmin))
 		{
 			tmin = t;
-			pcol = boxes[i * 3 + 2];
+			pcol = scene->boxes[i * 3 + 2];
 		}
 	}
 	if (pcol)
@@ -232,6 +189,49 @@ inline int init_scene( scene_t *scene)
 	sum3( scene->s2, scene->s0, right);
 	return 0;
 }
+
+// 3d scene :
+// multiple facets (3 vertex3 + 1 color3 each)
+#define F 40
+v3 _facets[] = {
+		{ 0, 0, 0 },
+		{ F, 0, 0 },
+		{ 0, F, 0 },
+		{ 1, 0, 0 },	// color
+
+		{ 0, 0, 0 },
+		{ 0, F, 0 },
+		{ 0, 0, F },
+		{ 0, 1, 0 },	// color
+
+		{ 0, 0, 0 },
+		{ 0, 0, F },	// WARNING : visible faces must have normal pointing to eye !
+		{ F, 0, 0 },
+		{ 0, 0, 1 },	// color
+
+};
+int nfacets = sizeof( _facets) / sizeof( _facets[0]) / 4;
+// multiple spheres
+#define S 20
+v3 _spheres[] = {
+#if 0
+	{ S, S, S },
+	{ S/4, 0, 0 },	// radius
+	{ 1, 0, 1 },	// color
+#endif
+};
+int nspheres = sizeof( _spheres) / sizeof( _spheres[0]) / 3;
+
+v3 _boxes[] = {
+	{ -S, -S, -S },	// lower
+	{ S, S, S },	// upper
+	{ 1, 1, 0 },	// color
+};
+int nboxes = sizeof( _boxes) / sizeof( _boxes[0]) / 3;
+
+v3 *facets = _facets;
+v3 *spheres = _spheres;
+v3 *boxes = _boxes;
 
 inline int load_scene( scene_t *scene, char *file)
 {
@@ -445,6 +445,8 @@ int main( int argc, char *argv[])
 	scene.nfacets = nfacets;
 	scene.spheres = spheres;
 	scene.nspheres = nspheres;
+	scene.boxes = boxes;
+	scene.nboxes = nboxes;
 	scene.w = w;
 	scene.h = h;
 	scene.e = __e;
