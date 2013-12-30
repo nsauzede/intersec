@@ -266,7 +266,8 @@ int thr( void *opaque)
 		while (!end && !running && !*w->quit)
 		{
 			SDL_LockMutex( w->mutex_go);
-			while (((*w->start == start) && !running && !*w->quit) && SDL_CondWait( w->cond_go, w->mutex_go) == 0)				// this blocks without hogging cpu
+			while (((*w->start == start) && !running && !*w->quit) && SDL_CondWait( w->cond_go, w->mutex_go) == 0)
+				// this blocks without hogging cpu
 				continue;
 			if ((*w->start != start) || running || *w->quit)
 				end = 1;
