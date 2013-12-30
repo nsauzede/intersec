@@ -64,30 +64,6 @@ typedef struct {
 #define EPS 0.1
 #define BIG 1000.0
 #define COMP_EPS(x,val) (x >= ((val) - EPS) && x <= ((val) + EPS))
-// camera is : eye coordinate (vector e)..
-#if 1
-#define E 20
-	v3 __e = { 2*E, 2*E, 2*E };
-// ..a direction (vector v)..
-#define V E/2
-	v3 __v = { -2*V, -2*V, -2*V };
-#else
-#define E 10
-	v3 __e = { 0*E, 0*E, 1*E };
-// ..a direction (vector v)..
-#define V E/2
-	v3 __v = { -0*V, -0*V, -1*V };
-#endif
-// ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
-v3 up = { 0, 1, 0};
-// camera screen size
-#if 1
-int w = 110, h = 50;
-#else
-//int w = 640, h = 480;
-//int w = 1024, h = 768;
-int w = 1920, h = 1080;
-#endif
 
 void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 {
@@ -190,58 +166,15 @@ inline int init_scene( scene_t *scene)
 	return 0;
 }
 
-// 3d scene :
-// multiple facets (3 vertex3 + 1 color3 each)
-#define F 40
-v3 _facets[] = {
-		{ 0, 0, 0 },
-		{ F, 0, 0 },
-		{ 0, F, 0 },
-		{ 1, 0, 0 },	// color
-
-		{ 0, 0, 0 },
-		{ 0, F, 0 },
-		{ 0, 0, F },
-		{ 0, 1, 0 },	// color
-
-		{ 0, 0, 0 },
-		{ 0, 0, F },	// WARNING : visible faces must have normal pointing to eye !
-		{ F, 0, 0 },
-		{ 0, 0, 1 },	// color
-
-};
-int nfacets = sizeof( _facets) / sizeof( _facets[0]) / 4;
-// multiple spheres
-#define S 20
-v3 _spheres[] = {
-#if 0
-	{ S, S, S },
-	{ S/4, 0, 0 },	// radius
-	{ 1, 0, 1 },	// color
-#endif
-};
-int nspheres = sizeof( _spheres) / sizeof( _spheres[0]) / 3;
-
-v3 _boxes[] = {
-	{ -S, -S, -S },	// lower
-	{ S, S, S },	// upper
-	{ 1, 1, 0 },	// color
-};
-int nboxes = sizeof( _boxes) / sizeof( _boxes[0]) / 3;
-
-v3 *facets = _facets;
-v3 *spheres = _spheres;
-v3 *boxes = _boxes;
-
 inline int load_scene( scene_t *scene, char *file)
 {
 	int i, j;
 	FILE *in = fopen( file, "rt");
 	if (in)
 	{
-		nfacets = 0;
-		nspheres = 0;
-		nboxes = 0;
+		scene->nfacets = 0;
+		scene->nspheres = 0;
+		scene->nboxes = 0;
 		char buf[1024];
 		char *ptr;
 		while (!feof( in))
@@ -250,13 +183,13 @@ inline int load_scene( scene_t *scene, char *file)
 				break;
 			ptr = strstr( buf, "endfacet");
 			if (ptr)
-				nfacets++;
+				scene->nfacets++;
 		}
-		printf( "read nfacets=%d\n", nfacets);
+		printf( "read nfacets=%d\n", scene->nfacets);
 		rewind( in);
-		if (nfacets)
+		if (scene->nfacets)
 		{
-		facets = malloc( nfacets * sizeof(v3[4]));
+		scene->facets = malloc( scene->nfacets * sizeof(v3[4]));
 		i = 0;
 		j = 0;
 #ifdef USE_NORMAL
@@ -284,19 +217,19 @@ inline int load_scene( scene_t *scene, char *file)
 				float p[3];
 				sscanf( ptr, "%*s %f %f %f", &p[0], &p[1], &p[2]);
 //				printf( "read p: %f,%f,%f\n", p[0], p[1], p[2]);
-				facets[i * 4 + j][0] = p[0];
-				facets[i * 4 + j][1] = p[1];
-				facets[i * 4 + j][2] = p[2];
+				scene->facets[i * 4 + j][0] = p[0];
+				scene->facets[i * 4 + j][1] = p[1];
+				scene->facets[i * 4 + j][2] = p[2];
 				if (++j >= 3)
 				{
 #ifndef USE_NORMAL
-					facets[i * 4 + j][0] = !(i % 3);	// fake facet color with facet index r
-					facets[i * 4 + j][1] = !((i + 1) % 3);	// g
-					facets[i * 4 + j][2] = !((i + 2) % 3);	// b
+					scene->facets[i * 4 + j][0] = !(i % 3);	// fake facet color with facet index r
+					scene->facets[i * 4 + j][1] = !((i + 1) % 3);	// g
+					scene->facets[i * 4 + j][2] = !((i + 2) % 3);	// b
 #else
-					facets[i * 4 + j][0] = normal[0];	// fake facet color with facet normal r
-					facets[i * 4 + j][1] = normal[1];	// g
-					facets[i * 4 + j][2] = normal[2];	// b
+					scene->facets[i * 4 + j][0] = normal[0];	// fake facet color with facet normal r
+					scene->facets[i * 4 + j][1] = normal[1];	// g
+					scene->facets[i * 4 + j][2] = normal[2];	// b
 #endif
 					i++;
 					j = 0;
@@ -306,7 +239,7 @@ inline int load_scene( scene_t *scene, char *file)
 		}
 		fclose( in);
 	}
-	printf( "nfacets=%d\n", nfacets);
+	printf( "nfacets=%d\n", scene->nfacets);
 ////
 	return 0;
 }
@@ -401,6 +334,74 @@ int thr( void *opaque)
 	dprintf( "thr %d quitting\n", num);
 	return 0;
 }
+
+// 3d scene :
+// multiple facets (3 vertex3 + 1 color3 each)
+#define F 40
+v3 _facets[] = {
+		{ 0, 0, 0 },
+		{ F, 0, 0 },
+		{ 0, F, 0 },
+		{ 1, 0, 0 },	// color
+
+		{ 0, 0, 0 },
+		{ 0, F, 0 },
+		{ 0, 0, F },
+		{ 0, 1, 0 },	// color
+
+		{ 0, 0, 0 },
+		{ 0, 0, F },	// WARNING : visible faces must have normal pointing to eye !
+		{ F, 0, 0 },
+		{ 0, 0, 1 },	// color
+
+};
+int nfacets = sizeof( _facets) / sizeof( _facets[0]) / 4;
+// multiple spheres
+#define S 20
+v3 _spheres[] = {
+#if 0
+	{ S, S, S },
+	{ S/4, 0, 0 },	// radius
+	{ 1, 0, 1 },	// color
+#endif
+};
+int nspheres = sizeof( _spheres) / sizeof( _spheres[0]) / 3;
+
+v3 _boxes[] = {
+	{ -S, -S, -S },	// lower
+	{ S, S, S },	// upper
+	{ 1, 1, 0 },	// color
+};
+int nboxes = sizeof( _boxes) / sizeof( _boxes[0]) / 3;
+
+v3 *facets = _facets;
+v3 *spheres = _spheres;
+v3 *boxes = _boxes;
+
+// camera is : eye coordinate (vector e)..
+#if 1
+#define E 20
+	v3 __e = { 2*E, 2*E, 2*E };
+// ..a direction (vector v)..
+#define V E/2
+	v3 __v = { -2*V, -2*V, -2*V };
+#else
+#define E 10
+	v3 __e = { 0*E, 0*E, 1*E };
+// ..a direction (vector v)..
+#define V E/2
+	v3 __v = { -0*V, -0*V, -1*V };
+#endif
+// ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
+v3 up = { 0, 1, 0};
+// camera screen size
+#if 1
+int w = 110, h = 50;
+#else
+//int w = 640, h = 480;
+//int w = 1024, h = 768;
+int w = 1920, h = 1080;
+#endif
 
 int main( int argc, char *argv[])
 {
