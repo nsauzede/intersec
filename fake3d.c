@@ -470,13 +470,15 @@ int main( int argc, char *argv[])
 							end = 1;
 							break;
 						case SDLK_UP:
-							if (done){
+//							if (done)
+							{
 							go = 1;
 							add3( scene.e, -0.5);
 							}
 							break;
 						case SDLK_DOWN:
-							if (done){
+//							if (done)
+							{
 							go = 1;
 							add3( scene.e, +0.5);
 							}
