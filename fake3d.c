@@ -50,6 +50,9 @@ typedef struct {
 	v3 *objs;
 	int nobjs;
 
+	v3 *lamps;
+	int nlamps;
+
 // camera is : eye coordinate (vector e)..
 // ..a direction (vector v)..
 // ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
@@ -101,8 +104,30 @@ void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 			obj = cur_obj;
 		}
 	}
-	if (obj)
-		memcpy( col, obj[OBJ_COLOR], 3 * sizeof( col[0]));
+	if (!obj)
+		return;
+
+	v3 pinter; // intersection pos
+	copy3( pinter, _v);
+	mult3( pinter, tmin);
+	sum3( pinter, _e, pinter);
+
+	v3 vcol;
+	copy3( vcol, obj[OBJ_COLOR]);
+	for (i = 0; i < scene->nlamps; i++)
+	{
+		v3 vdist;
+		diff3( vdist, scene->lamps[i], pinter);
+		double att = 900;
+#if 1
+		double dist = norm3( vdist) + 0.01;
+		att /= dist * dist;
+		if (att > 1.0)
+			att = 1.0;
+#endif
+		mult3( vcol, att); 
+	}
+	memcpy( col, vcol, 3 * sizeof( col[0]));
 }
 
 // input : s0,s1,s2,e
@@ -330,8 +355,14 @@ int thr( void *opaque)
 // 3d scene :
 #define F 40
 #define S 20
-// multiple objects
+// objects
 v3 __objs[] = {
+// a sphere
+	{ 0, S/4, 0 },	// 0=sphere
+	{ S, S, -S/2 },
+	{  },
+	{  },
+	{ 1, 1, 1 },	// color
 // a facet
 	{ 1, 0, 0 },	// 1=facet
 	{ 0, 0, 0 },
@@ -360,9 +391,17 @@ v3 __objs[] = {
 int _nobjs = sizeof( __objs) / sizeof( __objs[0]) / LEN_OBJ;
 v3 *_objs = __objs;
 
+// lamps
+v3 __lamps[] = {
+// a lamp
+	{ F, F, -F },
+};
+int _nlamps = sizeof( __lamps) / sizeof( __lamps[0]);
+v3 *_lamps = __lamps;
+
 // camera is : eye coordinate (vector e)..
 #if 1
-#define E 20
+#define E 30
 	v3 _e = { 2*E, 2*E, 2*E };
 // ..a direction (vector v)..
 #define V E/2
@@ -420,6 +459,8 @@ int main( int argc, char *argv[])
 	scene_t scene;
 	scene.objs = _objs;
 	scene.nobjs = _nobjs;
+	scene.lamps = _lamps;
+	scene.nlamps = _nlamps;
 	scene.w = w;
 	scene.h = h;
 	scene.e = _e;

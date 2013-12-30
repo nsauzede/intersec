@@ -504,6 +504,7 @@ int sky_color( int level, double ex, double ey, double ez, double _vx, double _v
 	return 0;
 }
 
+#define CHEAPO_LIGHTING
 unsigned long traced = 0;
 unsigned long intersected = 0;
 unsigned long reflected = 0;
@@ -517,15 +518,16 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 	set3( _v, _vx, _vy, _vz);
 	int nsph = scene.nspheres;
 	sphere_t *spheres = scene.spheres;
+#ifndef CHEAPO_LIGHTING
 	int nlamps = scene.nlamps;
 	lamp_t *lamps = scene.lamps;
+#endif
 	if (level == 0)
 		traced++;
 	if (level > level_max_reached)
 		level_max_reached = level;
 	unsigned long smin = -1, s;
 	double tmin = BIG, tmax = 0;
-//#define CHEAPO_LIGHTING
 #ifdef CHEAPO_LIGHTING
 	double srmin = 0;
 #endif
