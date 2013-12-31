@@ -75,34 +75,141 @@ typedef struct {
 #define BIG 1000.0
 #define COMP_EPS(x,val) (x >= ((val) - EPS) && x <= ((val) + EPS))
 
-int intersec_obj( v3 *obj, v3 e, v3 v, double *tmin)
+int intersec_obj( v3 *obj, v3 e, v3 v, double *tmin, v3 normal, v3 col)
 {
 	int res = 0;
+
+	mult3( normal, 0);	// default no normal
 	if (obj[0][0] == 0) // sphere
+	{
 		res = intersec_sphere( obj[OBJ_LOC0], obj[0][1], e, v, tmin, 0);
+		if (res)
+		{
+			v3 pinter; // intersection pos
+			copy3( pinter, v);
+			mult3( pinter, *tmin);
+			sum3( pinter, e, pinter);
+			diff3( normal, pinter, obj[OBJ_LOC0]);
+			div3( normal, norm3( normal));
+		}
+	}
 	else if (obj[0][0] == 1) // facet
+	{
 		res = intersec_plane( obj[OBJ_LOC0], obj[OBJ_LOC1], obj[OBJ_LOC2], e, v, tmin);
+		if (res)
+		{
+			v3 n1, n2;
+			diff3( n1, obj[OBJ_LOC0], obj[OBJ_LOC1]);
+			diff3( n2, obj[OBJ_LOC0], obj[OBJ_LOC2]);
+			cross3( normal, n1, n2);
+		}
+	}
 	else if (obj[0][0] == 2) // box
-		res = intersec_box( obj[OBJ_LOC0], obj[OBJ_LOC1], e, v, tmin, 0);
+	{
+		int num = 0;
+		res = intersec_box( obj[OBJ_LOC0], obj[OBJ_LOC1], e, v, tmin, 0, &num);
+		if (res)
+		{
+#if 0
+//		asm volatile( "int $3");
+		if (num == 1)
+		{
+			col[0] = 1;
+			col[1] = 0;
+			col[2] = 0;
+		}
+		else if (num == 2)
+		{
+			col[0] = 1;
+			col[1] = 1;
+			col[2] = 0;
+		}
+		else if (num == 4)
+		{
+			col[0] = 1;
+			col[1] = 1;
+			col[2] = 1;
+		}
+		else if (num == 8)
+		{
+			col[0] = 1;
+			col[1] = 1;
+			col[2] = 1;
+		}
+		else if (num == 16)
+		{
+			col[0] = 0;
+			col[1] = 1;
+			col[2] = 1;
+		}
+		else if (num == 32)
+		{
+			col[0] = 0;
+			col[1] = 0;
+			col[2] = 1;
+		}
+#endif
+			if (num == 1)
+			{
+				normal[0] = 0.0;
+				normal[1] = 0.0;
+				normal[2] = 0.0;
+			}
+			else if (num == 2)
+			{
+				normal[0] = 0.0;
+				normal[1] = 0.9;
+				normal[2] = 0.0;
+			}
+			else if (num == 4)
+			{
+				normal[0] = 0.0;
+				normal[1] = 0.0;
+				normal[2] = 0.0;
+			}
+			else if (num == 8)
+			{
+				normal[0] = 0.0;
+				normal[1] = 0.9;
+				normal[2] = 0.0;
+			}
+			else if (num == 16)
+			{
+				normal[0] = 0.0;
+				normal[1] = 0.0;
+				normal[2] = 0.0;
+			}
+			else if (num == 32)
+			{
+				normal[0] = 0.0;
+				normal[1] = 0.0;
+				normal[2] = 0.0;
+			}
+		}
+	}
 	return res;
 }
 
 void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 {
 	double tmin = BIG;
-//	v3 objnormal;
+	v3 objnormal;
 	int res;
 	int i;
 	v3 *obj = 0;
+	v3 col0;
+	mult3( col0, 0);
 	for (i = 0; i < scene->nobjs; i++)
 	{
 		v3 *cur_obj = &scene->objs[i * LEN_OBJ];
+		v3 cur_objnormal;
 		double t = 0;
-		res = intersec_obj( cur_obj, _e, _v, &t);
+		res = intersec_obj( cur_obj, _e, _v, &t, cur_objnormal, col0);
 		if (res && (t < tmin))
 		{
 			tmin = t;
 			obj = cur_obj;
+			copy3( objnormal, cur_objnormal);
 		}
 	}
 	if (!obj)
@@ -114,11 +221,19 @@ void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 	sum3( pinter, _e, pinter);
 
 	v3 vcol;
-	copy3( vcol, obj[OBJ_COLOR]);
+	copy3( vcol, obj[OBJ_COLOR]);		// start with black
+//	copy3( vcol, col0);		// start with black
 	for (i = 0; i < scene->nlamps; i++)
 	{
 		v3 vdist;	// this is shadow (or enlightment) vec for this lamp
 		diff3( vdist, scene->lamps[i], pinter);
+
+		double colin = dot3( vdist, objnormal);
+		if (colin <= 0)
+		{
+			mult3( vcol, 0);
+			break;
+		}
 
 		int j;
 //		double tshad = BIG;
@@ -130,7 +245,9 @@ void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 		{
 			v3 *cur_obj = &scene->objs[i * LEN_OBJ];
 			double t = 0;
-			res = intersec_obj( cur_obj, pinter, vdist, &t);
+			v3 objnormal2;
+			v3 col1;
+			res = intersec_obj( cur_obj, pinter, vdist, &t, objnormal2, col1);
 			if (res)
 				break;
 		}
@@ -146,7 +263,7 @@ void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 			mult3( vcol, att);
 		}
 	}
-	memcpy( col, vcol, 3 * sizeof( col[0]));
+	copy3( col, vcol);
 }
 
 // input : s0,s1,s2,e

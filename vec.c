@@ -283,9 +283,12 @@ int intersec_sphere( v3 cs, double sr, v3 e, v3 v, double *tmin, double *tmax)
 #define MAX(a,b) (a > b ? a : b)
 #define MIN3(a,b,c) (a < b ? (a < c ? a : c) : b < c ? b : c)
 #define MAX3(a,b,c) (a > b ? (a > c ? a : c) : b > c ? b : c)
-int intersec_box( v3 lower, v3 upper, v3 e, v3 v, double *_tmin, double *_tmax)
+int intersec_box( v3 lower, v3 upper, v3 e, v3 v, double *_tmin, double *_tmax, int *num)
 {
 	double tmin, tmax, tminx, tmaxx, tminy, tmaxy, tminz, tmaxz, t1, t2;
+
+	int numx = 0, numy = 0, numz = 0;
+
 	if (fabs(v[0]) < SMALL)
 	{
 		if ((lower[0] < e[0]) && (upper[0] > e[0]))
@@ -304,6 +307,11 @@ int intersec_box( v3 lower, v3 upper, v3 e, v3 v, double *_tmin, double *_tmax)
 		tmaxx = MAX( t1, t2);
 		if (tmaxx < 0)
 			return 0;
+
+		if (tminx == t1)
+			numx = 1;
+		else
+			numx = 2;
 	}
 	if (fabs(v[1]) < SMALL)
 	{
@@ -323,6 +331,11 @@ int intersec_box( v3 lower, v3 upper, v3 e, v3 v, double *_tmin, double *_tmax)
 		tmaxy = MAX( t1, t2);
 		if (tmaxy < 0)
 			return 0;
+
+		if (tminy == t1)
+			numy = 1;
+		else
+			numy = 2;
 	}
 	if (fabs(v[2]) < SMALL)
 	{
@@ -342,11 +355,23 @@ int intersec_box( v3 lower, v3 upper, v3 e, v3 v, double *_tmin, double *_tmax)
 		tmaxz = MAX( t1, t2);
 		if (tmaxz < 0)
 			return 0;
+
+		if (tminz == t1)
+			numz = 1;
+		else
+			numz = 2;
 	}
 	tmin = MAX3( tminx, tminy, tminz);
 	tmax = MIN3( tmaxx, tmaxy, tmaxz);
 	if (tmax < tmin)
 		return 0;
+
+	if (tmin == tminx)
+		*num = numx;
+	else if (tmin == tminy)
+		*num = numy << 2;
+	else if (tmin == tminz)
+		*num = numz << 4;
 
 	if (_tmin)
 		*_tmin = tmin;
@@ -354,3 +379,4 @@ int intersec_box( v3 lower, v3 upper, v3 e, v3 v, double *_tmin, double *_tmax)
 		*_tmax = tmax;
 	return 2;
 }
+
