@@ -132,7 +132,7 @@ int main( int argc, char *argv[])
 	div3( v, n);
 	double t2;
 	v3 p2;
-	ni = intersec_box( lower, upper, e, v, &t, &t2);
+	ni = intersec_box( lower, upper, e, v, &t, &t2, 0);
 	sum3( p, e, mult3( copy3( p, v), t));
 	sum3( p2, e, mult3( copy3( p2, v), t2));
 	disp3( "e", e);
@@ -165,7 +165,7 @@ int main( int argc, char *argv[])
 	gettimeofday( &old_tv, 0);
 	for (i = 0; i < num; i++)
 	{
-		res[i] = intersec_box( boxes2[i * 2], boxes2[i * 2 + 1], e, v, &t[i], 0);
+		res[i] = intersec_box( boxes2[i * 2], boxes2[i * 2 + 1], e, v, &t[i], 0, 0);
 	}
 	gettimeofday( &tv, 0);
 	old_tm = (double)old_tv.tv_sec * 1000000 + old_tv.tv_usec;

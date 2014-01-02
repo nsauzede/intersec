@@ -366,12 +366,15 @@ int intersec_box( v3 lower, v3 upper, v3 e, v3 v, double *_tmin, double *_tmax, 
 	if (tmax < tmin)
 		return 0;
 
+	if (num)
+	{
 	if (tmin == tminx)
 		*num = numx;
 	else if (tmin == tminy)
 		*num = numy << 2;
 	else if (tmin == tminz)
 		*num = numz << 4;
+	}
 
 	if (_tmin)
 		*_tmin = tmin;

@@ -17,5 +17,6 @@ void disp3( char *s, const v3 v);
 int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt);
 int solvetri( double a, double b, double c, double *t1, double *t2);
 int intersec_sphere( v3 cs, double sr, v3 e, v3 v, double *tmin, double *tmax);
+// num will contain hi face's num
 int intersec_box( v3 lower, v3 upper, v3 e, v3 v, double *_tmin, double *_tmax, int *num);
 
