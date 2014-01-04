@@ -233,7 +233,7 @@ void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 
 	v3 vcol;
 	copy3( vcol, obj[OBJ_COLOR]);
-#if 0
+#if 1
 	//	copy3( vcol, col0);		// start with black
 	for (i = 0; i < scene->nlamps; i++)
 	{
@@ -649,10 +649,14 @@ v3 *_objs = __objs;
 
 // lamps
 v3 __lamps[] = {
-// a lamp
+#if 1
+	// a lamp
 	{ 120, 120, -50 },
-// a lamp
+#endif
+#if 0
+	// a lamp
 	{ 120, 150, 80 },
+#endif
 };
 int _nlamps = sizeof( __lamps) / sizeof( __lamps[0]);
 v3 *_lamps = __lamps;
@@ -662,8 +666,8 @@ v3 _e = { -20, 70, -40 };
 // ..a direction (vector v)..
 v3 _v = { 200, 50, 0 };
 // ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
-//v3 _up = { -190, -70, 40};
-v3 _up = { 0, 1, 0};
+v3 _up = { -190, -70, 40};
+//v3 _up = { 0, 1, 0};
 
 #endif
 
@@ -803,6 +807,20 @@ int main( int argc, char *argv[])
 							if (done)
 							{
 								scene.e[1] -= DELT;
+								go = 1;
+							}
+							break;
+						case SDLK_HOME:
+							if (done)
+							{
+								scene.e[0] += DELT;
+								go = 1;
+							}
+							break;
+						case SDLK_END:
+							if (done)
+							{
+								scene.e[0] -= DELT;
 								go = 1;
 							}
 							break;
