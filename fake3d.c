@@ -34,7 +34,7 @@ typedef struct {
 
 typedef struct {
 //		{
-//			s type		sphere=0; facet=1; box=2
+//			s type		sphere=0; facet=1; box=2; paral=3
 //			s s0		sphere: radius
 //			s N/A
 //		}
@@ -96,6 +96,17 @@ int intersec_obj( v3 *obj, v3 e, v3 v, double *tmin, v3 normal, v3 col)
 	else if (obj[0][0] == 1) // facet
 	{
 		res = intersec_plane( obj[OBJ_LOC0], obj[OBJ_LOC1], obj[OBJ_LOC2], e, v, tmin);
+		if (res)
+		{
+			v3 n1, n2;
+			diff3( n1, obj[OBJ_LOC0], obj[OBJ_LOC1]);
+			diff3( n2, obj[OBJ_LOC0], obj[OBJ_LOC2]);
+			cross3( normal, n1, n2);
+		}
+	}
+	else if (obj[0][0] == 3) // parallelogram
+	{
+		res = intersec_parallelogram( obj[OBJ_LOC0], obj[OBJ_LOC1], obj[OBJ_LOC2], e, v, tmin);
 		if (res)
 		{
 			v3 n1, n2;
@@ -221,8 +232,9 @@ void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 	sum3( pinter, _e, pinter);
 
 	v3 vcol;
-	copy3( vcol, obj[OBJ_COLOR]);		// start with black
-//	copy3( vcol, col0);		// start with black
+	copy3( vcol, obj[OBJ_COLOR]);
+#if 0
+	//	copy3( vcol, col0);		// start with black
 	for (i = 0; i < scene->nlamps; i++)
 	{
 		v3 vdist;	// this is shadow (or enlightment) vec for this lamp
@@ -263,6 +275,7 @@ void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 			mult3( vcol, att);
 		}
 	}
+#endif
 	copy3( col, vcol);
 }
 
@@ -307,6 +320,8 @@ inline int init_scene( scene_t *scene)
 	v3 right;
 	// normalize v
 	div3( scene->v, norm3( scene->v));
+	// normalize up
+	div3( scene->up, norm3( scene->up));
 	cross3( right, scene->v, scene->up);
 	cross3( scene->up, right, scene->v);
 	sum3( scene->s0, scene->e, scene->v);
@@ -488,17 +503,20 @@ int thr( void *opaque)
 	return 0;
 }
 
+#if 0
 // 3d scene :
 #define F 40
 #define S 20
 // objects
 v3 __objs[] = {
-// a sphere
+#if 1
+	// a sphere
 	{ 0, S/4, 0 },	// 0=sphere
 	{ S, S, -S/2 },
 	{  },
 	{  },
 	{ 1, 1, 1 },	// color
+#endif
 // a facet
 	{ 1, 0, 0 },	// 1=facet
 	{ 0, 0, 0 },
@@ -517,12 +535,14 @@ v3 __objs[] = {
 	{ 0, 0, F },	// WARNING : visible faces must have normal pointing to eye !
 	{ F, 0, 0 },
 	{ 0, 0, 1 },	// color
-// a box
+#if 0
+	// a box
 	{ 2, 0, 0 },	// 2=box
 	{ -S, -S, -S },	// lower
 	{ S, S, S },	// upper
 	{},
 	{ 1, 1, 0 },	// color
+#endif
 };
 int _nobjs = sizeof( __objs) / sizeof( __objs[0]) / LEN_OBJ;
 v3 *_objs = __objs;
@@ -551,6 +571,101 @@ v3 *_lamps = __lamps;
 #endif
 // ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
 v3 _up = { 0, 1, 0};
+
+#else
+// plate4
+// objects
+v3 __objs[] = {
+	// a sphere
+	{ 0, 40, 0 },	// 0=sphere
+	{ 210, 55, -80 },
+	{  },
+	{  },
+	{ .5, .3, .5 },	// color
+	// a sphere
+	{ 0, 35, 0 },	// 0=sphere
+	{ 200, 90, 70 },
+	{  },
+	{  },
+	{ .3, .5, .9 },	// color
+#if 0
+	// a parallelogram
+	{ 3, 0, 0 },	// 3=parallelogram
+	{ -10000, 0, -10000 },
+	{ 10000, 0, -10000 },
+	{ -10000, 0, 10000 },
+	{ 1, 0, 0 },	// color
+#endif
+#if 1
+#define T 3
+#else
+#define T 1
+#endif	// a parallelogram
+	{ T, 0, 0 },	// 3=parallelogram
+	{ 150, 0, -15 },
+	{ 150, 0, 15 },
+	{ 150, 60, -15 },
+	{ 1, .5, .5 },	// color
+	// a parallelogram
+	{ T, 0, 0 },	// 3=parallelogram
+	{ 150, 0, -15 },
+	{ 300, 0, -15 },
+	{ 150, 60, -15 },
+	{ .5, 1, .5 },	// color
+	// a parallelogram
+	{ T, 0, 0 },	// 3=parallelogram
+	{ 150, 0, 15 },
+	{ 300, 0, 15 },
+	{ 150, 60, 15 },
+	{ .5, .5, 1 },	// color
+	// a parallelogram
+	{ T, 0, 0 },	// 3=parallelogram
+	{ 150, 60, -15 },
+	{ 150, 60, 15 },
+	{ 300, 60, -15 },
+	{ 1, .5, 1 },	// color
+
+	// a parallelogram
+	{ T, 0, 0 },	// 3=parallelogram
+	{ 200, 60, -15 },
+	{ 200, 60, 15 },
+	{ 200, 120, -15 },
+	{ 1, 1, .5 },	// color
+	// a parallelogram
+	{ T, 0, 0 },	// 3=parallelogram
+	{ 200, 60, -15 },
+	{ 250, 60, -15 },
+	{ 200, 120, -15 },
+	{ .5, .5, .5 },	// color
+	// a parallelogram
+	{ T, 0, 0 },	// 3=parallelogram
+	{ 200, 60, 15 },
+	{ 250, 60, 15 },
+	{ 200, 120, 15 },
+	{ 1, 1, 1 },	// color
+};
+int _nobjs = sizeof( __objs) / sizeof( __objs[0]) / LEN_OBJ;
+v3 *_objs = __objs;
+
+// lamps
+v3 __lamps[] = {
+// a lamp
+	{ 120, 120, -50 },
+// a lamp
+	{ 120, 150, 80 },
+};
+int _nlamps = sizeof( __lamps) / sizeof( __lamps[0]);
+v3 *_lamps = __lamps;
+
+// camera is : eye coordinate (vector e)..
+v3 _e = { -20, 70, -40 };
+// ..a direction (vector v)..
+v3 _v = { 200, 50, 0 };
+// ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
+//v3 _up = { -190, -70, 40};
+v3 _up = { 0, 1, 0};
+
+#endif
 
 #define W 800
 #define H 600
@@ -646,18 +761,49 @@ int main( int argc, char *argv[])
 						case SDLK_ESCAPE:
 							end = 1;
 							break;
-						case SDLK_UP:
-//							if (done)
+						case SDLK_PAGEUP:
+							if (done)
 							{
-							go = 1;
-							add3( scene.e, -0.5);
+								v3 tmp;
+								sum3( scene.e, scene.e, mult3( copy3( tmp, scene.v), 10));
+								go = 1;
+							}
+							break;
+						case SDLK_PAGEDOWN:
+							if (done)
+							{
+								v3 tmp;
+								diff3( scene.e, scene.e, mult3( copy3( tmp, scene.v), 10));
+								go = 1;
+							}
+							break;
+#define DELT 10
+						case SDLK_LEFT:
+							if (done)
+							{
+								scene.e[2] += DELT;
+								go = 1;
+							}
+							break;
+						case SDLK_RIGHT:
+							if (done)
+							{
+								scene.e[2] -= DELT;
+								go = 1;
+							}
+							break;
+						case SDLK_UP:
+							if (done)
+							{
+								scene.e[1] += DELT;
+								go = 1;
 							}
 							break;
 						case SDLK_DOWN:
-//							if (done)
+							if (done)
 							{
-							go = 1;
-							add3( scene.e, +0.5);
+								scene.e[1] -= DELT;
+								go = 1;
 							}
 							break;
 						default:
@@ -665,7 +811,7 @@ int main( int argc, char *argv[])
 					}
 					break;
 				case SDL_MOUSEBUTTONUP:
-	//				if (done)
+					if (done)
 						go = 1;
 					break;
 				default:
