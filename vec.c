@@ -171,6 +171,92 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 	return result;
 }
 
+int intersec_parallelogram( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
+{
+	v3 delta, location;
+	double dot,pos1,pos2,gu[4],gv[4];
+	int i,j,crossing_no; 
+	
+	// plane normal :
+	v3 vect1, vect2;
+	diff3( vect1, p1, p0);
+	diff3( vect2, p2, p0);
+	v3 norm;
+	cross3( norm, vect1, vect2);
+	double nn;
+	nn = norm3( norm);
+	div3( norm, nn);				// should be done at constr
+
+	dot = dot3( norm, l);
+	
+	double n1 = dot3( norm, p0);	// should be done at obj constr ?
+
+	if (fabs(dot)<SMALL)
+		return 0;
+	pos1 = n1;
+	pos2 = dot3( norm, l0);
+	*pt=(pos1-pos2)/dot;
+	sum3( location, l0, mult3( copy3( location, l), *pt));
+	diff3( delta, location, p0);
+	if ((fabs(norm[0]) > fabs(norm[1])) && (fabs(norm[0]) > fabs(norm[2])))
+	{ 
+		gu[0] = - delta[1];
+		gv[0] = - delta[2];
+		gu[1] = vect1[1] - delta[1];
+		gv[1] = vect1[2] - delta[2];
+		gu[2] = vect2[1] + vect1[1] - delta[1];
+		gv[2] = vect2[2] + vect1[2] - delta[2];
+		gu[3] = vect2[1] - delta[1];
+		gv[3] = vect2[2] - delta[2];
+	}
+	else
+	{
+		if (fabs(norm[1]) >= fabs(norm[2]))
+		{ 
+			gu[0] = - delta[0];
+			gv[0] = - delta[2];
+			gu[1] = vect1[0] - delta[0];
+			gv[1] = vect1[2] - delta[2];
+			gu[2] = vect2[0] + vect1[0] - delta[0];
+			gv[2] = vect2[2] + vect1[2] - delta[2]; 
+			gu[3] = vect2[0] - delta[0];
+			gv[3] = vect2[2] - delta[2]; 
+		}
+		else
+		{
+			gu[0] = - delta[0];
+			gv[0] = - delta[1];
+			gu[1] = vect1[0] - delta[0];
+			gv[1] = vect1[1] - delta[1];
+			gu[2] = vect2[0] + vect1[0] - delta[0];
+			gv[2] = vect2[1] + vect1[1] - delta[1];
+			gu[3] = vect2[0] - delta[0];
+			gv[3] = vect2[1] - delta[1]; 
+		}
+	}
+	crossing_no = 0;
+	for (i=0; i<4; i++)
+	{ 
+		j = (i + 1) % 4;
+		if (((gv[i] < 0) && (gv[j] >= 0)) || ((gv[j] < 0) && (gv[i]>= 0))) 
+		{
+			if ((gu[i]>=0) && (gu[j] >= 0))
+				crossing_no++; 
+			else
+			{
+				if ((gu[i]>=0) || (gu[j] >= 0))
+				{
+					if (gu[i] - gv[i] * (gu[j] + gu[i]) / (gv[j] - gv[i]) >0)
+						crossing_no++;
+				}
+			}
+		}
+	}
+	if ((crossing_no % 2) == 0)
+		return 0;
+	return 1;
+}
+
 #define SMALL 0.001
 int solvetri( double a, double b, double c, double *t1, double *t2)
 {
