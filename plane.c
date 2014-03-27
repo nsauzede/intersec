@@ -5,9 +5,10 @@
 
 #define dprintf(...) do{}while(0)
 
-typedef double v3[3];
+typedef double v1_t;
+typedef v1_t v3_t[3];
 
-double* cross3( v3 dest, v3 src1, v3 src2)
+v1_t* cross3( v3_t dest, v3_t src1, v3_t src2)
 {
 	dest[0] = src1[1] * src2[2] - src1[2] * src2[1];
 	dest[1] = src1[2] * src2[0] - src1[0] * src2[2];
@@ -15,7 +16,7 @@ double* cross3( v3 dest, v3 src1, v3 src2)
 	return dest;
 }
 
-double* sum3( v3 dest, v3 src1, v3 src2)
+v1_t* sum3( v3_t dest, v3_t src1, v3_t src2)
 {
 	dest[0] = src1[0] + src2[0];
 	dest[1] = src1[1] + src2[1];
@@ -23,7 +24,7 @@ double* sum3( v3 dest, v3 src1, v3 src2)
 	return dest;
 }
 
-double* diff3( v3 dest, v3 src1, v3 src2)
+v1_t* diff3( v3_t dest, v3_t src1, v3_t src2)
 {
 	dest[0] = src1[0] - src2[0];
 	dest[1] = src1[1] - src2[1];
@@ -31,7 +32,7 @@ double* diff3( v3 dest, v3 src1, v3 src2)
 	return dest;
 }
 
-double* div3( v3 n, double nn)
+v1_t* div3_t( v3_t n, v1_t nn)
 {
 	n[0] /= nn;
 	n[1] /= nn;
@@ -39,7 +40,7 @@ double* div3( v3 n, double nn)
 	return n;
 }
 
-double* mult3( v3 n, double nn)
+v1_t* mult3( v3_t n, v1_t nn)
 {
 	n[0] *= nn;
 	n[1] *= nn;
@@ -47,41 +48,41 @@ double* mult3( v3 n, double nn)
 	return n;
 }
 
-double dot3( v3 p, v3 n)
+v1_t dot3( v3_t p, v3_t n)
 {
 	return p[0] * n[0] + p[1] * n[1] + p[2] * n[2];
 }
 
-double norm3( v3 n)
+v1_t norm3( v3_t n)
 {
 	return sqrt( dot3( n, n));	
 }
 
 // plane : (p - po) . n = 0
 // line : p = dl + l0
-int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
+int intersec_plane( v3_t p0, v3_t p1, v3_t p2, v3_t l0, v3_t l, v1_t *pt)
 {
 	int result = 0;
 	dprintf( "l0 is %f,%f,%f l is %f,%f,%f\n", l0[0], l0[1], l0[2], l[0], l[1], l[2]);
 	dprintf( "p0 is %f,%f,%f p1 is %f,%f,%f p2 is %f,%f,%f\n", p0[0], p0[1], p0[2], p1[0], p1[1], p1[2], p2[0], p2[1], p2[2]);
 	// plane normal :
-	v3 v1, v2;
+	v3_t v1, v2;
 	diff3( v1, p1, p0);
 	diff3( v2, p2, p0);
 	dprintf( "v1 is %f,%f,%f v2 is %f,%f,%f\n", v1[0], v1[1], v1[2], v2[0], v2[1], v2[2]);
-	v3 n;
+	v3_t n;
 	cross3( n, v1, v2);
-	double nn;
+	v1_t nn;
 	nn = norm3( n);
-	div3( n, nn);
+	div3_t( n, nn);
 	dprintf( "normal is %f,%f,%f\n", n[0], n[1], n[2]);
 	// t = ((p0 - l0) . n) / (l . n)
-	double num;
-	v3 p;
+	v1_t num;
+	v3_t p;
 	diff3( p, p0, l0);
 	num = dot3( p, n);
 	dprintf( "num is %f\n", num);
-	double den;
+	v1_t den;
 	den = dot3( l, n);
 	dprintf( "den is %f\n", den);
 	if (den == 0)
@@ -97,9 +98,9 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 	}
 	else
 	{
-		double det;
-		double a, b, c, d, e, f, g, h, i;
-		v3 lb;
+		v1_t det;
+		v1_t a, b, c, d, e, f, g, h, i;
+		v3_t lb;
 		sum3( lb, l0, l);
 		a = l0[0] - lb[0];
 		b = p1[0] - p0[0];
@@ -114,7 +115,7 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 		dprintf( "det=%f\n", det);
 		if (det > 0.001) // matrix is invertible
 		{
-			double A, B, C, D, E, F, G, H, I;
+			v1_t A, B, C, D, E, F, G, H, I;
 			A = (e * i - f * h);
 			B = -(d * i - f * g);
 			C = (d * h - e * g);
@@ -124,7 +125,7 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 			G = (b * f - c * e);
 			H = -(a * f - c * d);
 			I = (a * e - b * d);
-			double t, u = 0, v = 0;
+			v1_t t, u = 0, v = 0;
 			// p=p0+u*v1+v*v2
 			t = (A * (l0[0] - p0[0]) + D * (l0[1] - p0[1]) + G * (l0[2] - p0[2])) / det;
 			u = (B * (l0[0] - p0[0]) + E * (l0[1] - p0[1]) + H * (l0[2] - p0[2])) /det;
@@ -146,10 +147,10 @@ int intersec_plane( v3 p0, v3 p1, v3 p2, v3 l0, v3 l, double *pt)
 }
 
 #define SMALL 0.001
-int solvetri( double a, double b, double c, double *t1, double *t2)
+int solvetri( v1_t a, v1_t b, v1_t c, v1_t *t1, v1_t *t2)
 {
 	int result = 0;
-	double d, sd;
+	v1_t d, sd;
 	d = b * b - 4 * a * c;
 	sd = sqrt( d);
 	
@@ -171,24 +172,24 @@ int solvetri( double a, double b, double c, double *t1, double *t2)
 	return result;
 }
 
-int intersec_sphere( v3 cs, double sr, v3 e, v3 v, double *tmin, double *tmax)
+int intersec_sphere( v3_t cs, v1_t sr, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 {
-	double ex = e[0];
-	double ey = e[1];
-	double ez = e[2];
-	double cx = cs[0];
-	double cy = cs[1];
-	double cz = cs[2];
-	double vx = v[0];
-	double vy = v[1];
-	double vz = v[2];
+	v1_t ex = e[0];
+	v1_t ey = e[1];
+	v1_t ez = e[2];
+	v1_t cx = cs[0];
+	v1_t cy = cs[1];
+	v1_t cz = cs[2];
+	v1_t vx = v[0];
+	v1_t vy = v[1];
+	v1_t vz = v[2];
 	
 	int result = 0;
-	double a, b, c;
-	double t1, t2;
+	v1_t a, b, c;
+	v1_t t1, t2;
 	
-	double tx, ty, tz;
-	double n;
+	v1_t tx, ty, tz;
+	v1_t n;
 	n = sr * sr;
 	tx = ex - cx;
 	ty = ey - cy;
@@ -202,7 +203,7 @@ int intersec_sphere( v3 cs, double sr, v3 e, v3 v, double *tmin, double *tmax)
 	{
 		if (fabs( t1) > fabs( t2))
 		{
-			double temp = t1;
+			v1_t temp = t1;
 			t1 = t2;
 			t2 = temp;
 		}
@@ -231,21 +232,21 @@ int intersec_sphere( v3 cs, double sr, v3 e, v3 v, double *tmin, double *tmax)
 #ifdef USE_SOLID
 int use_solid = 1;
 #endif
-int intersec_cyl( v3 cy, v3 e, v3 v, double *tmin, double *tmax)
+int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 {
 	int result = 0;
 
-	double a, b, c;
-	double t1, t2;
+	v1_t a, b, c;
+	v1_t t1, t2;
 	int sol;
-	double Hc = cy[0];
-	double Rc = cy[1];
-	double Vx = v[0];
-	double Vy = v[1];
-	double Vz = v[2];
-	double lx0 = e[0];
-	double ly0 = e[1];
-	double lz0 = e[2];
+	v1_t Hc = cy[3 * 2 + 0];
+	v1_t Rc = cy[3 * 2 + 1];
+	v1_t Vx = v[0];
+	v1_t Vy = v[1];
+	v1_t Vz = v[2];
+	v1_t lx0 = e[0];
+	v1_t ly0 = e[1];
+	v1_t lz0 = e[2];
 	a = Vx * Vx + Vy * Vy;
 	b = 2 * lx0 * Vx + 2 * ly0 * Vy;
 	c = lx0 * lx0 + ly0 * ly0 - Rc * Rc;
@@ -254,7 +255,7 @@ int intersec_cyl( v3 cy, v3 e, v3 v, double *tmin, double *tmax)
 	{
 		if (t1 > t2)
 		{
-			double temp = t1;
+			v1_t temp = t1;
 			t1 = t2;
 			t2 = temp;
 		}
@@ -263,24 +264,24 @@ int intersec_cyl( v3 cy, v3 e, v3 v, double *tmin, double *tmax)
 	{
 		t2 = t1;
 	}
-	double foo1 = 0.0;
-	double foo2 = 0.0;
-	double foo = 0.0;
+	v1_t foo1 = 0.0;
+	v1_t foo2 = 0.0;
+	v1_t foo = 0.0;
 	if (sol 
 			//&& (fabs(t1) > SMALL)
 			)
 	{
 		int hit = 0;
 
-		double zmin = 0;
-		double zmax = Hc;
-		double z1 = lz0 + Vz * t1;
-		double z2 = lz0 + Vz * t2;
+		v1_t zmin = 0;
+		v1_t zmax = Hc;
+		v1_t z1 = lz0 + Vz * t1;
+		v1_t z2 = lz0 + Vz * t2;
 #ifdef USE_SOLID
 		if (use_solid)
 		{
-		double z1a = z1 - zmax;
-		double z2a = z2 - zmax;
+		v1_t z1a = z1 - zmax;
+		v1_t z2a = z2 - zmax;
 
 		if ((z1 < zmin) && (z2 > zmin))
 		{
@@ -312,7 +313,7 @@ int intersec_cyl( v3 cy, v3 e, v3 v, double *tmin, double *tmax)
 			if (hit)
 			{
 				foo = z2;
-				double temp = t2;
+				v1_t temp = t2;
 				t1 = t2;
 				t2 = temp;
 			}
@@ -348,43 +349,43 @@ int intersec_cyl( v3 cy, v3 e, v3 v, double *tmin, double *tmax)
 // camera is : eye coordinate (vector e)..
 #if 1
 #define E 5
-	v3 e = { -2*E, 0*E, 16*E };
+	v3_t e = { -2*E, 0*E, 16*E };
 // ..a direction (vector v)..
 #define V E/2
-	v3 v = { -0*V, -0*V, -2*V };
+	v3_t v = { -0*V, -0*V, -2*V };
 #elif 0
 #define E 20
-	v3 e = { 0*E, 0*E, -2*E };
+	v3_t e = { 0*E, 0*E, -2*E };
 // ..a direction (vector v)..
 #define V E/2
-	v3 v = { -0*V, -0*V, 2*V };
+	v3_t v = { -0*V, -0*V, 2*V };
 #elif 0
 #define E 20
-	v3 e = { 0*E, 0*E, 2*E };
+	v3_t e = { 0*E, 0*E, 2*E };
 // ..a direction (vector v)..
 #define V E/2
-	v3 v = { -0*V, -0*V, -2*V };
+	v3_t v = { -0*V, -0*V, -2*V };
 #elif 1
 #define E 20
-	v3 e = { 2*E, -2*E, 2*E };
+	v3_t e = { 2*E, -2*E, 2*E };
 // ..a direction (vector v)..
 #define V E/2
-	v3 v = { -2*V, 2*V, -2*V };
+	v3_t v = { -2*V, 2*V, -2*V };
 #elif 1
 #define E 20
-	v3 e = { 2*E, 2*E, 2*E };
+	v3_t e = { 2*E, 2*E, 2*E };
 // ..a direction (vector v)..
 #define V E/2
-	v3 v = { -2*V, -2*V, -2*V };
+	v3_t v = { -2*V, -2*V, -2*V };
 #else
 #define E 50
-	v3 e = { 0*E, 0*E, 1*E };
+	v3_t e = { 0*E, 0*E, 1*E };
 // ..a direction (vector v)..
 #define V E/2
-	v3 v = { -0*V, -0*V, -1*V };
+	v3_t v = { -0*V, -0*V, -1*V };
 #endif
 // ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
-v3 up = { -0, +1, 1};
+v3_t up = { -0, +1, 1};
 // camera screen size
 #if 1
 int w = 44, h = 80;
@@ -402,7 +403,7 @@ int w = 1920, h = 1080;
 //#define LOAD_SCENE
 // multiple facets (3 vertex3 + 1 color3 each)
 #define F 40
-v3 _facets[] = {
+v3_t _facets[] = {
 #if 0
 		{ 0, 0, 0 },
 		{ F, 0, 0 },
@@ -421,11 +422,11 @@ v3 _facets[] = {
 #endif
 };
 int nfacets = sizeof( _facets) / sizeof( _facets[0]) / 4;
-v3 *facets = _facets;
+v3_t *facets = _facets;
 
 // multiple spheres
 #define S 20
-v3 _spheres[] = {
+v3_t _spheres[] = {
 #if 0
 	{ S, S, S },
 	{ S/4, 0, 0 },	// radius
@@ -433,26 +434,28 @@ v3 _spheres[] = {
 #endif
 };
 int nspheres = sizeof( _spheres) / sizeof( _spheres[0]) / 3;
-v3 *spheres = _spheres;
+v3_t *spheres = _spheres;
 
 // multiple cyls
 #define CH 20
 #define CR 10
-v3 _cyls[] = {
+v3_t _cyls[] = {
 #if 1
+	{ 0, 0, 0 },	// center
+	{ 0, 0, 1 },	// axis
 	{ CH, CR, 0 },	// CH, CR
 	{ 0, 1, 0 },	// color
 #endif
 };
-int ncyls = sizeof( _cyls) / sizeof( _cyls[0]) / 2;
-v3 *cyls = _cyls;
+int ncyls = sizeof( _cyls) / sizeof( _cyls[0]) / 4;
+v3_t *cyls = _cyls;
 
-void traceray( v3 e, v3 _v, v3 col)
+void traceray( v3_t e, v3_t _v, v3_t col)
 {
-	double *pcol = 0;
-	double tmin = BIG;
-	double t;
-	double *p0, *p1, *p2;
+	v1_t *pcol = 0;
+	v1_t tmin = BIG;
+	v1_t t;
+	v1_t *p0, *p1, *p2;
 	int res;
 	int i;
 	for (i = 0; i < nfacets; i++)
@@ -484,7 +487,9 @@ void traceray( v3 e, v3 _v, v3 col)
 	}
 	for (i = 0; i < ncyls; i++)
 	{
-		p0 = cyls[i * 2 + 0];		// cyl H and R
+		p0 = cyls[i * 4 + 0];		// cyl center
+		p1 = cyls[i * 4 + 1];		// cyl axis
+		p2 = cyls[i * 4 + 2];		// cyl H and R
 		t = 0;
 		res = intersec_cyl( p0, e, _v, &t, 0);
 		dprintf( "result=%d t=%f\n", res, t);
@@ -492,7 +497,7 @@ void traceray( v3 e, v3 _v, v3 col)
 		if (res && (t < tmin))
 		{
 			tmin = t;
-			pcol = &cyls[i * 2 + 1][0];
+			pcol = &cyls[i * 4 + 3][0];
 		}
 	}
 	if (pcol)
@@ -539,7 +544,7 @@ int main( int argc, char *argv[])
 		rewind( in);
 		if (nfacets)
 		{
-		facets = malloc( nfacets * sizeof(v3[4]));
+		facets = malloc( nfacets * sizeof(v3_t[4]));
 		i = 0;
 		j = 0;
 #ifdef USE_NORMAL
@@ -594,10 +599,10 @@ int main( int argc, char *argv[])
 	printf( "nspheres=%d\n", nspheres);
 	printf( "ncyls=%d\n", ncyls);
 	// compute camera screen as three vectors of a plane : s0, s1 and s2
-	v3 s0, s1, s2;
-	v3 right;
+	v3_t s0, s1, s2;
+	v3_t right;
 	// normalize v
-	div3( v, norm3( v));
+	div3_t( v, norm3( v));
 	cross3( right, v, up);
 	cross3( up, right, v);
 	sum3( s0, e, v);
@@ -609,20 +614,20 @@ int main( int argc, char *argv[])
 		for (i = 0; i < w; i++)
 		{
 
-			double u, v;
-			v = -(double)0.5 + (double)1.0 * (double)i / ((double)w - 1);
-			u = -(double)0.5 + (double)1.0 * (double)(h - j - 1) / ((double)h - 1);
+			v1_t u, v;
+			v = -(v1_t)0.5 + (v1_t)1.0 * (v1_t)i / ((v1_t)w - 1);
+			u = -(v1_t)0.5 + (v1_t)1.0 * (v1_t)(h - j - 1) / ((v1_t)h - 1);
 			// compute a point s in camera screen plane based on {u,v}
-			v3 s;
+			v3_t s;
 			// p=p0+(p1-p0)u+(p2-p0)v
 			s[0] = s0[0] + (s1[0] - s0[0]) * u + (s2[0] - s0[0]) * v;
 			s[1] = s0[1] + (s1[1] - s0[1]) * u + (s2[1] - s0[1]) * v;
 			s[2] = s0[2] + (s1[2] - s0[2]) * u + (s2[2] - s0[2]) * v;
 			// compute final camera=> pixel vector _v
-			v3 _v;
+			v3_t _v;
 			diff3( _v, s, e);
 
-			v3 col;
+			v3_t col;
 			memset( col, 0, sizeof( col));
 			traceray( e, _v, col);
 
