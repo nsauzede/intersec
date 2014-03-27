@@ -227,11 +227,150 @@ int intersec_sphere( v3 cs, double sr, v3 e, v3 v, double *tmin, double *tmax)
 	return result;
 }
 
+#define USE_SOLID
+#ifdef USE_SOLID
+int use_solid = 1;
+#endif
+int intersec_cyl( v3 cy, v3 e, v3 v, double *tmin, double *tmax)
+{
+	int result = 0;
+
+	double a, b, c;
+	double t1, t2;
+	int sol;
+	double Hc = cy[0];
+	double Rc = cy[1];
+	double Vx = v[0];
+	double Vy = v[1];
+	double Vz = v[2];
+	double lx0 = e[0];
+	double ly0 = e[1];
+	double lz0 = e[2];
+	a = Vx * Vx + Vy * Vy;
+	b = 2 * lx0 * Vx + 2 * ly0 * Vy;
+	c = lx0 * lx0 + ly0 * ly0 - Rc * Rc;
+	sol = solvetri( a, b, c, &t1, &t2);
+	if (sol == 2)
+	{
+		if (t1 > t2)
+		{
+			double temp = t1;
+			t1 = t2;
+			t2 = temp;
+		}
+	}
+	else if (sol == 1)
+	{
+		t2 = t1;
+	}
+	double foo1 = 0.0;
+	double foo2 = 0.0;
+	double foo = 0.0;
+	if (sol 
+			//&& (fabs(t1) > SMALL)
+			)
+	{
+		int hit = 0;
+
+		double zmin = 0;
+		double zmax = Hc;
+		double z1 = lz0 + Vz * t1;
+		double z2 = lz0 + Vz * t2;
+#ifdef USE_SOLID
+		if (use_solid)
+		{
+		double z1a = z1 - zmax;
+		double z2a = z2 - zmax;
+
+		if ((z1 < zmin) && (z2 > zmin))
+		{
+			t1 = (zmin - lz0) / Vz;
+			hit = 1;
+			foo = lz0 + Vz * t1;
+			result = 1;
+		}
+		else
+		if ((z1a * z2a) < 0)
+		{
+			t1 = (zmax - lz0) / Vz;
+			hit = 1;
+			foo = lz0 + Vz * t1;
+			result = 1;
+		}
+		}
+		if (!hit)
+#endif
+		{
+		hit = (z1 >= zmin) && (z1 <= zmax);
+		if (hit)
+			foo = z1;
+		foo1 = z1;
+		foo2 = z2;
+		if (!hit && ((sol > 1) && (fabs(t2) > SMALL)))
+		{
+			hit = (z2 >= zmin) && (z2 <= zmax);
+			if (hit)
+			{
+				foo = z2;
+				double temp = t2;
+				t1 = t2;
+				t2 = temp;
+			}
+		}
+		}
+		if (hit)
+		{
+		result = sol;
+		if (tmin)
+			*tmin = t1;
+		if (tmax)
+			*tmax = t2;
+		}
+	}
+#if 0
+	printf( "%3.0f/", foo1);
+	printf( "%3.0f", foo2);
+#else
+	foo1 = foo1;
+	foo2 = foo2;
+#endif
+	foo = foo;
+	printf( "%3.0f", foo);
+	//printf( "%d", result);
+	//printf( "%d", sol);
+
+	return result;
+}
+
 #define EPS 0.1
 #define BIG 1000.0
 #define COMP_EPS(x,val) (x >= ((val) - EPS) && x <= ((val) + EPS))
 // camera is : eye coordinate (vector e)..
 #if 1
+#define E 5
+	v3 e = { -2*E, 0*E, 16*E };
+// ..a direction (vector v)..
+#define V E/2
+	v3 v = { -0*V, -0*V, -2*V };
+#elif 0
+#define E 20
+	v3 e = { 0*E, 0*E, -2*E };
+// ..a direction (vector v)..
+#define V E/2
+	v3 v = { -0*V, -0*V, 2*V };
+#elif 0
+#define E 20
+	v3 e = { 0*E, 0*E, 2*E };
+// ..a direction (vector v)..
+#define V E/2
+	v3 v = { -0*V, -0*V, -2*V };
+#elif 1
+#define E 20
+	v3 e = { 2*E, -2*E, 2*E };
+// ..a direction (vector v)..
+#define V E/2
+	v3 v = { -2*V, 2*V, -2*V };
+#elif 1
 #define E 20
 	v3 e = { 2*E, 2*E, 2*E };
 // ..a direction (vector v)..
@@ -245,10 +384,14 @@ int intersec_sphere( v3 cs, double sr, v3 e, v3 v, double *tmin, double *tmax)
 	v3 v = { -0*V, -0*V, -1*V };
 #endif
 // ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
-v3 up = { 0, 1, 0};
+v3 up = { -0, +1, 1};
 // camera screen size
 #if 1
-int w = 110, h = 50;
+int w = 44, h = 80;
+#elif 0
+int w = 22, h = 20;
+#elif 1
+int w = 180, h = 80;
 #else
 //int w = 640, h = 480;
 //int w = 1024, h = 768;
@@ -260,6 +403,7 @@ int w = 1920, h = 1080;
 // multiple facets (3 vertex3 + 1 color3 each)
 #define F 40
 v3 _facets[] = {
+#if 0
 		{ 0, 0, 0 },
 		{ F, 0, 0 },
 		{ 0, F, 0 },
@@ -274,20 +418,34 @@ v3 _facets[] = {
 		{ 0, 0, F },	// WARNING : visible faces must have normal pointing to eye !
 		{ F, 0, 0 },
 		{ 0, 0, 1 },	// color
-
+#endif
 };
 int nfacets = sizeof( _facets) / sizeof( _facets[0]) / 4;
+v3 *facets = _facets;
+
 // multiple spheres
 #define S 20
 v3 _spheres[] = {
+#if 0
 	{ S, S, S },
 	{ S/4, 0, 0 },	// radius
 	{ 1, 0, 1 },	// color
+#endif
 };
-int nspheres = sizeof( _spheres) / sizeof( _spheres[0]);
-
-v3 *facets = _facets;
+int nspheres = sizeof( _spheres) / sizeof( _spheres[0]) / 3;
 v3 *spheres = _spheres;
+
+// multiple cyls
+#define CH 20
+#define CR 10
+v3 _cyls[] = {
+#if 1
+	{ CH, CR, 0 },	// CH, CR
+	{ 0, 1, 0 },	// color
+#endif
+};
+int ncyls = sizeof( _cyls) / sizeof( _cyls[0]) / 2;
+v3 *cyls = _cyls;
 
 void traceray( v3 e, v3 _v, v3 col)
 {
@@ -324,6 +482,19 @@ void traceray( v3 e, v3 _v, v3 col)
 			pcol = &spheres[i * 3 + 2][0];
 		}
 	}
+	for (i = 0; i < ncyls; i++)
+	{
+		p0 = cyls[i * 2 + 0];		// cyl H and R
+		t = 0;
+		res = intersec_cyl( p0, e, _v, &t, 0);
+		dprintf( "result=%d t=%f\n", res, t);
+		dprintf( " %d", res);
+		if (res && (t < tmin))
+		{
+			tmin = t;
+			pcol = &cyls[i * 2 + 1][0];
+		}
+	}
 	if (pcol)
 		memcpy( col, pcol, 3 * sizeof( col[0]));
 }
@@ -336,6 +507,13 @@ int main( int argc, char *argv[])
 	int arg = 1;
 	if (arg < argc)
 	{
+#ifdef USE_SOLID
+		if (!strcmp( "--hollow", argv[arg]))
+		{
+			use_solid = 0;
+			arg++;
+		}
+#endif
 		scene = argv[arg++];
 	}
 	
@@ -413,6 +591,8 @@ int main( int argc, char *argv[])
 	}
 	}
 	printf( "nfacets=%d\n", nfacets);
+	printf( "nspheres=%d\n", nspheres);
+	printf( "ncyls=%d\n", ncyls);
 	// compute camera screen as three vectors of a plane : s0, s1 and s2
 	v3 s0, s1, s2;
 	v3 right;
