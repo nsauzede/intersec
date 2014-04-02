@@ -54,7 +54,7 @@ endif
 
 MV=mv
 
-LDFLAGS=-lm
+LDFLAGS+=-lm
 
 all:$(TARGET)
 
@@ -64,13 +64,9 @@ check: $(TARGET)
 ifdef USE_SDL
 intersec.exe: CFLAGS+=-DUSE_SDL
 intersec.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
-#intersec.exe:LDFLAGS+=`$(SDLCONFIG) --libs` -mno-windows
 intersec.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
 fake3d.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
 fake3d.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
-
-#%.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
-#%.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
 
 #plane.exe: CFLAGS+=-DUSE_SDL
 #plane.exe:CFLAGS+=`$(SDLCONFIG) --cflags`
@@ -85,10 +81,8 @@ fbench.exe: fbench.o fvec.o
 %.exe: %.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-sdlr3:CFLAGS=`$(SDLCONFIG) --cflags`
-sdlr3:LDFLAGS+=`$(SDLCONFIG) --libs`
-sdlr3:sdlr3.c
-	$(CC) -o $@ $(CFLAGS) $^ $(LDFLAGS)
+sdlr3.exe:CFLAGS=`$(SDLCONFIG) --cflags` -g -O3
+sdlr3.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
 
 clean:
 	$(RM) $(TARGET) *.o

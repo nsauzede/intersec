@@ -28,8 +28,10 @@ xsize = 1024;
 ysize = 768;
 An = 3;
 #else
-xsize = 600;
-ysize = 600;
+xsize = 720;
+ysize = 480;
+//xsize = 600;
+//ysize = 600;
 An = 1;
 #endif
 camera_X = 0;
