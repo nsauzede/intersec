@@ -232,6 +232,7 @@ int intersec_sphere( v3_t cs, v1_t sr, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 #ifdef USE_SOLID
 int use_solid = 1;
 #endif
+
 int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 {
 	int result = 0;
@@ -239,6 +240,27 @@ int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	v1_t a, b, c;
 	v1_t t1, t2;
 	int sol;
+
+	v1_t z0 = 0;
+#define DO_TRANSLATE
+#ifdef DO_TRANSLATE
+	v1_t x0 = 0;
+	v1_t y0 = 0;
+	x0 = cy[0];
+	y0 = cy[1];
+	z0 = cy[2];
+#endif
+
+#define DO_ROTATE
+#ifdef DO_ROTATE
+	//v1_t rx = cy[3 * 1 + 0] * (double)M_PI / 180.0;
+	v1_t rx = +1*45.0 * (double)M_PI / 180.0;
+	//v1_t ry = cy[3 * 1 + 1] * (double)M_PI / 180.0;
+	v1_t ry = -1*45.0 * (double)M_PI / 180.0;
+	//v1_t rz = cy[3 * 1 + 2] * (double)M_PI / 180.0;
+	v1_t rz = +0*45.0 * (double)M_PI / 180.0;
+#endif
+
 	v1_t Hc = cy[3 * 2 + 0];
 	v1_t Rc = cy[3 * 2 + 1];
 	v1_t Vx = v[0];
@@ -247,9 +269,66 @@ int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	v1_t lx0 = e[0];
 	v1_t ly0 = e[1];
 	v1_t lz0 = e[2];
+
+#ifdef DO_TRANSLATE
+	lx0 -= x0;
+	ly0 -= y0;
+	lz0 -= z0;
+#endif
+
+#ifdef DO_ROTATE
+	v1_t xx = 0, yy = 0, zz = 0;
+	rx = rx;
+	rz = rz;
+	ry = ry;
+	xx = xx;
+	zz = zz;
+	yy = yy;
+
+#if 1
+	yy = ly0 * cos(rx) - lz0 * sin(rx);
+	zz = ly0 * sin(rx) + lz0 * cos(rx);
+	ly0 = yy;
+	lz0 = zz;
+	yy = Vy * cos(rx) - Vz * sin(rx);
+	zz = Vy * sin(rx) + Vz * cos(rx);
+	Vy = yy;
+	Vz = zz;
+#endif
+
+#if 1
+	xx = lx0 * cos(ry) + lz0 * sin(ry);
+	zz = -lx0 * sin(ry) + lz0 * cos(ry);
+	lx0 = xx;
+	lz0 = zz;
+	xx = Vx * cos(ry) + Vz * sin(ry);
+	zz = -Vx * sin(ry) + Vz * cos(ry);
+	Vx = xx;
+	Vz = zz;
+#endif
+
+#if 0
+	xx = lx0 * cos(rz) - ly0 * sin(rz);
+	yy = lx0 * sin(rz) + ly0 * cos(rz);
+	lx0 = xx;
+	lz0 = yy;
+	xx = Vx * cos(rz) - Vy * sin(rz);
+	yy = Vx * sin(rz) + Vy * cos(rz);
+	Vx = xx;
+	Vy = yy;
+#endif
+
+#endif
+
 	a = Vx * Vx + Vy * Vy;
 	b = 2 * lx0 * Vx + 2 * ly0 * Vy;
 	c = lx0 * lx0 + ly0 * ly0 - Rc * Rc;
+#if 0
+	a = Vx * Vx + Vy * Vy;
+	b = 2 * lx0 * Vx + 2 * ly0 * Vy - 2 * Vx * x0 - 2 * Vy * y0;
+	c = lx0 * lx0 + ly0 * ly0 - Rc * Rc - 2 * lx0 * x0 + x0 * x0 - 2 * ly0 * y0 + y0 * y0;
+#endif
+
 	sol = solvetri( a, b, c, &t1, &t2);
 	if (sol == 2)
 	{
@@ -273,8 +352,8 @@ int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	{
 		int hit = 0;
 
-		v1_t zmin = 0;
-		v1_t zmax = Hc;
+		v1_t zmin = z0;
+		v1_t zmax = z0 + Hc;
 		v1_t z1 = lz0 + Vz * t1;
 		v1_t z2 = lz0 + Vz * t2;
 #ifdef USE_SOLID
@@ -347,7 +426,7 @@ int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 #define BIG 1000.0
 #define COMP_EPS(x,val) (x >= ((val) - EPS) && x <= ((val) + EPS))
 // camera is : eye coordinate (vector e)..
-#if 1
+#if 0
 #define E 5
 	v3_t e = { -2*E, 0*E, 16*E };
 // ..a direction (vector v)..
@@ -365,7 +444,7 @@ int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 // ..a direction (vector v)..
 #define V E/2
 	v3_t v = { -0*V, -0*V, -2*V };
-#elif 1
+#elif 0
 #define E 20
 	v3_t e = { 2*E, -2*E, 2*E };
 // ..a direction (vector v)..
@@ -385,7 +464,7 @@ int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	v3_t v = { -0*V, -0*V, -1*V };
 #endif
 // ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
-v3_t up = { -0, +1, 1};
+v3_t up = { -0, +1, 0};
 // camera screen size
 #if 1
 int w = 44, h = 80;
@@ -437,12 +516,12 @@ int nspheres = sizeof( _spheres) / sizeof( _spheres[0]) / 3;
 v3_t *spheres = _spheres;
 
 // multiple cyls
-#define CH 20
-#define CR 10
+#define CH 10
+#define CR 5
 v3_t _cyls[] = {
 #if 1
 	{ 0, 0, 0 },	// center
-	{ 0, 0, 1 },	// axis
+	{ 0, 0, 0 },	// axis
 	{ CH, CR, 0 },	// CH, CR
 	{ 0, 1, 0 },	// color
 #endif
@@ -488,8 +567,8 @@ void traceray( v3_t e, v3_t _v, v3_t col)
 	for (i = 0; i < ncyls; i++)
 	{
 		p0 = cyls[i * 4 + 0];		// cyl center
-		p1 = cyls[i * 4 + 1];		// cyl axis
-		p2 = cyls[i * 4 + 2];		// cyl H and R
+//		p1 = cyls[i * 4 + 1];		// cyl axis
+//		p2 = cyls[i * 4 + 2];		// cyl H and R
 		t = 0;
 		res = intersec_cyl( p0, e, _v, &t, 0);
 		dprintf( "result=%d t=%f\n", res, t);
