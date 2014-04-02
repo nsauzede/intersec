@@ -422,45 +422,179 @@ int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	return result;
 }
 
+int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
+{
+	int result = 0;
+
+	v1_t a, b, c;
+	v1_t t1, t2;
+	int sol;
+
+	v1_t z0 = 0;
+#define DO_TRANSLATE
+#ifdef DO_TRANSLATE
+	v1_t x0 = 0;
+	v1_t y0 = 0;
+	x0 = obj[0];
+	y0 = obj[1];
+	z0 = obj[2];
+#endif
+
+#define DO_ROTATE
+#ifdef DO_ROTATE
+	//v1_t rx = cy[3 * 1 + 0] * (double)M_PI / 180.0;
+	v1_t rx = +0*45.0 * (double)M_PI / 180.0;
+	//v1_t ry = cy[3 * 1 + 1] * (double)M_PI / 180.0;
+	v1_t ry = -0*45.0 * (double)M_PI / 180.0;
+	//v1_t rz = cy[3 * 1 + 2] * (double)M_PI / 180.0;
+	v1_t rz = +0*45.0 * (double)M_PI / 180.0;
+#endif
+
+//	v1_t lim = obj[3 * 2 + 2];
+	v1_t A = obj[3 * 2 + 0];
+	v1_t B = obj[3 * 2 + 1];
+	v1_t C = obj[3 * 2 + 2];
+	v1_t D = obj[3 * 2 + 3];
+	v1_t E = obj[3 * 2 + 4];
+	v1_t Vx = v[0];
+	v1_t Vy = v[1];
+	v1_t Vz = v[2];
+	v1_t lx0 = e[0];
+	v1_t ly0 = e[1];
+	v1_t lz0 = e[2];
+
+#ifdef DO_TRANSLATE
+	lx0 -= x0;
+	ly0 -= y0;
+	lz0 -= z0;
+#endif
+
+#ifdef DO_ROTATE
+	v1_t xx = 0, yy = 0, zz = 0;
+	rx = rx;
+	rz = rz;
+	ry = ry;
+	xx = xx;
+	zz = zz;
+	yy = yy;
+
+#if 1
+	yy = ly0 * cos(rx) - lz0 * sin(rx);
+	zz = ly0 * sin(rx) + lz0 * cos(rx);
+	ly0 = yy;
+	lz0 = zz;
+	yy = Vy * cos(rx) - Vz * sin(rx);
+	zz = Vy * sin(rx) + Vz * cos(rx);
+	Vy = yy;
+	Vz = zz;
+#endif
+
+#if 1
+	xx = lx0 * cos(ry) + lz0 * sin(ry);
+	zz = -lx0 * sin(ry) + lz0 * cos(ry);
+	lx0 = xx;
+	lz0 = zz;
+	xx = Vx * cos(ry) + Vz * sin(ry);
+	zz = -Vx * sin(ry) + Vz * cos(ry);
+	Vx = xx;
+	Vz = zz;
+#endif
+
+#if 0
+	xx = lx0 * cos(rz) - ly0 * sin(rz);
+	yy = lx0 * sin(rz) + ly0 * cos(rz);
+	lx0 = xx;
+	lz0 = yy;
+	xx = Vx * cos(rz) - Vy * sin(rz);
+	yy = Vx * sin(rz) + Vy * cos(rz);
+	Vx = xx;
+	Vy = yy;
+#endif
+
+#endif
+
+	a = A * Vx * Vx + B * Vy * Vy + C * Vz * Vz;
+	b = 2 * A * lx0 * Vx + 2 * B * ly0 * Vy + 2 * C * lz0 * Vz + E * Vy;
+	c = A * lx0 * lx0 + B * ly0 * ly0 + C * lz0 * lz0 + E * ly0 - D;
+
+	sol = solvetri( a, b, c, &t1, &t2);
+	if (sol == 2)
+	{
+		if (t1 > t2)
+		{
+			v1_t temp = t1;
+			t1 = t2;
+			t2 = temp;
+		}
+	}
+	else if (sol == 1)
+	{
+		t2 = t1;
+	}
+	v1_t foo1 = 0.0;
+	v1_t foo2 = 0.0;
+	v1_t foo = 0.0;
+	if (sol 
+			//&& (fabs(t1) > SMALL)
+			)
+	{
+		foo = t1;
+		result = 1;
+	}
+#if 0
+	printf( "%3.0f/", foo1);
+	printf( "%3.0f", foo2);
+#else
+	foo1 = foo1;
+	foo2 = foo2;
+#endif
+	foo = foo;
+	printf( "%3.0f", foo);
+	//printf( "%d", result);
+	//printf( "%d", sol);
+
+	return result;
+}
+
 #define EPS 0.1
 #define BIG 1000.0
 #define COMP_EPS(x,val) (x >= ((val) - EPS) && x <= ((val) + EPS))
 // camera is : eye coordinate (vector e)..
 #if 0
-#define E 5
-	v3_t e = { -2*E, 0*E, 16*E };
+#define EE 5
+	v3_t e = { -2*EE, 0*EE, 16*EE };
 // ..a direction (vector v)..
-#define V E/2
+#define V EE/2
 	v3_t v = { -0*V, -0*V, -2*V };
 #elif 0
-#define E 20
-	v3_t e = { 0*E, 0*E, -2*E };
+#define EE 20
+	v3_t e = { 0*EE, 0*EE, -2*EE };
 // ..a direction (vector v)..
-#define V E/2
+#define V EE/2
 	v3_t v = { -0*V, -0*V, 2*V };
 #elif 0
-#define E 20
-	v3_t e = { 0*E, 0*E, 2*E };
+#define EE 20
+	v3_t e = { 0*EE, 0*EE, 2*EE };
 // ..a direction (vector v)..
-#define V E/2
+#define V EE/2
 	v3_t v = { -0*V, -0*V, -2*V };
 #elif 0
-#define E 20
-	v3_t e = { 2*E, -2*E, 2*E };
+#define EE 20
+	v3_t e = { 2*EE, -2*EE, 2*EE };
 // ..a direction (vector v)..
-#define V E/2
+#define V EE/2
 	v3_t v = { -2*V, 2*V, -2*V };
 #elif 1
-#define E 20
-	v3_t e = { 2*E, 2*E, 2*E };
+#define EE 20
+	v3_t e = { 2*EE, 2*EE, 2*EE };
 // ..a direction (vector v)..
-#define V E/2
+#define V EE/2
 	v3_t v = { -2*V, -2*V, -2*V };
 #else
-#define E 50
-	v3_t e = { 0*E, 0*E, 1*E };
+#define EE 50
+	v3_t e = { 0*EE, 0*EE, 1*EE };
 // ..a direction (vector v)..
-#define V E/2
+#define V EE/2
 	v3_t v = { -0*V, -0*V, -1*V };
 #endif
 // ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
@@ -519,7 +653,7 @@ v3_t *spheres = _spheres;
 #define CH 10
 #define CR 5
 v3_t _cyls[] = {
-#if 1
+#if 0
 	{ 0, 0, 0 },	// center
 	{ 0, 0, 0 },	// axis
 	{ CH, CR, 0 },	// CH, CR
@@ -528,6 +662,34 @@ v3_t _cyls[] = {
 };
 int ncyls = sizeof( _cyls) / sizeof( _cyls[0]) / 4;
 v3_t *cyls = _cyls;
+
+// multiple quads
+#if 1 // Y-cone
+#define A +1		// +
+#define B -1		// -
+#define C +1		// +
+#define D +0		// 0
+#define E 0			// N/A
+#define LIM 30
+#elif 1 // Z-cylinder
+#define A +1		// +
+#define B +1		// 0
+#define C +0		// +
+#define D +25		// +
+#define E 0			// N/A
+#define LIM 30
+#endif
+v3_t _quads[] = {
+#if 1
+	{ 0, 0, 0 },	// translation
+	{ 0, 0, 0 },	// rotation
+	{ A, B, C },	// 
+	{ D, E, LIM },	// 
+	{ 0, 1, 0 },	// color
+#endif
+};
+int nquads = sizeof( _quads) / sizeof( _quads[0]) / 5;
+v3_t *quads = _quads;
 
 void traceray( v3_t e, v3_t _v, v3_t col)
 {
@@ -577,6 +739,19 @@ void traceray( v3_t e, v3_t _v, v3_t col)
 		{
 			tmin = t;
 			pcol = &cyls[i * 4 + 3][0];
+		}
+	}
+	for (i = 0; i < nquads; i++)
+	{
+		p0 = quads[i * 5 + 0];		// quad
+		t = 0;
+		res = intersec_quad( p0, e, _v, &t, 0);
+		dprintf( "result=%d t=%f\n", res, t);
+		dprintf( " %d", res);
+		if (res && (t < tmin))
+		{
+			tmin = t;
+			pcol = &quads[i * 5 + 4][0];
 		}
 	}
 	if (pcol)
@@ -677,6 +852,7 @@ int main( int argc, char *argv[])
 	printf( "nfacets=%d\n", nfacets);
 	printf( "nspheres=%d\n", nspheres);
 	printf( "ncyls=%d\n", ncyls);
+	printf( "nquads=%d\n", nquads);
 	// compute camera screen as three vectors of a plane : s0, s1 and s2
 	v3_t s0, s1, s2;
 	v3_t right;
