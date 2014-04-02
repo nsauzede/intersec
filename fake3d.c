@@ -34,11 +34,11 @@ typedef struct {
 
 typedef struct {
 //		{
-//			s type		sphere=0; facet=1; box=2; paral=3
-//			s s0		sphere: radius
-//			s N/A
+//			s type		sphere=0; facet=1; box=2; paral=3 ; cyl=4
+//			s s0		sphere: radius; cyl: radius
+//			s c0		cyl: height
 //		}
-//		v3 loc0		sphere: center;	facet: vertex0; box: lower
+//		v3 loc0		sphere: center;	facet: vertex0; box: lower; cyl: axis
 //		v3 loc1		facet: vertex1; box: upper
 //		v3 loc2		facet: vertex2
 //		v3 color
@@ -197,6 +197,19 @@ int intersec_obj( v3 *obj, v3 e, v3 v, double *tmin, v3 normal, v3 col)
 				normal[2] = 0.0;
 			}
 		}
+	}
+	else if (obj[0][0] == 4) // cyl
+	{
+		res = intersec_cylZ( obj[OBJ_LOC0], e, v, tmin, 0);
+#if 0
+		if (res)
+		{
+			v3 n1, n2;
+			diff3( n1, obj[OBJ_LOC0], obj[OBJ_LOC1]);
+			diff3( n2, obj[OBJ_LOC0], obj[OBJ_LOC2]);
+			cross3( normal, n1, n2);
+		}
+#endif
 	}
 	return res;
 }

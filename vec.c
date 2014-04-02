@@ -469,3 +469,101 @@ int intersec_box( v3 lower, v3 upper, v3 e, v3 v, double *_tmin, double *_tmax, 
 	return 2;
 }
 
+int intersec_cylZ( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
+{
+	int result = 0;
+	int use_solid = 1;
+
+	v1_t a, b, c;
+	v1_t t1, t2;
+	int sol;
+	v1_t x0 = cy[0];
+	v1_t y0 = cy[1];
+	v1_t z0 = cy[2];
+	v1_t Hc = cy[3 * 2 + 0];
+	v1_t Rc = cy[3 * 2 + 1];
+	if (Rc < 0)
+	{
+		use_solid = 0;
+		Rc = -Rc;
+	}
+	v1_t Vx = v[0];
+	v1_t Vy = v[1];
+	v1_t Vz = v[2];
+	v1_t lx0 = e[0];
+	v1_t ly0 = e[1];
+	v1_t lz0 = e[2];
+	a = Vx * Vx + Vy * Vy;
+	b = 2 * lx0 * Vx + 2 * ly0 * Vy - 2 * Vx * x0 - 2 * Vy * y0;
+	c = lx0 * lx0 + ly0 * ly0 - Rc * Rc - 2 * lx0 * x0 + x0 * x0 - 2 * ly0 * y0 + y0 * y0;
+	sol = solvetri( a, b, c, &t1, &t2);
+	if (sol == 2)
+	{
+		if (t1 > t2)
+		{
+			v1_t temp = t1;
+			t1 = t2;
+			t2 = temp;
+		}
+	}
+	else if (sol == 1)
+	{
+		t2 = t1;
+	}
+	if (sol 
+			//&& (fabs(t1) > SMALL) // if we keep this test, there are glitch when the camera eye is colinear with cyl edge
+			)
+	{
+		int hit = 0;
+
+		v1_t zmin = z0;
+		v1_t zmax = z0 + Hc;
+		v1_t z1 = lz0 + Vz * t1;
+		v1_t z2 = lz0 + Vz * t2;
+		if (use_solid)
+		{
+		v1_t z1a = z1 - zmax;
+		v1_t z2a = z2 - zmax;
+
+		if ((z1 < zmin) && (z2 > zmin))
+		{
+			t1 = (zmin - lz0) / Vz;
+			hit = 1;
+			result = 1;
+		}
+		else
+		if ((z1a * z2a) < 0)
+		{
+			t1 = (zmax - lz0) / Vz;
+			hit = 1;
+			result = 1;
+		}
+		}
+		if (!hit)
+		{
+		hit = (z1 >= zmin) && (z1 <= zmax);
+		if (!hit && ((sol > 1) && (fabs(t2) > SMALL)))
+		{
+			hit = (z2 >= zmin) && (z2 <= zmax);
+			if (hit)
+			{
+				v1_t temp = t2;
+				t1 = t2;
+				t2 = temp;
+			}
+		}
+		}
+		if (hit)
+		{
+		result = sol;
+		if (tmin)
+			*tmin = t1;
+		if (tmax)
+			*tmax = t2;
+		}
+	}
+
+	return result;
+}
+
+
