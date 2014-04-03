@@ -296,9 +296,9 @@ int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 #define DO_ROTATE
 #ifdef DO_ROTATE
 	//v1_t rx = cy[3 * 1 + 0] * (double)M_PI / 180.0;
-	v1_t rx = +1*45.0 * (double)M_PI / 180.0;
+	v1_t rx = +0*45.0 * (double)M_PI / 180.0;
 	//v1_t ry = cy[3 * 1 + 1] * (double)M_PI / 180.0;
-	v1_t ry = -1*45.0 * (double)M_PI / 180.0;
+	v1_t ry = -0*45.0 * (double)M_PI / 180.0;
 	//v1_t rz = cy[3 * 1 + 2] * (double)M_PI / 180.0;
 	v1_t rz = +0*45.0 * (double)M_PI / 180.0;
 #endif
@@ -365,11 +365,6 @@ int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	a = Vx * Vx + Vy * Vy;
 	b = 2 * lx0 * Vx + 2 * ly0 * Vy;
 	c = lx0 * lx0 + ly0 * ly0 - Rc * Rc;
-#if 0
-	a = Vx * Vx + Vy * Vy;
-	b = 2 * lx0 * Vx + 2 * ly0 * Vy - 2 * Vx * x0 - 2 * Vy * y0;
-	c = lx0 * lx0 + ly0 * ly0 - Rc * Rc - 2 * lx0 * x0 + x0 * x0 - 2 * ly0 * y0 + y0 * y0;
-#endif
 
 	sol = solvetri( a, b, c, &t1, &t2);
 	if (sol == 2)
@@ -606,7 +601,7 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 				v1_t z1a = z1 - zmax;
 				v1_t z2a = z2 - zmax;
 
-				if ((z1 <= zmin) && (z2 >= zmin))
+				if ((z1 < zmin) && (z2 > zmin))
 				{
 					t1 = (zmin - lz0) / Vz;
 					hit = 1;
@@ -661,8 +656,8 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	foo2 = foo2;
 #endif
 	foo = foo;
-	foo = sol;
-	foo = z1;
+//	foo = sol;
+//	foo = z1;
 	printf( "%3.0f", foo);
 //	printf( "[%4.0f/%4.0f]", t1, t2);
 	//printf( "%d", result);
@@ -715,7 +710,7 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 // ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
 v3_t up = { -0, +1, 0};
 // camera screen size
-#if 0
+#if 1
 int w = 44, h = 80;
 #elif 1
 int w = 22, h = 40;
@@ -768,7 +763,7 @@ v3_t *spheres = _spheres;
 #define CH 10
 #define CR 5
 v3_t _cyls[] = {
-#if 0
+#if 1
 	{ 0, 0, 0 },	// center
 	{ 0, 0, 0 },	// axis
 	{ CH, CR, 0 },	// CH, CR
@@ -779,14 +774,14 @@ int ncyls = sizeof( _cyls) / sizeof( _cyls[0]) / 4;
 v3_t *cyls = _cyls;
 
 // multiple quads
-#if 1 // Z-cone
+#if 0 // Z-cone
 #define A +1		// +
 #define B +1		// +
 #define C -1		// -
 #define D +0		// 0
 #define E 0			// N/A
 #define LIM 10
-#elif 1 // Y-cone
+#elif 0 // Y-cone
 #define A +1		// +
 #define B -1		// -
 #define C +1		// +
@@ -809,7 +804,7 @@ v3_t *cyls = _cyls;
 #define LIM 10
 #endif
 v3_t _quads[] = {
-#if 1
+#if 0
 	{ 0, 0, 0 },	// translation
 	{ 0, 0, 0 },	// rotation
 	{ A, B, C },	// 
@@ -904,6 +899,9 @@ int main( int argc, char *argv[])
 #endif
 		scene = argv[arg++];
 	}
+#ifdef USE_SOLID
+	printf( "use_solid=%d\n", use_solid);
+#endif
 	
 	int i, j;
 	if (scene)	// load scene ?
