@@ -427,7 +427,7 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	int result = 0;
 
 	v1_t a, b, c;
-	v1_t t1, t2;
+	v1_t t1 = 0, t2 = 0;
 	int sol;
 
 	v1_t z0 = 0;
@@ -445,17 +445,17 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	//v1_t rx = cy[3 * 1 + 0] * (double)M_PI / 180.0;
 	v1_t rx = +0*45.0 * (double)M_PI / 180.0;
 	//v1_t ry = cy[3 * 1 + 1] * (double)M_PI / 180.0;
-	v1_t ry = -0*45.0 * (double)M_PI / 180.0;
+	v1_t ry = +0*25.0 * (double)M_PI / 180.0;
 	//v1_t rz = cy[3 * 1 + 2] * (double)M_PI / 180.0;
 	v1_t rz = +0*45.0 * (double)M_PI / 180.0;
 #endif
 
-//	v1_t lim = obj[3 * 2 + 2];
 	v1_t A = obj[3 * 2 + 0];
 	v1_t B = obj[3 * 2 + 1];
 	v1_t C = obj[3 * 2 + 2];
 	v1_t D = obj[3 * 2 + 3];
 	v1_t E = obj[3 * 2 + 4];
+	v1_t lim = obj[3 * 2 + 5];
 	v1_t Vx = v[0];
 	v1_t Vy = v[1];
 	v1_t Vz = v[2];
@@ -534,12 +534,80 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	v1_t foo1 = 0.0;
 	v1_t foo2 = 0.0;
 	v1_t foo = 0.0;
+		v1_t z1 = 0;
+		v1_t z2 = 0;
+
+		if (t1 < 0)
+			asm volatile("int $3");
 	if (sol 
-			//&& (fabs(t1) > SMALL)
-			)
+		//&& (fabs(t1) > SMALL)
+	)
 	{
-		foo = t1;
-		result = 1;
+		int hit = 0;
+		z1 = lz0 + Vz * t1;
+		z2 = lz0 + Vz * t2;
+
+		if (fabs( lim) < SMALL)
+		{
+			hit = 1;
+			foo = z1;
+		}
+		else
+		{
+			v1_t zmin = z0;
+			v1_t zmax = z0 + lim;
+#ifdef USE_SOLID
+			if (use_solid)
+			{
+				v1_t z1a = z1 - zmax;
+				v1_t z2a = z2 - zmax;
+
+				if ((z1 <= zmin) && (z2 >= zmin))
+				{
+					t1 = (zmin - lz0) / Vz;
+					hit = 1;
+					foo = lz0 + Vz * t1;
+					result = 1;
+				}
+				else
+					if ((z1a * z2a) < 0)
+					{
+						t1 = (zmax - lz0) / Vz;
+						hit = 1;
+						foo = lz0 + Vz * t1;
+						result = 1;
+					}
+			}
+			if (!hit)
+#endif
+			{
+				hit = (z1 >= zmin) && (z1 <= zmax);
+				if (hit)
+					foo = z1;
+				foo1 = z1;
+				foo2 = z2;
+				if (!hit && ((sol > 1) && (fabs(t2) > SMALL)
+							))
+				{
+					hit = (z2 >= zmin) && (z2 <= zmax);
+					if (hit)
+					{
+						foo = z2;
+						v1_t temp = t2;
+						t1 = t2;
+						t2 = temp;
+					}
+				}
+			}
+		}
+		if (hit)
+		{
+			result = sol;
+			if (tmin)
+				*tmin = t1;
+			if (tmax)
+				*tmax = t2;
+		}
 	}
 #if 0
 	printf( "%3.0f/", foo1);
@@ -549,7 +617,9 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	foo2 = foo2;
 #endif
 	foo = foo;
+	foo = z1;
 	printf( "%3.0f", foo);
+//	printf( "[%4.0f/%4.0f]", t1, t2);
 	//printf( "%d", result);
 	//printf( "%d", sol);
 
@@ -600,10 +670,10 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 // ..and an "up" (vector up) (camera "head" rotation, default pointing to the "sky")
 v3_t up = { -0, +1, 0};
 // camera screen size
-#if 1
+#if 0
 int w = 44, h = 80;
-#elif 0
-int w = 22, h = 20;
+#elif 1
+int w = 22, h = 40;
 #elif 1
 int w = 180, h = 80;
 #else
@@ -664,20 +734,34 @@ int ncyls = sizeof( _cyls) / sizeof( _cyls[0]) / 4;
 v3_t *cyls = _cyls;
 
 // multiple quads
-#if 1 // Y-cone
+#if 1 // Z-cone
+#define A +1		// +
+#define B +1		// +
+#define C -1		// -
+#define D +0		// 0
+#define E 0			// N/A
+#define LIM 10
+#elif 1 // Y-cone
 #define A +1		// +
 #define B -1		// -
 #define C +1		// +
 #define D +0		// 0
 #define E 0			// N/A
-#define LIM 30
-#elif 1 // Z-cylinder
+#define LIM 0
+#elif 0 // Y-cylinder
 #define A +1		// +
-#define B +1		// 0
-#define C +0		// +
+#define B +0		// 0
+#define C +1		// +
 #define D +25		// +
 #define E 0			// N/A
-#define LIM 30
+#define LIM 0
+#elif 1 // Z-cylinder
+#define A +1		// +
+#define B +1		// +
+#define C +0		// 0
+#define D +25		// +
+#define E 0			// N/A
+#define LIM 10
 #endif
 v3_t _quads[] = {
 #if 1
