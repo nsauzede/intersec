@@ -295,12 +295,12 @@ int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 
 #define DO_ROTATE
 #ifdef DO_ROTATE
-	//v1_t rx = cy[3 * 1 + 0] * (double)M_PI / 180.0;
-	v1_t rx = +0*45.0 * (double)M_PI / 180.0;
-	//v1_t ry = cy[3 * 1 + 1] * (double)M_PI / 180.0;
-	v1_t ry = -0*45.0 * (double)M_PI / 180.0;
-	//v1_t rz = cy[3 * 1 + 2] * (double)M_PI / 180.0;
-	v1_t rz = +0*45.0 * (double)M_PI / 180.0;
+	v1_t rx = cy[3 * 1 + 0] * (double)M_PI / 180.0;
+	//v1_t rx = +0*45.0 * (double)M_PI / 180.0;
+	v1_t ry = cy[3 * 1 + 1] * (double)M_PI / 180.0;
+	//v1_t ry = -0*45.0 * (double)M_PI / 180.0;
+	v1_t rz = cy[3 * 1 + 2] * (double)M_PI / 180.0;
+	//v1_t rz = +0*45.0 * (double)M_PI / 180.0;
 #endif
 
 	v1_t Hc = cy[3 * 2 + 0];
@@ -479,12 +479,12 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 
 #define DO_ROTATE
 #ifdef DO_ROTATE
-	//v1_t rx = cy[3 * 1 + 0] * (double)M_PI / 180.0;
-	v1_t rx = +0*45.0 * (double)M_PI / 180.0;
-	//v1_t ry = cy[3 * 1 + 1] * (double)M_PI / 180.0;
-	v1_t ry = +0*25.0 * (double)M_PI / 180.0;
-	//v1_t rz = cy[3 * 1 + 2] * (double)M_PI / 180.0;
-	v1_t rz = +0*45.0 * (double)M_PI / 180.0;
+	v1_t rx = obj[3 * 1 + 0] * (double)M_PI / 180.0;
+	//v1_t rx = +0*45.0 * (double)M_PI / 180.0;
+	v1_t ry = obj[3 * 1 + 1] * (double)M_PI / 180.0;
+	//v1_t ry = +0*25.0 * (double)M_PI / 180.0;
+	v1_t rz = obj[3 * 1 + 2] * (double)M_PI / 180.0;
+	//v1_t rz = +0*45.0 * (double)M_PI / 180.0;
 #endif
 
 	v1_t A = obj[3 * 2 + 0];
@@ -598,8 +598,8 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 #ifdef USE_SOLID
 			if (use_solid)
 			{
-				v1_t z1a = z1 - zmax;
-				v1_t z2a = z2 - zmax;
+//				v1_t z1a = z1 - zmax;
+//				v1_t z2a = z2 - zmax;
 
 				if ((z1 < zmin) && (z2 > zmin))
 				{
@@ -608,6 +608,7 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 					foo = lz0 + Vz * t1;
 					result = 1;
 				}
+#if 0
 				else
 					if ((z1a * z2a) < 0)
 					{
@@ -616,6 +617,7 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 						foo = lz0 + Vz * t1;
 						result = 1;
 					}
+#endif
 			}
 			if (!hit)
 #endif
@@ -763,9 +765,9 @@ v3_t *spheres = _spheres;
 #define CH 10
 #define CR 5
 v3_t _cyls[] = {
-#if 1
+#if 0
 	{ 0, 0, 0 },	// center
-	{ 0, 0, 0 },	// axis
+	{ +0*25.0, +1*120.0, -1*45.0 },	// axis
 	{ CH, CR, 0 },	// CH, CR
 	{ 0, 1, 0 },	// color
 #endif
@@ -774,7 +776,14 @@ int ncyls = sizeof( _cyls) / sizeof( _cyls[0]) / 4;
 v3_t *cyls = _cyls;
 
 // multiple quads
-#if 0 // Z-cone
+#if 1 // ellipsoid
+#define A +8		// +
+#define B +4		// +
+#define C +1		// +
+#define D +500		// +
+#define E 0			// N/A
+#define LIM 0
+#elif 1 // Z-cone
 #define A +1		// +
 #define B +1		// +
 #define C -1		// -
@@ -804,9 +813,9 @@ v3_t *cyls = _cyls;
 #define LIM 10
 #endif
 v3_t _quads[] = {
-#if 0
+#if 1
 	{ 0, 0, 0 },	// translation
-	{ 0, 0, 0 },	// rotation
+	{ +0*25.0, -0*25.0, +0*45.0 },	// rotation
 	{ A, B, C },	// 
 	{ D, E, LIM },	// 
 	{ 0, 1, 0 },	// color
