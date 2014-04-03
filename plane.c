@@ -147,7 +147,7 @@ int intersec_plane( v3_t p0, v3_t p1, v3_t p2, v3_t l0, v3_t l, v1_t *pt)
 }
 
 #define SMALL 0.001
-int solvetri( v1_t a, v1_t b, v1_t c, v1_t *t1, v1_t *t2)
+int _solvetri( v1_t a, v1_t b, v1_t c, v1_t *t1, v1_t *t2)
 {
 	int result = 0;
 	v1_t d, sd;
@@ -158,6 +158,10 @@ int solvetri( v1_t a, v1_t b, v1_t c, v1_t *t1, v1_t *t2)
 	{
 		*t1 = (-b - sd) / 2 / a;
 		*t2 = (-b + sd) / 2 / a;
+#if 0
+		if ((*t1 < 0) || (*t2 < 0))
+		asm volatile( "int $3");
+#endif
 		result = 2;
 	}
 	else if (d == 0)
@@ -170,6 +174,44 @@ int solvetri( v1_t a, v1_t b, v1_t c, v1_t *t1, v1_t *t2)
 		result = 0;
 	}
 	return result;
+}
+
+#if 0
+#define solvetri _solvetri
+#else
+#define solvetri __solvetri
+#endif
+
+int __solvetri( v1_t a, v1_t b, v1_t c, v1_t *_t1, v1_t *_t2)
+{
+	v1_t t1 = 0, t2 = 0;
+	int sol = _solvetri( a, b, c, &t1, &t2);
+	if (sol > 0)
+	{
+		if (t1 < 0)
+		{
+			sol--;
+			if (sol)
+			{
+				if (t2 >= 0)
+				{
+					t1 = t2;
+				}
+				else
+					sol--;
+			}
+		}
+		else if (sol > 1)
+		{
+			if (t2 < 0)
+				sol--;
+		}
+	}
+	if (_t1)
+		*_t1 = t1;
+	if (_t2)
+		*_t2 = t2;
+	return sol;
 }
 
 int intersec_sphere( v3_t cs, v1_t sr, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
@@ -537,8 +579,10 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 		v1_t z1 = 0;
 		v1_t z2 = 0;
 
+#if 0
 		if (t1 < 0)
 			asm volatile("int $3");
+#endif
 	if (sol 
 		//&& (fabs(t1) > SMALL)
 	)
@@ -617,6 +661,7 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	foo2 = foo2;
 #endif
 	foo = foo;
+	foo = sol;
 	foo = z1;
 	printf( "%3.0f", foo);
 //	printf( "[%4.0f/%4.0f]", t1, t2);
