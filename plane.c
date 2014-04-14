@@ -272,7 +272,7 @@ int intersec_sphere( v3_t cs, v1_t sr, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 
 #define USE_SOLID
 #ifdef USE_SOLID
-int use_solid = 1;
+int use_solid = 0;
 #endif
 
 int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
@@ -492,7 +492,12 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	v1_t C = obj[3 * 2 + 2];
 	v1_t D = obj[3 * 2 + 3];
 	v1_t E = obj[3 * 2 + 4];
-	v1_t lim = obj[3 * 2 + 5];
+	v1_t _xmin = obj[3 * 2 + 6];
+	v1_t _xmax = obj[3 * 2 + 7];
+	v1_t _ymin = obj[3 * 2 + 8];
+	v1_t _ymax = obj[3 * 2 + 9];
+	v1_t _zmin = obj[3 * 2 + 10];
+	v1_t _zmax = obj[3 * 2 + 11];
 	v1_t Vx = v[0];
 	v1_t Vy = v[1];
 	v1_t Vz = v[2];
@@ -568,72 +573,56 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	{
 		t2 = t1;
 	}
-	v1_t foo1 = 0.0;
-	v1_t foo2 = 0.0;
-	v1_t foo = 0.0;
-		v1_t z1 = 0;
-		v1_t z2 = 0;
+	v1_t fooz = 0.0;
+	v1_t fooy = 0.0;
+	v1_t foox = 0.0;
+	v1_t z1 = 0;
+	v1_t z2 = 0;
+	v1_t y1 = 0;
+	v1_t y2 = 0;
+	v1_t x1 = 0;
+	v1_t x2 = 0;
 
-#if 0
-		if (t1 < 0)
-			asm volatile("int $3");
-#endif
-	if (sol 
-		//&& (fabs(t1) > SMALL)
+	if (sol //&& (fabs(t1) > SMALL)
 	)
 	{
-		int hit = 0;
+		int hitx = 0, hity = 0, hitz = 0;
 		z1 = lz0 + Vz * t1;
 		z2 = lz0 + Vz * t2;
+		y1 = ly0 + Vy * t1;
+		y2 = ly0 + Vy * t2;
+		x1 = lx0 + Vx * t1;
+		x2 = lx0 + Vx * t2;
 
-		if (fabs( lim) < SMALL)
+		if (fabs( _zmax - _zmin) < SMALL)
 		{
-			hit = 1;
-			foo = z1;
+			hitz = 1;
+			fooz = z1;
 		}
 		else
 		{
-			v1_t zmin = z0;
-			v1_t zmax = z0 + lim;
-#ifdef USE_SOLID
+			v1_t zmin = z0 + _zmin;
+			v1_t zmax = z0 + _zmax;
 			if (use_solid)
 			{
-//				v1_t z1a = z1 - zmax;
-//				v1_t z2a = z2 - zmax;
-
 				if ((z1 < zmin) && (z2 > zmin))
 				{
 					t1 = (zmin - lz0) / Vz;
-					hit = 1;
-					foo = lz0 + Vz * t1;
-					result = 1;
+					hitz = 1;
+					fooz = lz0 + Vz * t1;
 				}
-#if 0
-				else
-					if ((z1a * z2a) < 0)
-					{
-						t1 = (zmax - lz0) / Vz;
-						hit = 1;
-						foo = lz0 + Vz * t1;
-						result = 1;
-					}
-#endif
 			}
-			if (!hit)
-#endif
+			if (!hitz)
 			{
-				hit = (z1 >= zmin) && (z1 <= zmax);
-				if (hit)
-					foo = z1;
-				foo1 = z1;
-				foo2 = z2;
-				if (!hit && ((sol > 1) && (fabs(t2) > SMALL)
-							))
+				hitz = (z1 >= zmin) && (z1 <= zmax);
+				if (hitz)
+					fooz = z1;
+				if (!hitz && ((sol > 1) && (fabs(t2) > SMALL)))
 				{
-					hit = (z2 >= zmin) && (z2 <= zmax);
-					if (hit)
+					hitz = (z2 >= zmin) && (z2 <= zmax);
+					if (hitz)
 					{
-						foo = z2;
+						fooz = z2;
 						v1_t temp = t2;
 						t1 = t2;
 						t2 = temp;
@@ -641,7 +630,79 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 				}
 			}
 		}
-		if (hit)
+		if (fabs( _ymax - _ymin) < SMALL)
+		{
+			hity = 1;
+			fooy = y1;
+		}
+		else
+		{
+			v1_t ymin = y0 + _ymin;
+			v1_t ymax = y0 + _ymax;
+			if (use_solid)
+			{
+				if ((y1 < ymin) && (y2 > ymin))
+				{
+					t1 = (ymin - ly0) / Vy;
+					hity = 1;
+					fooy = ly0 + Vy * t1;
+				}
+			}
+			if (!hity)
+			{
+				hity = (y1 >= ymin) && (y1 <= ymax);
+				if (hity)
+					fooy = y1;
+				if (!hity && ((sol > 1) && (fabs(t2) > SMALL)))
+				{
+					hity = (y2 >= ymin) && (y2 <= ymax);
+					if (hity)
+					{
+						fooy = y2;
+						v1_t temp = t2;
+						t1 = t2;
+						t2 = temp;
+					}
+				}
+			}
+		}
+		if (fabs( _xmax - _xmin) < SMALL)
+		{
+			hitx = 1;
+			foox = x1;
+		}
+		else
+		{
+			v1_t xmin = x0 + _xmin;
+			v1_t xmax = x0 + _xmax;
+			if (use_solid)
+			{
+				if ((x1 < xmin) && (x2 > xmin))
+				{
+					t1 = (xmin - lx0) / Vx;
+					hitx = 1;
+					foox = lx0 + Vx * t1;
+				}
+			}
+			if (!hitx)
+			{
+				hitx = (x1 >= xmin) && (x1 <= xmax);
+				if (hitx)
+					foox = x1;
+				if (!hitx && ((sol > 1) && (fabs(t2) > SMALL)))
+				{
+					hitx = (x2 >= xmin) && (x2 <= xmax);
+					if (hitx)
+					{
+						foox = x2;
+						v1_t temp = t2;
+						t1 = t2;
+						t2 = temp;
+					}
+				}
+			}
+		}
+		if (hitx && hity && hitz)
 		{
 			result = sol;
 			if (tmin)
@@ -650,20 +711,13 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 				*tmax = t2;
 		}
 	}
-#if 0
-	printf( "%3.0f/", foo1);
-	printf( "%3.0f", foo2);
-#else
-	foo1 = foo1;
-	foo2 = foo2;
-#endif
-	foo = foo;
-//	foo = sol;
-//	foo = z1;
-	printf( "%3.0f", foo);
-//	printf( "[%4.0f/%4.0f]", t1, t2);
-	//printf( "%d", result);
-	//printf( "%d", sol);
+	fooz = fooz;
+	fooy = fooy;
+	foox = foox;
+//	printf( "%d:", sol);
+	//printf( "%3d", (int)fooz*10);
+	//printf( "%.1f", foox);
+	printf( "%3.0f", foox);
 
 	return result;
 }
@@ -673,11 +727,11 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 #define COMP_EPS(x,val) (x >= ((val) - EPS) && x <= ((val) + EPS))
 // camera is : eye coordinate (vector e)..
 #if 0
-#define EE 5
-	v3_t e = { -2*EE, 0*EE, 16*EE };
+#define EE 1
+	v3_t e = { +0*EE, 0*EE, 1*EE };
 // ..a direction (vector v)..
-#define V EE/2
-	v3_t v = { -0*V, -0*V, -2*V };
+#define V EE
+	v3_t v = { -0*V, -0*V, -1*V };
 #elif 0
 #define EE 20
 	v3_t e = { 0*EE, 0*EE, -2*EE };
@@ -750,11 +804,11 @@ int nfacets = sizeof( _facets) / sizeof( _facets[0]) / 4;
 v3_t *facets = _facets;
 
 // multiple spheres
-#define S 20
+#define S 1.0
 v3_t _spheres[] = {
 #if 0
-	{ S, S, S },
-	{ S/4, 0, 0 },	// radius
+	{ 0*S, 0*S, 0*S },
+	{ S/2, 0, 0 },	// radius
 	{ 1, 0, 1 },	// color
 #endif
 };
@@ -776,52 +830,78 @@ int ncyls = sizeof( _cyls) / sizeof( _cyls[0]) / 4;
 v3_t *cyls = _cyls;
 
 // multiple quads
-#if 1 // ellipsoid
+#if 0 // sphere
+#define A +1		// 1
+#define B +1		// 1
+#define C +1		// 1
+#define D +0.25		// r2
+#define E +0		// -
+#define LIM 0
+#elif 0 // elliptic paraboloid
+#define A +60		// +
+#define B +0		// N/A
+#define C +60		// +
+#define D +0		// 0
+#define E -60		// -
+#define LIM 0
+#elif 0 // hyperbolic paraboloid
+#define A +2		// +
+#define B +0		// N/A
+#define C -2		// -
+#define D +0		// 0
+#define E -10		// -
+#define LIM 0
+#elif 0 // Z-hyperboloid of one sheet
+#define A +1		// +
+#define B +1		// -
+#define C -1		// +
+#define D +50		// +
+#define E 0			// N/A
+#define XMIN 0
+#define XMAX 10
+#define YMIN 0
+#define YMAX 10
+#define ZMIN 0
+#define ZMAX 10
+#elif 0 // Z-ellipsoid
 #define A +8		// +
 #define B +4		// +
 #define C +1		// +
 #define D +500		// +
 #define E 0			// N/A
 #define LIM 0
-#elif 1 // Z-cone
+#elif 0 // Z-cone
 #define A +1		// +
 #define B +1		// +
 #define C -1		// -
 #define D +0		// 0
 #define E 0			// N/A
 #define LIM 10
-#elif 0 // Y-cone
-#define A +1		// +
-#define B -1		// -
-#define C +1		// +
-#define D +0		// 0
-#define E 0			// N/A
-#define LIM 0
-#elif 0 // Y-cylinder
-#define A +1		// +
-#define B +0		// 0
-#define C +1		// +
-#define D +25		// +
-#define E 0			// N/A
-#define LIM 0
 #elif 1 // Z-cylinder
 #define A +1		// +
 #define B +1		// +
 #define C +0		// 0
 #define D +25		// +
 #define E 0			// N/A
-#define LIM 10
+#define XMIN 0
+#define XMAX 0
+#define YMIN 0
+#define YMAX 0
+#define ZMIN 0
+#define ZMAX 10
 #endif
 v3_t _quads[] = {
 #if 1
-	{ 0, 0, 0 },	// translation
-	{ +0*25.0, -0*25.0, +0*45.0 },	// rotation
+	{ 0*5, 0*5, 0*0 },	// translation
+	{ +0*90.0, -0*25.0, +0*180.0 },	// rotation
 	{ A, B, C },	// 
-	{ D, E, LIM },	// 
+	{ D, E, 0 },	// 
+	{ XMIN, XMAX, YMIN },
+	{ YMAX, ZMIN, ZMAX },
 	{ 0, 1, 0 },	// color
 #endif
 };
-int nquads = sizeof( _quads) / sizeof( _quads[0]) / 5;
+int nquads = sizeof( _quads) / sizeof( _quads[0]) / 7;
 v3_t *quads = _quads;
 
 void traceray( v3_t e, v3_t _v, v3_t col)
@@ -884,7 +964,7 @@ void traceray( v3_t e, v3_t _v, v3_t col)
 		if (res && (t < tmin))
 		{
 			tmin = t;
-			pcol = &quads[i * 5 + 4][0];
+			pcol = &quads[i * 7 + 6][0];
 		}
 	}
 	if (pcol)
@@ -895,7 +975,6 @@ int main( int argc, char *argv[])
 {
 	char *scene = 0;
 	
-	printf( "hello plane\n");
 	int arg = 1;
 	if (arg < argc)
 	{
@@ -903,6 +982,11 @@ int main( int argc, char *argv[])
 		if (!strcmp( "--hollow", argv[arg]))
 		{
 			use_solid = 0;
+			arg++;
+		}
+		else if (!strcmp( "--solid", argv[arg]))
+		{
+			use_solid = 1;
 			arg++;
 		}
 #endif
@@ -985,10 +1069,13 @@ int main( int argc, char *argv[])
 		fclose( in);
 	}
 	}
-	printf( "nfacets=%d\n", nfacets);
-	printf( "nspheres=%d\n", nspheres);
-	printf( "ncyls=%d\n", ncyls);
-	printf( "nquads=%d\n", nquads);
+	printf( "e=%.1f;%.1f;%.1f v=%.1f;%.1f;%.1f\n", e[0], e[1], e[2], v[0], v[1], v[2]);
+	printf( "w=%d h=%d\n", w, h);
+	printf( "nfacets=%d ", nfacets);
+	printf( "nspheres=%d ", nspheres);
+	printf( "ncyls=%d ", ncyls);
+	printf( "nquads=%d ", nquads);
+	printf( "\n");
 	// compute camera screen as three vectors of a plane : s0, s1 and s2
 	v3_t s0, s1, s2;
 	v3_t right;
@@ -1024,7 +1111,8 @@ int main( int argc, char *argv[])
 
 			char c = '?';
 			if (COMP_EPS( col[0], 0.0) && COMP_EPS( col[1], 0.0) && COMP_EPS( col[2], 0.0))
-				c = '.';
+				//c = '.';
+				c = ' ';
 			else if (COMP_EPS( col[0], 1.0) && COMP_EPS( col[1], 0.0) && COMP_EPS( col[2], 0.0))
 				c = 'R';
 			else if (COMP_EPS( col[0], 0.0) && COMP_EPS( col[1], 1.0) && COMP_EPS( col[2], 0.0))
