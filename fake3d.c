@@ -198,18 +198,9 @@ int intersec_obj( v3 *obj, v3 e, v3 v, double *tmin, v3 normal, v3 col)
 			}
 		}
 	}
-	else if (obj[0][0] == 4) // cyl
+	else if (obj[0][0] == 4) // quad
 	{
-		res = intersec_cylZ( obj[OBJ_LOC0], e, v, tmin, 0);
-#if 0
-		if (res)
-		{
-			v3 n1, n2;
-			diff3( n1, obj[OBJ_LOC0], obj[OBJ_LOC1]);
-			diff3( n2, obj[OBJ_LOC0], obj[OBJ_LOC2]);
-			cross3( normal, n1, n2);
-		}
-#endif
+		res = intersec_quad( obj[OBJ_LOC0], e, v, tmin, 0);
 	}
 	return res;
 }
@@ -516,7 +507,7 @@ int thr( void *opaque)
 	return 0;
 }
 
-#if 0
+#if 1
 // 3d scene :
 #define F 40
 #define S 20
@@ -529,7 +520,6 @@ v3 __objs[] = {
 	{  },
 	{  },
 	{ 1, 1, 1 },	// color
-#endif
 // a facet
 	{ 1, 0, 0 },	// 1=facet
 	{ 0, 0, 0 },
@@ -548,8 +538,16 @@ v3 __objs[] = {
 	{ 0, 0, F },	// WARNING : visible faces must have normal pointing to eye !
 	{ F, 0, 0 },
 	{ 0, 0, 1 },	// color
-#if 0
+#if 1
 	// a box
+	{ 2, 0, 0 },	// 2=box
+	{ -S, -S, -S },	// lower
+	{ S, S, S },	// upper
+	{},
+	{ 1, 1, 0 },	// color
+#endif
+#else
+	// a quad
 	{ 2, 0, 0 },	// 2=box
 	{ -S, -S, -S },	// lower
 	{ S, S, S },	// upper
@@ -737,6 +735,7 @@ int main( int argc, char *argv[])
 	p.scene = &scene;
 	if (scene_file)	// load scene ?
 		load_scene( &scene, scene_file);
+	printf( "using %d objs\n", scene.nobjs);
 	p.screen = screen;
 	p.w = w;
 	p.h = h;
