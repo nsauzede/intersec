@@ -58,8 +58,6 @@ typedef struct {
 	double rindex;					// refraction index
 } sphere_t;
 
-typedef double v3[3];
-
 typedef v3 lamp_t;
 
 typedef struct {
