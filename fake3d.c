@@ -714,6 +714,21 @@ int main( int argc, char *argv[])
 	SDL_Init( SDL_INIT_VIDEO);
 	atexit( SDL_Quit);
 	screen = SDL_SetVideoMode( w, h, bpp, 0);
+	
+	SDL_Rect rect;
+	Uint32 col;
+	int r, g, b;
+	rect.x = 0;
+	rect.y = 0;
+	rect.w = w;
+	rect.h = h;
+	r = 64;
+	g = 64;
+	b = 64;
+	col = SDL_MapRGB( screen->format, r, g, b);
+	SDL_FillRect( screen, &rect, col);
+//	SDL_UpdateRect( screen, 0, 0, 0, 0);
+	
 	SDL_EnableKeyRepeat( SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 	mutex = SDL_CreateMutex();
 	cond = SDL_CreateCond();

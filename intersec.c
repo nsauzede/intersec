@@ -84,6 +84,7 @@ int load_scene( scene_t *scene, char *file)
 		scene->nfacets = 0;
 		scene->nspheres = 0;
 		char buf[1024];
+		memset( buf, 0, sizeof( buf));
 		char *ptr;
 		while (!feof( in))
 		{
@@ -135,7 +136,7 @@ int load_scene( scene_t *scene, char *file)
 		}
 		printf( "type=%x (%s)\n", type, type == STL ? "STL" : type == POV ? "POV" : "unknown");
 		printf( "read nfacets=%d\n", scene->nfacets);
-		printf( "read nspheres=%d\n", scene->nspheres);
+		printf( "should read nspheres=%d\n", scene->nspheres);
 		printf( "read nlamps=%d\n", scene->nlamps);
 		rewind( in);
 		if ((type == POV) && scene->nspheres)
@@ -157,30 +158,51 @@ int load_scene( scene_t *scene, char *file)
 				ptr = strstr( buf, "light_source");
 				if (ptr)
 				{
-					ptr = strchr( buf, '<');
-					printf( "light_source=[%s]\n", ptr);
-					sscanf( ptr, "<%f, %f, %f>", &p[0], &p[1], &p[2]);
-					printf( "read l: %f,%f,%f\n", p[0], p[1], p[2]);
-					scene->lamps[l][0] = p[0];
-					scene->lamps[l][1] = p[1];
-					scene->lamps[l][2] = p[2];
-					l++;
+					while (1)
+					{
+						ptr = strchr( buf, '<');
+						if (ptr)
+							break;
+						if (!fgets( buf, sizeof( buf), in))
+							break;
+					}
+					if (ptr)
+					{
+						ptr = strchr( buf, '<');
+						printf( "light_source=[%s]\n", ptr);
+						sscanf( ptr, "<%f, %f, %f>", &p[0], &p[1], &p[2]);
+						printf( "read l: %f,%f,%f\n", p[0], p[1], p[2]);
+						scene->lamps[l][0] = p[0];
+						scene->lamps[l][1] = p[1];
+						scene->lamps[l][2] = p[2];
+						l++;
+					}
 					continue;
 				}
 				ptr = strstr( buf, "sphere");
 				if (ptr)
 				{
-					if (!fgets( buf, sizeof( buf), in))
-						break;
-					ptr = strchr( buf, '<');
-					printf( "sphere=[%s]\n", ptr);
-					sscanf( ptr, "<%f, %f, %f>, %f", &p[0], &p[1], &p[2], &p[3]);
-					printf( "read s: %f,%f,%f %f\n", p[0], p[1], p[2], p[3]);
-					i++;
-					scene->spheres[i].cx = p[0];
-					scene->spheres[i].cy = p[1];
-					scene->spheres[i].cz = p[2];
-					scene->spheres[i].sr = p[3];
+					while (1)
+					{
+						ptr = strchr( buf, '<');
+						if (ptr)
+							break;
+						if (!fgets( buf, sizeof( buf), in))
+							break;
+					}
+					if (ptr)
+					{
+						printf( "sphere=[%s]\n", ptr);
+						sscanf( ptr, "<%f, %f, %f>, %f", &p[0], &p[1], &p[2], &p[3]);
+						printf( "read s: %f,%f,%f %f\n", p[0], p[1], p[2], p[3]);
+						i++;
+						scene->spheres[i].cx = p[0];
+						scene->spheres[i].cy = p[1];
+						scene->spheres[i].cz = p[2];
+						scene->spheres[i].sr = p[3];
+					}
+					else
+						exit( 1);
 					continue;
 				}
 				ptr = strstr( buf, "rgb");
@@ -233,7 +255,7 @@ int load_scene( scene_t *scene, char *file)
 		if ((type == STL) && scene->nfacets)
 		{
 		scene->facets = malloc( scene->nfacets * sizeof(v3[4]));
-		memset( scene->spheres, 0, scene->nspheres * sizeof(*scene->spheres));
+		memset( scene->facets, 0, scene->nfacets * sizeof(*scene->facets));
 		i = 0;
 		j = 0;
 #ifdef USE_NORMAL
@@ -870,6 +892,18 @@ int main( int argc, char *argv[])
 		screen = SDL_SetVideoMode( w, h, bpp, 0);
 		if (screen)
 			atexit( SDL_Quit);
+			
+		Uint32 col;
+		SDL_Rect rect;
+		rect.x = 0;
+		rect.y = 0;
+		rect.w = w;
+		rect.h = h;
+		int cr = 64;
+		int cg = 64;
+		int cb = 64;
+		col = SDL_MapRGB( screen->format, cr, cg, cb);
+		SDL_FillRect( screen, &rect, col);
 	}
 #endif
 	winw = 1.0 * winscale; winh = winw * h / w;
@@ -921,7 +955,23 @@ int main( int argc, char *argv[])
 		printf( "eye: e(%f;%f;%f) v(%f;%f;%f)\n", ex, ey, ez, vx, vy, vz);
 	}
 	
-	printf( "w=%lu h=%lu winw=%.2f winh=%.2f vx=%f vy=%f vz=%f level_max=%d\n", w, h, winw, winh, vx, vy, vz, level_max);
+	printf( "w=%lu h=%lu winw=%.2f winh=%.2f level_max=%d\n", w, h, winw, winh, level_max);
+#if 0
+	ex = 2.1;
+	ey = 1.3;
+	ez = 1.7;
+	vx = -0.700389;
+	vy = -0.433574;
+	vz = -0.566982;
+#else
+	ex = 2;
+	ey = 2;
+	ez = 2;
+	vx = -1;
+	vy = -1;
+	vz = -1;
+#endif
+	printf( "ex=%f ey=%f ez=%f vx=%f vy=%f vz=%f\n", ex, ey, ez, vx, vy, vz);
 	unsigned long i, j;
 	double old_t;
 	double last_t;
