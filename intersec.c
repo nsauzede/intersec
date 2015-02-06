@@ -61,6 +61,7 @@ typedef struct {
 typedef v3 lamp_t;
 
 typedef struct {
+	double ex, ey, ez, vx, vy, vz;
 	sphere_t *spheres;
 	int nspheres;
 	v3 *facets;
@@ -179,7 +180,7 @@ int load_scene( scene_t *scene, char *file)
 					}
 					continue;
 				}
-				ptr = strstr( buf, "sphere");
+				ptr = strstr( buf, "location");
 				if (ptr)
 				{
 					while (1)
@@ -190,16 +191,71 @@ int load_scene( scene_t *scene, char *file)
 						if (!fgets( buf, sizeof( buf), in))
 							break;
 					}
+					sscanf( ptr, "<%f, %f, %f>", &p[0], &p[1], &p[2]);
+					scene->ex = p[0];
+					scene->ey = p[1];
+					scene->ez = p[2];
+					continue;
+				}
+				ptr = strstr( buf, "look_at");
+				if (ptr)
+				{
+					while (1)
+					{
+						ptr = strchr( buf, '<');
+						if (ptr)
+							break;
+						if (!fgets( buf, sizeof( buf), in))
+							break;
+					}
+					sscanf( ptr, "<%f, %f, %f>", &p[0], &p[1], &p[2]);
+					scene->vx = p[0] - scene->ex;
+					scene->vy = p[1] - scene->ey;
+					scene->vz = p[2] - scene->ez;
+					continue;
+				}
+				ptr = strstr( buf, "direction");
+				if (ptr)
+				{
+					while (1)
+					{
+						ptr = strchr( buf, '<');
+						if (ptr)
+							break;
+						if (!fgets( buf, sizeof( buf), in))
+							break;
+					}
+					sscanf( ptr, "<%f, %f, %f>", &p[0], &p[1], &p[2]);
+					scene->vx = p[0];
+					scene->vy = p[1];
+					scene->vz = p[2];
+					continue;
+				}
+				ptr = strstr( buf, "sphere");
+				if (ptr)
+				{
+//					printf( "sphere ? %s\n", buf);
+					while (1)
+					{
+						ptr = strchr( buf, '<');
+						if (ptr)
+							break;
+						if (!fgets( buf, sizeof( buf), in))
+							break;
+					}
 					if (ptr)
 					{
-						printf( "sphere=[%s]\n", ptr);
+//						printf( "sphere=[%s]\n", ptr);
 						sscanf( ptr, "<%f, %f, %f>, %f", &p[0], &p[1], &p[2], &p[3]);
-						printf( "read s: %f,%f,%f %f\n", p[0], p[1], p[2], p[3]);
+//						printf( "read s: %f,%f,%f %f\n", p[0], p[1], p[2], p[3]);
 						i++;
 						scene->spheres[i].cx = p[0];
 						scene->spheres[i].cy = p[1];
 						scene->spheres[i].cz = p[2];
 						scene->spheres[i].sr = p[3];
+						scene->spheres[i].r = 1;		// just in case color not defined
+						scene->spheres[i].g = 1;		//
+						scene->spheres[i].b = 1;		//
 					}
 					else
 						exit( 1);
@@ -621,7 +677,7 @@ int traceray( int level, double ex, double ey, double ez, double _vx, double _vy
 		double rrefl = 0.0, grefl = 0.0, brefl = 0.0;
 		double rrefr = 0.0, grefr = 0.0, brefr = 0.0;
 	
-		if (level > 0)
+//		if (level > 0)
 			intersected++;
 //		printf( "object\n");
 // compute intersections here
@@ -877,6 +933,12 @@ int main( int argc, char *argv[])
 			scene_file = argv[arg++];
 		}
 	}
+	scene.ex = ex;
+	scene.ey = ey;
+	scene.ez = ez;
+	scene.vx = vx;
+	scene.vy = vy;
+	scene.vz = vz;
 	scene.spheres = __spheres;
 	scene.nspheres = __nsph;
 	if (scene_file)
@@ -884,6 +946,14 @@ int main( int argc, char *argv[])
 		load_scene( &scene, scene_file);
 	}
 	printf( "nspheres=%d\n", scene.nspheres);
+#if 0
+{	int i;
+	for (i = 0; i < scene.nspheres; i++)
+	{
+		printf(" %f %f %f %f\n", scene.spheres[i].cx, scene.spheres[i].cy, scene.spheres[i].cz, scene.spheres[i].sr);
+}	}
+#endif
+//	exit(1);
 	printf( "nlamps=%d\n", scene.nlamps);
 #ifdef USE_SDL
 	if (do_sdl)
@@ -952,26 +1022,11 @@ int main( int argc, char *argv[])
 	if (do_txt)
 	{
 		printf( "w=%lu h=%lu\n", w, h);
-		printf( "eye: e(%f;%f;%f) v(%f;%f;%f)\n", ex, ey, ez, vx, vy, vz);
+		printf( "eye: e(%f;%f;%f) v(%f;%f;%f)\n", scene.ex, scene.ey, scene.ez, scene.vx, scene.vy, scene.vz);
 	}
 	
 	printf( "w=%lu h=%lu winw=%.2f winh=%.2f level_max=%d\n", w, h, winw, winh, level_max);
-#if 0
-	ex = 2.1;
-	ey = 1.3;
-	ez = 1.7;
-	vx = -0.700389;
-	vy = -0.433574;
-	vz = -0.566982;
-#else
-	ex = 2;
-	ey = 2;
-	ez = 2;
-	vx = -1;
-	vy = -1;
-	vz = -1;
-#endif
-	printf( "ex=%f ey=%f ez=%f vx=%f vy=%f vz=%f\n", ex, ey, ez, vx, vy, vz);
+	printf( "ex=%f ey=%f ez=%f vx=%f vy=%f vz=%f\n", scene.ex, scene.ey, scene.ez, scene.vx, scene.vy, scene.vz);
 	unsigned long i, j;
 	double old_t;
 	double last_t;
@@ -1026,13 +1081,13 @@ int main( int argc, char *argv[])
 			_vx = vx - winw / 2 + winw * (double)i / (w - 1);
 #else
 			v3 v;
-			v[0] = vx;
-			v[1] = vy;
-			v[2] = vz;
+			v[0] = scene.vx;
+			v[1] = scene.vy;
+			v[2] = scene.vz;
 			v3 e;
-			e[0] = ex;
-			e[1] = ey;
-			e[2] = ez;
+			e[0] = scene.ex;
+			e[1] = scene.ey;
+			e[2] = scene.ez;
 			// p=p0+(p1-p0)u+(p2-p0)v
 			v3 up = { 0, 1, 0};
 			v3 right;
@@ -1058,7 +1113,7 @@ int main( int argc, char *argv[])
 //			printf( "j=%lu i=%lu vy=%f vx=%f\n", j, i, _vy, _vx);
 			double r = 0.0, g = 0.0, b = 0.0;
 
-			traceray( 0, ex, ey, ez, _vx, _vy, _vz, &r, &g, &b, &pix, 1.0, 1.0, 1.0);
+			traceray( 0, scene.ex, scene.ey, scene.ez, _vx, _vy, _vz, &r, &g, &b, &pix, 1.0, 1.0, 1.0);
 			unsigned char cr, cg, cb;
 			cr = (double)255 * r;
 			cg = (double)255 * g;
