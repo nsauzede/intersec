@@ -274,7 +274,7 @@ int load_scene( scene_t *scene, char *file)
 					continue;
 				}
 				ptr = strstr( buf, "diffuse");
-				if (ptr)
+				if (ptr && i != -1)
 				{
 					printf( "diffuse=[%s]\n", ptr);
 					sscanf( ptr, "diffuse %f", &p[0]);
@@ -285,7 +285,7 @@ int load_scene( scene_t *scene, char *file)
 					continue;
 				}
 				ptr = strstr( buf, "reflection");
-				if (ptr)
+				if (ptr && i != -1)
 				{
 					printf( "reflection=[%s]\n", ptr);
 					sscanf( ptr, "reflection %f", &p[0]);
@@ -296,7 +296,7 @@ int load_scene( scene_t *scene, char *file)
 					continue;
 				}
 				ptr = strstr( buf, "specular");
-				if (ptr)
+				if (ptr && i != -1)
 				{
 					printf( "specular=[%s]\n", ptr);
 					sscanf( ptr, "specular %f", &p[0]);
