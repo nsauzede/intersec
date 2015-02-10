@@ -17,7 +17,7 @@ CC=$(CCCROSS)gcc
 SDLCONFIG=$(SDLCROSS)sdl-config
 
 CFLAGS+=-g
-#OPTIM=1
+OPTIM=1
 ifdef OPTIM
 #CFLAGS+=-O2
 CFLAGS+=-O3
@@ -33,7 +33,7 @@ LDFLAGS+=-m32
 endif
 endif
 
-#USE_SKY=1
+USE_SKY=1
 ifdef USE_SKY
 CFLAGS+=-DUSE_SKY=$(USE_SKY)
 endif

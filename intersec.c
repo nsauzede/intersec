@@ -49,6 +49,7 @@
 #define dprintf(...) do{}while(0)
 #endif
 
+#pragma pack(1)
 typedef struct {
 	double cx, cy, cz, sr;
 	double r, g, b;
@@ -57,6 +58,7 @@ typedef struct {
 	double rfatt, gfatt, bfatt;		// refraction
 	double rindex;					// refraction index
 } sphere_t;
+#pragma pack()
 
 typedef v3 lamp_t;
 
@@ -170,9 +172,9 @@ int load_scene( scene_t *scene, char *file)
 					if (ptr)
 					{
 						ptr = strchr( buf, '<');
-						printf( "light_source=[%s]\n", ptr);
+//						printf( "light_source=[%s]\n", ptr);
 						sscanf( ptr, "<%f, %f, %f>", &p[0], &p[1], &p[2]);
-						printf( "read l: %f,%f,%f\n", p[0], p[1], p[2]);
+//						printf( "read l: %f,%f,%f\n", p[0], p[1], p[2]);
 						scene->lamps[l][0] = p[0];
 						scene->lamps[l][1] = p[1];
 						scene->lamps[l][2] = p[2];
@@ -265,9 +267,9 @@ int load_scene( scene_t *scene, char *file)
 				if (ptr)
 				{
 					ptr = strchr( buf, '<');
-					printf( "rgb=[%s]\n", ptr);
+//					printf( "rgb=[%s]\n", ptr);
 					sscanf( ptr, "<%f, %f, %f>", &p[0], &p[1], &p[2]);
-					printf( "read c: %f,%f,%f\n", p[0], p[1], p[2]);
+//					printf( "read c: %f,%f,%f\n", p[0], p[1], p[2]);
 					scene->spheres[i].r = p[0];
 					scene->spheres[i].g = p[1];
 					scene->spheres[i].b = p[2];
@@ -276,9 +278,9 @@ int load_scene( scene_t *scene, char *file)
 				ptr = strstr( buf, "diffuse");
 				if (ptr && i != -1)
 				{
-					printf( "diffuse=[%s]\n", ptr);
+//					printf( "diffuse=[%s]\n", ptr);
 					sscanf( ptr, "diffuse %f", &p[0]);
-					printf( "read d: %f\n", p[0]);
+//					printf( "read d: %f\n", p[0]);
 					scene->spheres[i].rdatt = p[0];
 					scene->spheres[i].gdatt = p[0];
 					scene->spheres[i].bdatt = p[0];
@@ -287,9 +289,9 @@ int load_scene( scene_t *scene, char *file)
 				ptr = strstr( buf, "reflection");
 				if (ptr && i != -1)
 				{
-					printf( "reflection=[%s]\n", ptr);
+//					printf( "reflection=[%s]\n", ptr);
 					sscanf( ptr, "reflection %f", &p[0]);
-					printf( "read r: %f\n", p[0]);
+//					printf( "read r: %f\n", p[0]);
 					scene->spheres[i].rratt = p[0];
 					scene->spheres[i].gratt = p[0];
 					scene->spheres[i].bratt = p[0];
@@ -298,9 +300,9 @@ int load_scene( scene_t *scene, char *file)
 				ptr = strstr( buf, "specular");
 				if (ptr && i != -1)
 				{
-					printf( "specular=[%s]\n", ptr);
+//					printf( "specular=[%s]\n", ptr);
 					sscanf( ptr, "specular %f", &p[0]);
-					printf( "read r: %f\n", p[0]);
+//					printf( "read r: %f\n", p[0]);
 					scene->spheres[i].rfatt = p[0];
 					scene->spheres[i].gfatt = p[0];
 					scene->spheres[i].bfatt = p[0];
@@ -946,11 +948,20 @@ int main( int argc, char *argv[])
 		load_scene( &scene, scene_file);
 	}
 	printf( "nspheres=%d\n", scene.nspheres);
-#if 0
+#if 1
 {	int i;
 	for (i = 0; i < scene.nspheres; i++)
 	{
-		printf(" %f %f %f %f\n", scene.spheres[i].cx, scene.spheres[i].cy, scene.spheres[i].cz, scene.spheres[i].sr);
+		if (i >= 5)
+			break;
+//		printf(" %f %f %f %f\n", scene.spheres[i].cx, scene.spheres[i].cy, scene.spheres[i].cz, scene.spheres[i].sr);
+		int j;
+		double *p = (double *)&scene.spheres[i];
+		for (j = 0; j < sizeof(sphere_t)/sizeof(double); j++)
+		{
+			printf(" %5.2f", p[j]);
+		}
+		printf( "\n");
 }	}
 #endif
 //	exit(1);
