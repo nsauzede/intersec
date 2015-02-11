@@ -144,6 +144,7 @@ int load_scene( scene_t *scene, char *file)
 		rewind( in);
 		if ((type == POV) && scene->nspheres)
 		{
+			float diffuse = 0, reflection = 0, specular = 0;
 			if (scene->nlamps)
 			{
 				scene->lamps = malloc( scene->nlamps * sizeof(*scene->lamps));
@@ -258,6 +259,15 @@ int load_scene( scene_t *scene, char *file)
 						scene->spheres[i].r = 1;		// just in case color not defined
 						scene->spheres[i].g = 1;		//
 						scene->spheres[i].b = 1;		//
+						scene->spheres[i].rdatt = diffuse;
+						scene->spheres[i].gdatt = diffuse;
+						scene->spheres[i].bdatt = diffuse;
+						scene->spheres[i].rratt = reflection;
+						scene->spheres[i].gratt = reflection;
+						scene->spheres[i].bratt = reflection;
+						scene->spheres[i].rfatt = specular;
+						scene->spheres[i].gfatt = specular;
+						scene->spheres[i].bfatt = specular;
 					}
 					else
 						exit( 1);
@@ -276,36 +286,45 @@ int load_scene( scene_t *scene, char *file)
 					continue;
 				}
 				ptr = strstr( buf, "diffuse");
-				if (ptr && i != -1)
+				if (ptr)
 				{
 //					printf( "diffuse=[%s]\n", ptr);
-					sscanf( ptr, "diffuse %f", &p[0]);
-//					printf( "read d: %f\n", p[0]);
-					scene->spheres[i].rdatt = p[0];
-					scene->spheres[i].gdatt = p[0];
-					scene->spheres[i].bdatt = p[0];
+					sscanf( ptr, "diffuse %f", &diffuse);
+//					printf( "read d: %f\n", diffuse);
+					if (i != -1)
+					{
+						scene->spheres[i].rdatt = diffuse;
+						scene->spheres[i].gdatt = diffuse;
+						scene->spheres[i].bdatt = diffuse;
+					}
 					continue;
 				}
 				ptr = strstr( buf, "reflection");
-				if (ptr && i != -1)
+				if (ptr)
 				{
 //					printf( "reflection=[%s]\n", ptr);
-					sscanf( ptr, "reflection %f", &p[0]);
-//					printf( "read r: %f\n", p[0]);
-					scene->spheres[i].rratt = p[0];
-					scene->spheres[i].gratt = p[0];
-					scene->spheres[i].bratt = p[0];
+					sscanf( ptr, "reflection %f", &reflection);
+//					printf( "read r: %f\n", reflection);
+					if (i != -1)
+					{
+						scene->spheres[i].rratt = reflection;
+						scene->spheres[i].gratt = reflection;
+						scene->spheres[i].bratt = reflection;
+					}
 					continue;
 				}
 				ptr = strstr( buf, "specular");
-				if (ptr && i != -1)
+				if (ptr)
 				{
 //					printf( "specular=[%s]\n", ptr);
-					sscanf( ptr, "specular %f", &p[0]);
-//					printf( "read r: %f\n", p[0]);
-					scene->spheres[i].rfatt = p[0];
-					scene->spheres[i].gfatt = p[0];
-					scene->spheres[i].bfatt = p[0];
+					sscanf( ptr, "specular %f", &specular);
+//					printf( "read r: %f\n", specular);
+					if (i != -1)
+					{
+						scene->spheres[i].rfatt = specular;
+						scene->spheres[i].gfatt = specular;
+						scene->spheres[i].bfatt = specular;
+					}
 					continue;
 				}
 			}
