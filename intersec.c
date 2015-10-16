@@ -125,6 +125,17 @@ int load_scene( scene_t *scene, char *file)
 				type = POV;
 				scene->nspheres++;
 			}
+			ptr = strstr( buf, "triangle {");
+			if (ptr)
+			{
+				if (type &= ~POV)
+				{
+					printf( "bad scene file : type=%x and POV token found\n", type);
+					exit( 1);
+				}
+				type = POV;
+				scene->nfacets++;
+			}
 			ptr = strstr( buf, "light_source");
 			if (ptr)
 			{
@@ -144,6 +155,11 @@ int load_scene( scene_t *scene, char *file)
 		rewind( in);
 		if ((type == POV) && scene->nspheres)
 		{
+			if (scene->nfacets)
+			{
+				scene->facets = malloc( scene->nfacets * sizeof(v3[4]));
+				memset( scene->facets, 0, scene->nfacets * sizeof(*scene->facets));
+			}
 			float diffuse = 0, reflection = 0, specular = 0;
 			if (scene->nlamps)
 			{
@@ -977,6 +993,23 @@ int main( int argc, char *argv[])
 		int j;
 		double *p = (double *)&scene.spheres[i];
 		for (j = 0; j < sizeof(sphere_t)/sizeof(double); j++)
+		{
+			printf(" %5.2f", p[j]);
+		}
+		printf( "\n");
+}	}
+#endif
+	printf( "nfacets=%d\n", scene.nfacets);
+#if 1
+{	int i;
+	for (i = 0; i < scene.nfacets; i++)
+	{
+		if (i >= 5)
+			break;
+//		printf(" %f %f %f %f\n", scene.spheres[i].cx, scene.spheres[i].cy, scene.spheres[i].cz, scene.spheres[i].sr);
+		int j;
+		double *p = (double *)&scene.facets[i];
+		for (j = 0; j < 4; j++)
 		{
 			printf(" %5.2f", p[j]);
 		}
