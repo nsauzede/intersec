@@ -506,12 +506,14 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	lz0 -= z0;
 
 	v1_t xx = 0, yy = 0, zz = 0;
+#if 0
 	rx = rx;
 	rz = rz;
 	ry = ry;
 	xx = xx;
 	zz = zz;
 	yy = yy;
+#endif
 
 	//rotate
 	yy = ly0 * cos(rx) - lz0 * sin(rx);

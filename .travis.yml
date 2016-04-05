@@ -3,7 +3,7 @@ dist: trusty
 language: c
 compiler:
   - gcc
-#  - clang
+  - clang
 
 
 before_install:

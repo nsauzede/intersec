@@ -299,7 +299,7 @@ int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	//v1_t rx = +0*45.0 * (double)M_PI / 180.0;
 	v1_t ry = cy[3 * 1 + 1] * (double)M_PI / 180.0;
 	//v1_t ry = -0*45.0 * (double)M_PI / 180.0;
-	v1_t rz = cy[3 * 1 + 2] * (double)M_PI / 180.0;
+//	v1_t rz = cy[3 * 1 + 2] * (double)M_PI / 180.0;
 	//v1_t rz = +0*45.0 * (double)M_PI / 180.0;
 #endif
 
@@ -320,12 +320,14 @@ int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 
 #ifdef DO_ROTATE
 	v1_t xx = 0, yy = 0, zz = 0;
+#if 0
 	rx = rx;
 	rz = rz;
 	ry = ry;
 	xx = xx;
 	zz = zz;
 	yy = yy;
+#endif
 
 #if 1
 	yy = ly0 * cos(rx) - lz0 * sin(rx);
@@ -380,8 +382,8 @@ int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	{
 		t2 = t1;
 	}
-	v1_t foo1 = 0.0;
-	v1_t foo2 = 0.0;
+//	v1_t foo1 = 0.0;
+//	v1_t foo2 = 0.0;
 	v1_t foo = 0.0;
 	if (sol 
 			//&& (fabs(t1) > SMALL)
@@ -421,8 +423,8 @@ int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 		hit = (z1 >= zmin) && (z1 <= zmax);
 		if (hit)
 			foo = z1;
-		foo1 = z1;
-		foo2 = z2;
+//		foo1 = z1;
+//		foo2 = z2;
 		if (!hit && ((sol > 1) && (fabs(t2) > SMALL)))
 		{
 			hit = (z2 >= zmin) && (z2 <= zmax);
@@ -447,11 +449,8 @@ int intersec_cyl( v3_t cy, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 #if 0
 	printf( "%3.0f/", foo1);
 	printf( "%3.0f", foo2);
-#else
-	foo1 = foo1;
-	foo2 = foo2;
 #endif
-	foo = foo;
+//	foo = foo;
 	printf( "%3.0f", foo);
 	//printf( "%d", result);
 	//printf( "%d", sol);
@@ -483,7 +482,7 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	//v1_t rx = +0*45.0 * (double)M_PI / 180.0;
 	v1_t ry = obj[3 * 1 + 1] * (double)M_PI / 180.0;
 	//v1_t ry = +0*25.0 * (double)M_PI / 180.0;
-	v1_t rz = obj[3 * 1 + 2] * (double)M_PI / 180.0;
+//	v1_t rz = obj[3 * 1 + 2] * (double)M_PI / 180.0;
 	//v1_t rz = +0*45.0 * (double)M_PI / 180.0;
 #endif
 
@@ -513,12 +512,14 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 
 #ifdef DO_ROTATE
 	v1_t xx = 0, yy = 0, zz = 0;
+#if 0
 	rx = rx;
 	rz = rz;
 	ry = ry;
 	xx = xx;
 	zz = zz;
 	yy = yy;
+#endif
 
 #if 1
 	yy = ly0 * cos(rx) - lz0 * sin(rx);
@@ -573,8 +574,8 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 	{
 		t2 = t1;
 	}
-	v1_t fooz = 0.0;
-	v1_t fooy = 0.0;
+//	v1_t fooz = 0.0;
+//	v1_t fooy = 0.0;
 	v1_t foox = 0.0;
 	v1_t z1 = 0;
 	v1_t z2 = 0;
@@ -597,7 +598,7 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 		if (fabs( _zmax - _zmin) < SMALL)
 		{
 			hitz = 1;
-			fooz = z1;
+//			fooz = z1;
 		}
 		else
 		{
@@ -609,20 +610,22 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 				{
 					t1 = (zmin - lz0) / Vz;
 					hitz = 1;
-					fooz = lz0 + Vz * t1;
+//					fooz = lz0 + Vz * t1;
 				}
 			}
 			if (!hitz)
 			{
 				hitz = (z1 >= zmin) && (z1 <= zmax);
 				if (hitz)
-					fooz = z1;
+				{
+//					fooz = z1;
+				}
 				if (!hitz && ((sol > 1) && (fabs(t2) > SMALL)))
 				{
 					hitz = (z2 >= zmin) && (z2 <= zmax);
 					if (hitz)
 					{
-						fooz = z2;
+//						fooz = z2;
 						v1_t temp = t2;
 						t1 = t2;
 						t2 = temp;
@@ -633,7 +636,7 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 		if (fabs( _ymax - _ymin) < SMALL)
 		{
 			hity = 1;
-			fooy = y1;
+//			fooy = y1;
 		}
 		else
 		{
@@ -645,20 +648,22 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 				{
 					t1 = (ymin - ly0) / Vy;
 					hity = 1;
-					fooy = ly0 + Vy * t1;
+//					fooy = ly0 + Vy * t1;
 				}
 			}
 			if (!hity)
 			{
 				hity = (y1 >= ymin) && (y1 <= ymax);
 				if (hity)
-					fooy = y1;
+				{
+//					fooy = y1;
+				}
 				if (!hity && ((sol > 1) && (fabs(t2) > SMALL)))
 				{
 					hity = (y2 >= ymin) && (y2 <= ymax);
 					if (hity)
 					{
-						fooy = y2;
+//						fooy = y2;
 						v1_t temp = t2;
 						t1 = t2;
 						t2 = temp;
@@ -711,9 +716,11 @@ int intersec_quad( v3_t obj, v3_t e, v3_t v, v1_t *tmin, v1_t *tmax)
 				*tmax = t2;
 		}
 	}
+#if 0
 	fooz = fooz;
 	fooy = fooy;
 	foox = foox;
+#endif
 //	printf( "%d:", sol);
 	//printf( "%3d", (int)fooz*10);
 	//printf( "%.1f", foox);
@@ -1133,7 +1140,7 @@ int main( int argc, char *argv[])
 				else
 					c = 'b';
 			}
-			c = c;
+//			c = c;
 			printf( "%c", c);
 			fflush( stdout);
 		}

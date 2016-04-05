@@ -5,6 +5,7 @@ TARGET+=bench.exe
 TARGET+=fbench.exe
 
 CFLAGS=-Wall -Werror
+#CFLAGS+=-Wextra
 
 USE_SDL=1
 #USE_CROSS=1
@@ -87,4 +88,4 @@ sdlr3.exe:LDFLAGS+=`$(SDLCONFIG) --libs`
 clean:
 	$(RM) $(TARGET) *.o
 clobber: clean
-	$(RM) *~ *.tga *.exe
+	$(RM) *~ .*~ *.tga *.exe stderr.txt stdout.txt

@@ -284,7 +284,7 @@ void traceray( scene_t *scene, v3 _e, v3 _v, v3 col)
 }
 
 // input : s0,s1,s2,e
-inline int compute_scene( scene_t *scene, int i, int j, int *r, int *g, int *b)
+int compute_scene( scene_t *scene, int i, int j, int *r, int *g, int *b)
 {
 	int w = scene->w;
 	int h = scene->h;
@@ -334,7 +334,7 @@ inline int init_scene( scene_t *scene)
 	return 0;
 }
 
-inline int load_scene( scene_t *scene, char *file)
+int load_scene( scene_t *scene, char *file)
 {
 	int i, j;
 	FILE *in = fopen( file, "rt");
